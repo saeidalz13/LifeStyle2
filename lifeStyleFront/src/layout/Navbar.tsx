@@ -15,17 +15,17 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-            <Link to={Urls.finance}>
-                <div className="nav-link">Finance</div>
+            <Link to={Urls.login}>
+                <div className="nav-link">Log In</div>
             </Link>
             </li>
             <li className="nav-item">
-            <Link to={Urls.fitness}>
-                <div className="nav-link">Fitness</div>
+            <Link to={Urls.signup}>
+                <div className="nav-link">Sign Up</div>
             </Link>
             </li>
             <li className="nav-item">
-            <Link to={Urls.home}>
+            <Link to={Urls.about}>
                 <div className="nav-link">About</div>
             </Link>
             </li>

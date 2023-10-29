@@ -4,9 +4,17 @@ h1 {
     color: rgb(254, 249, 208);
 }
 
+input {
+    margin: 5px 0
+}
+
 .home-panels {
     padding: 100px;
     margin: 10px;
     border-radius: 20px;
     font-size: x-large;
+}
+
+.submit-btn {
+    padding: 8px 20px;
 }
