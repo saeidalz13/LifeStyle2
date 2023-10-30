@@ -3,31 +3,37 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type ProjUrls struct {
-	home string
+	Home          string
+	PostNewBudget string
 }
 
-type Constants struct {
-	port string
+type DotEnvVars struct {
+	port          string
+	mySqlPassword string
+	dataBaseName  string
 }
 
 func Urls() *ProjUrls {
 	return &ProjUrls{
-		home: "/",
+		Home:          "/",
+		PostNewBudget: "/new-budget",
 	}
 }
 
-func GetEnvVars() *Constants {
+func GetEnvVars() (*DotEnvVars, error) {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
+		return nil, err
 	}
-	return &Constants{
-		port: os.Getenv(strings.ToUpper("PORT")),
-	}
-}	
 
+	return &DotEnvVars{
+		port:          os.Getenv("PORT"),
+		mySqlPassword: os.Getenv("MYSQLPASSWORD"),
+		dataBaseName:  os.Getenv("DATABASENAME"),
+	}, nil
+}

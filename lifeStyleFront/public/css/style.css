@@ -1,15 +1,28 @@
+:root {
+    --beige-custom: rgb(254, 249, 208);
+    --default-box-shadow: 1px 1px 10px 1px rgb(0, 86, 86)
+}
+
 h1 {
     margin: 50px 0px;
     text-align: center;
-    color: rgb(254, 249, 208);
+    color: var(--beige-custom);
 }
 
+
 input {
-    margin: 5px 0
+    margin: 5px 0;
+}
+
+.budget-panels {
+    width: 90%;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .home-panels {
     padding: 100px;
+    width: 90%;
     margin: 10px;
     border-radius: 20px;
     font-size: x-large;
@@ -17,4 +30,16 @@ input {
 
 .submit-btn {
     padding: 8px 20px;
+}
+
+#new-budget-tips {
+    background-color: var(--beige-custom);
+    border-radius: 20px;
+}
+
+#form-new-budget {
+    background-color: rgba(29, 0, 23,0.2);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: var(--default-box-shadow);
 }

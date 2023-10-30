@@ -11,7 +11,12 @@ import (
 )
 
 func main() {
-	consts := GetEnvVars()
+	consts, err := GetEnvVars(); 
+	if err != nil {
+		log.Fatalln("Failed to retrieve data from dotenv file")
+		return
+	}
+	
 	urls := Urls()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -28,9 +33,10 @@ func main() {
 		})
 	r.Use(corsOptions.Handler)
 	// Get Functions
-	r.Get(urls.home, GetHome)
+	r.Get(urls.Home, GetHome)
 
 	// Post Functions
+	r.Post(urls.PostNewBudget, PostHome)
 
 	log.Printf("Listening to %s ...\n", consts.port)
 	log.Fatal(http.ListenAndServe(consts.port, r))
