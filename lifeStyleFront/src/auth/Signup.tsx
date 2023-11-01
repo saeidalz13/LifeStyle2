@@ -1,7 +1,33 @@
+import { FormEvent, useRef } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
+import BACKEND_URL from "../Config";
 
 const Signup = () => {
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmitSignup(e: FormEvent) {
+    e.preventDefault();
+    const newUser = {
+      email: emailRef.current?.value,
+      password: passwordRef.current?.value,
+    };
+
+    try {
+      const result = await fetch(`${BACKEND_URL}/signup`, {
+        method: "POST",
+        body: JSON.stringify(newUser),
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log(await result.text());
+
+      location.assign(Urls.home)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <>
       <div className="container mt-5 mb-5 mx-auto">
@@ -17,7 +43,7 @@ const Signup = () => {
                 </button>
               </Link>
             </div>
-            <form>
+            <form onSubmit={handleSubmitSignup}>
               <legend>Sign Up!</legend>
               <input
                 className="form-control"
@@ -25,6 +51,7 @@ const Signup = () => {
                 name="email"
                 id="email"
                 placeholder="Email Address"
+                ref={emailRef}
               />
               <input
                 className="form-control"
@@ -32,6 +59,7 @@ const Signup = () => {
                 name="password"
                 id="password"
                 placeholder="Password"
+                ref={passwordRef}
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">

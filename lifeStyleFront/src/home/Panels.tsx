@@ -1,15 +1,47 @@
 import { Link } from "react-router-dom";
 import Urls from "../Urls";
+import BACKEND_URL from "../Config";
 
-const Panels = () => {
+const Panels = (props: Authorized) => {
+  console.log(props.isAuth);
+
+  async function checkAuthorization() {
+    try {
+      const result = await fetch(`${BACKEND_URL}/finance`, {
+        method: "GET",
+        credentials: "include",
+      });
+  
+      if (result.ok) {
+        const isAuth = await result.json();
+        return isAuth.success;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking authorization:", error);
+      return false;
+    }
+  }
+
+
   return (
     <>
       <div className="container text-center">
         <div className="row">
           <div className="col">
-            <Link to={Urls.finance}>
-              <button className="btn btn-success home-panels">Finance</button>
-            </Link>
+            {props.isAuth ? (
+              <Link to={Urls.finance}>
+                <button
+                  className="btn btn-success home-panels"
+                >
+                  Finance
+                </button>
+              </Link>
+            ) : (
+              <button className="btn btn-success home-panels" disabled>
+                Finance
+              </button>
+            )}
           </div>
 
           <div className="col">
@@ -23,4 +55,7 @@ const Panels = () => {
   );
 };
 
+interface Authorized {
+  isAuth: boolean;
+}
 export default Panels;

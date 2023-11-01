@@ -10,19 +10,24 @@ import (
 type ProjUrls struct {
 	Home          string
 	PostNewBudget string
+	SignUp        string
+	Login         string
+	Finance       string
+}
+
+var URLS = &ProjUrls{
+	Home:          "/",
+	PostNewBudget: "/new-budget",
+	SignUp:        "/signup",
+	Login:         "/login",
+	Finance:       "/finance",
 }
 
 type DotEnvVars struct {
+	frontEndUrl   string
 	port          string
 	mySqlPassword string
 	dataBaseName  string
-}
-
-func Urls() *ProjUrls {
-	return &ProjUrls{
-		Home:          "/",
-		PostNewBudget: "/new-budget",
-	}
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
@@ -32,6 +37,7 @@ func GetEnvVars() (*DotEnvVars, error) {
 	}
 
 	return &DotEnvVars{
+		frontEndUrl:   os.Getenv("FRONTENDURL"),
 		port:          os.Getenv("PORT"),
 		mySqlPassword: os.Getenv("MYSQLPASSWORD"),
 		dataBaseName:  os.Getenv("DATABASENAME"),

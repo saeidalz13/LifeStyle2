@@ -1,7 +1,53 @@
+import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
+import BACKEND_URL from "../Config";
 
 const Login = () => {
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState<boolean>(false)
+  const [errMsg, setErrMsg] = useState<string>("")
+  const [success, setSuccess] = useState<boolean>(false)
+  const [successMsg, setSuccessMsg] = useState<string>("")
+
+  async function handleSubmitLogin(e: FormEvent) {
+    e.preventDefault();
+    const loginUser = {
+      email: emailRef.current?.value,
+      password: passwordRef.current?.value,
+    };
+
+    try {
+      const result = await fetch(`${BACKEND_URL}/login`, {
+        method: "POST",
+        body: JSON.stringify(loginUser),
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+      });
+      const resp = await result.json();
+
+      if (resp.error) {
+        setErr(true)
+        setErrMsg(resp.message)
+        console.log(resp)
+        setTimeout(() => {
+          setErr(false)
+        }, 5000)
+
+      } else {
+        setSuccess(true)
+        setSuccessMsg(resp.message)
+        setTimeout(()=>{
+          location.assign(Urls.home)
+        }, 1000)
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <>
       <div className="container mt-5 mb-5 mx-auto">
@@ -17,7 +63,7 @@ const Login = () => {
                 </button>
               </Link>
             </div>
-            <form>
+            <form onSubmit={handleSubmitLogin}>
               <legend>Log In!</legend>
               <input
                 className="form-control"
@@ -25,6 +71,7 @@ const Login = () => {
                 name="email"
                 id="email"
                 placeholder="Email Address"
+                ref={emailRef}
               />
               <input
                 className="form-control"
@@ -32,6 +79,7 @@ const Login = () => {
                 name="password"
                 id="password"
                 placeholder="Password"
+                ref={passwordRef}
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
@@ -48,6 +96,9 @@ const Login = () => {
             </button>
           </Link>
         </div>
+
+        {err && <div className="alert alert-warning mt-2 text-center mx-5 p-2">{errMsg}</div>}
+        {success && <div className="alert alert-success mt-2 text-center mx-5 p-2">{successMsg}</div>}
       </div>
     </>
   );

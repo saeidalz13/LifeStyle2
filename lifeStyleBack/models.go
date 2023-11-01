@@ -1,27 +1,39 @@
 package main
 
-import (
-	"database/sql"
+type User struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
-	_ "github.com/go-sql-driver/mysql"
-)
+type JsonRes struct {
+	Message string `json:"message"`
+}
 
-func ConnectMySql() (*sql.DB, error) {
-	consts, err := GetEnvVars(); 
-	if err != nil {
-		return nil, err
-	}
+type SqlStmts struct {
+	InsertSignUp string
+}
 
-	db, err := sql.Open("mysql", "root:"+consts.mySqlPassword+"@tcp(localhost:3306)/"+consts.dataBaseName)
-	if err != nil {
-		return nil, err
-	}
+type ApiError struct {
+	Err string `json:"error"`
+	Msg string `json:"message"`
+}
 
-	// Check if the connection is valid
-	if err = db.Ping(); err != nil {
-		db.Close()
-		return nil, err
-	}
+type ApiSuccess struct {
+	Success string `json:"success"`
+	Msg     string `json:"message"`
+}
 
-	return db, nil
+type NewBudget struct {
+	Id            int16
+	StartDate     string `json:"startDate"`
+	EndDate       string `json:"endDate"`
+	Income        string `json:"income"`
+	Savings       string `json:"savings"`
+	Capital       string `json:"capital"`
+	Eatout        string `json:"eatout"`
+	Entertainment string `json:"entertainment"`
+}
+
+var SqlStatements = &SqlStmts{
+	InsertSignUp: "INSERT INTO `users` (`email`, `password`) VALUES (?, ?);",
 }
