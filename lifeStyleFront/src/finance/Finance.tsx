@@ -1,14 +1,16 @@
-import Navbar from "../layout/Navbar"
-import Panels from "./Panels"
+import { NavLink } from "react-router-dom";
+import Panels from "./Panels";
+import Urls from "../Urls";
 
 const Finance = () => {
-  
   return (
     <div>
-    <Navbar />
-    <Panels />
+      <NavLink to={Urls.home}>
+        <button className="btn btn-secondary px-3 py-2">Home</button>
+      </NavLink>
+      <Panels />
     </div>
-  )
-}
+  );
+};
 
-export default Finance
+export default Finance;

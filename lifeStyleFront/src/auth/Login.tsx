@@ -2,8 +2,10 @@ import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
 import BACKEND_URL from "../Config";
+import rl from "../svg/RotatingLoad.svg"
 
 const Login = () => {
+  const [loading, setLoading] = useState<boolean>(false)
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<boolean>(false)
@@ -13,6 +15,7 @@ const Login = () => {
 
   async function handleSubmitLogin(e: FormEvent) {
     e.preventDefault();
+    setLoading(true)
     const loginUser = {
       email: emailRef.current?.value,
       password: passwordRef.current?.value,
@@ -27,7 +30,8 @@ const Login = () => {
       });
       const resp = await result.json();
 
-      if (resp.error) {
+      if (resp.responseType === "error") {
+        setLoading(false)
         setErr(true)
         setErrMsg(resp.message)
         console.log(resp)
@@ -38,9 +42,7 @@ const Login = () => {
       } else {
         setSuccess(true)
         setSuccessMsg(resp.message)
-        setTimeout(()=>{
-          location.assign(Urls.home)
-        }, 1000)
+        location.assign(Urls.home)
       }
       
     } catch (error) {
@@ -83,7 +85,7 @@ const Login = () => {
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
-                  Submit
+                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
             </form>

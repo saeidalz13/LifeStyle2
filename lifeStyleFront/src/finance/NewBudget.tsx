@@ -1,8 +1,15 @@
 import { FormEvent, useRef, useState } from "react";
 import Constants from "./Constants";
+import rl from "../svg/RotatingLoad.svg";
+import BACKEND_URL from "../Config";
 
 const NewBudget = () => {
+  const minMoney = "1.00"
+
   const [serverRes, setServerRes] = useState(false);
+  const [possibleErrs, setPossibleErrs] = useState(false);
+  const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
@@ -14,6 +21,7 @@ const NewBudget = () => {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setLoading(true);
     const allInputs = [
       startDateRef,
       endDateRef,
@@ -28,6 +36,7 @@ const NewBudget = () => {
       if (input.current) {
         if (!input.current.value) {
           input.current.style.backgroundColor = "lightpink";
+          setLoading(false);
           return;
         } else {
           input.current.style.backgroundColor = "";
@@ -35,34 +44,63 @@ const NewBudget = () => {
       }
     }
 
-    const dataReq = {
-      startDate: startDateRef.current?.value,
-      endDate: endDateRef.current?.value,
-      income: incomeRef.current?.value,
-      savings: savingsRef.current?.value,
-      capital: capitalRef.current?.value,
-      eatout: eatoutRef.current?.value,
-      entertainment: entertainmentRef.current?.value,
-    };
+    if (
+      startDateRef.current?.value &&
+      endDateRef.current?.value &&
+      incomeRef.current?.value &&
+      savingsRef.current?.value &&
+      capitalRef.current?.value &&
+      eatoutRef.current?.value &&
+      entertainmentRef.current?.value
+    ) {
+      const dataReq = {
+        startDate: startDateRef.current?.value,
+        endDate: endDateRef.current?.value,
+        income: incomeRef.current?.value,
+        savings: savingsRef.current?.value,
+        capital: capitalRef.current?.value,
+        eatout: eatoutRef.current?.value,
+        entertainment: entertainmentRef.current?.value,
+      };
+      const sumOfBudgets =
+        +dataReq.capital +
+        +dataReq.eatout +
+        +dataReq.entertainment +
+        +dataReq.savings;
+      if (sumOfBudgets > +dataReq.income) {
+        setLoading(false);
+        setPossibleErrs(true);
+        setPossibleErrsMsg("Your budgeted amount is more than your income!");
+        setTimeout(() => {
+          setPossibleErrs(false);
+        }, 10000);
+        return;
+      } else {
+        try {
+          const response = await fetch(`${BACKEND_URL}/finance/create-new-budget`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json;charset=UTF-8",
+            },
+            body: JSON.stringify(dataReq),
+          });
+          const dataRes = await response.json();
+          console.log(dataRes);
+          setServerRes(true);
+          setLoading(false);
 
-    try {
-      const response = await fetch("http://localhost:1300/new-budget", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-        body: JSON.stringify(dataReq),
-      });
-      const dataRes = await response.json();
-      console.log(dataRes);
-      setServerRes(true);
-
-      setTimeout(() => {
-        setServerRes(false);
-      }, 5000);
-    } catch (error) {
-      console.log(error);
+          setTimeout(() => {
+            setServerRes(false);
+          }, 5000);
+        } catch (error) {
+          console.log(error);
+          setLoading(false);
+        }
+      }
+    } else {
+      return;
     }
   }
 
@@ -101,7 +139,7 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={incomeRef}
-                min="1"
+                min={minMoney}
               />
 
               <label htmlFor="savings">Savings:</label>
@@ -112,7 +150,7 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={savingsRef}
-                min="1"
+                min={minMoney}
               />
 
               <label htmlFor="capital">Capital Budget:</label>
@@ -123,7 +161,7 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={capitalRef}
-                min="1"
+                min={minMoney}
               />
 
               <label htmlFor="eatout">Eat Out Budget:</label>
@@ -134,7 +172,7 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={eatoutRef}
-                min="1"
+                min={minMoney}
               />
 
               <label htmlFor="entertainment">Entertainment Budget:</label>
@@ -145,11 +183,11 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={entertainmentRef}
-                min="1"
+                min={minMoney}
               />
               <div style={{ marginTop: "20px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-success submit-btn">
-                  Submit
+                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
               {serverRes ? (
@@ -164,6 +202,17 @@ const NewBudget = () => {
                 </div>
               ) : (
                 ""
+              )}
+              {possibleErrs && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "red",
+                    marginTop: "5px",
+                  }}
+                >
+                  {possibleErrsMsg}
+                </div>
               )}
             </form>
           </div>

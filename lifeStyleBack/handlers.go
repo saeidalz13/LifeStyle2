@@ -22,15 +22,39 @@ type Claims struct {
 
 func GetHome(ftx *fiber.Ctx) error {
 	jwtCookie := ftx.Cookies("jwt")
-	log.Println(jwtCookie)
 	if jwtCookie == "" {
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Not Signed In"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Not Signed In"})
 	}
-	return ftx.JSON(&ApiSuccess{Success: "success", Msg: "Valid user"})
+
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(jwtCookie, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte(ENVCONSTS.JwtToken), nil
+	})
+	if err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Not Signed In"})
+	}
+
+	if !token.Valid {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Invalid Token! Not Signed In"})
+	}
+
+	return ftx.JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Valid user"})
 }
 
 func GetFinance(ftx *fiber.Ctx) error {
-	return ftx.JSON(&ApiSuccess{Success: "success", Msg:"Welcome to finances!"})
+	return ftx.JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Welcome to finances!"})
+}
+
+func GetSignOut(ftx *fiber.Ctx) error {
+	ftx.Cookie(&fiber.Cookie{
+		Name:     "jwt",                        // Replace with your cookie name
+		Value:    "",                           // Clear the cookie value
+		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
+		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
+	})
+
+	// Redirect to the home page or any other desired location
+	return ftx.Redirect(URLS.Home)
 }
 
 func PostSignup(ftx *fiber.Ctx) error {
@@ -38,7 +62,7 @@ func PostSignup(ftx *fiber.Ctx) error {
 
 	if contentType := ftx.Get("Content-Type"); contentType != "application/json" {
 		log.Println("Unsupported Content-Type:", contentType)
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Incorrect request data (not JSON)"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Incorrect request data (not JSON)"})
 	}
 
 	if err := ftx.BodyParser(&newUser); err != nil {
@@ -58,14 +82,14 @@ func PostSignup(ftx *fiber.Ctx) error {
 
 	select {
 	case result := <-ch:
-		if result == false {
-			return ftx.JSON(&ApiError{Err: "error", Msg: "Failed to add the user!"})
+		if !result {
+			return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the user!"})
 		}
 		log.Println("Received:", result)
 		return ftx.JSON(newUser)
 	case <-ctx.Done():
 		log.Println("Request timed out or cancelled")
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Request cancelled or time out!"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Request cancelled or time out!"})
 	}
 }
 
@@ -75,25 +99,25 @@ func PostLogin(ftx *fiber.Ctx) error {
 	var id int
 	if contentType := ftx.Get("Content-Type"); contentType != "application/json" {
 		log.Println("Unsupported Content-Type:", contentType)
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Incorrect request data (not JSON)"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Incorrect request data (not JSON)"})
 	}
 
 	if err := ftx.BodyParser(&loginUser); err != nil {
 		log.Println("Failed to parse the request body")
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Failed to parse the request (bad JSON format)"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the request (bad JSON format)"})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	row := DB.QueryRowContext(ctx, "SELECT * FROM users WHERE email = ?;", loginUser.Email)
+	row := DB.QueryRowContext(ctx, SqlStatements.SelectUser, loginUser.Email)
 	if err := row.Scan(&id, &availUser.Email, &availUser.Password); err != nil {
 		log.Println("Failed to read the row: ", err)
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Wrong Email Address! Try Again Please!"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong Email Address! Try Again Please!"})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(availUser.Password), []byte(loginUser.Password)); err != nil {
 		log.Println("Failed to match the passwords and find the user: ", err)
-		return ftx.JSON(&ApiError{Err: "error", Msg: "Wrong Password! Try Again Please!"})
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong Password! Try Again Please!"})
 	}
 
 	// JWT Settings
@@ -101,7 +125,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 	tokenString, err := GenerateToken(expirationTime, availUser.Email)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiError{Err: "error", Msg: "Failed to log in the user. Please try again later!"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
@@ -112,10 +136,76 @@ func PostLogin(ftx *fiber.Ctx) error {
 		SameSite: "Strict",
 	})
 
-	return ftx.Status(fiber.StatusAccepted).JSON(&ApiSuccess{Success: "success", Msg: "Successfully logged in! Redirecting to home page..."})
+	return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
 }
 
+func PostNewBudget(ftx *fiber.Ctx) error {
+	var newBudget NewBudget
+	var dbUser DbUser
 
+	if err := ftx.BodyParser(&newBudget); err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the requested budget JSON"})
+	}
+
+	userEmail, err := ExtractEmailFromClaim(ftx)
+	if err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	startDate, endDate, err := ConvertToDate(newBudget.StartDate, newBudget.EndDate)
+	if err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ch := make(chan bool, 1)
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel2()
+	AddNewBudget(ctx2, ch, &newBudget, startDate, endDate, dbUser.Id)
+
+	select {
+	case result := <-ch:
+		if !result {
+			return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget!"})
+		}
+		log.Println("Received:", result)
+		return ftx.JSON(newBudget)
+
+	case <-ctx2.Done():
+		log.Println("Request timed out or cancelled")
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Request cancelled or time out!"})
+	}
+}
+
+func GetAllBudgets(ftx *fiber.Ctx) error {
+	var dbUser DbUser
+
+	userEmail, err := ExtractEmailFromClaim(ftx)
+	if err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel2()
+	userBudgets, err := FindUserBudgets(ctx2, dbUser.Id)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budgets from database"})
+	}
+
+	return ftx.Status(fiber.StatusAccepted).JSON(map[string]interface{}{"budgets":userBudgets})
+}
 // Unused
 
 // func HandlerGetHome(w http.ResponseWriter, r *http.Request) {

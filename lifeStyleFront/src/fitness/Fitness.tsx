@@ -1,12 +1,16 @@
-import Navbar from "../layout/Navbar"
-
+import Urls from "../Urls";
+import { NavLink } from "react-router-dom";
 
 const Fitness = () => {
   return (
     <>
-      <Navbar />
+      <div>
+        <NavLink to={Urls.home}>
+          <button className="btn btn-secondary px-3 py-2">Home</button>
+        </NavLink>
+      </div>
     </>
-  )
-}
+  );
+};
 
-export default Fitness
+export default Fitness;

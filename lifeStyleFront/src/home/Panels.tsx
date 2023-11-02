@@ -1,53 +1,60 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Urls from "../Urls";
-import BACKEND_URL from "../Config";
+import finSVG from "../svg/FinanceHomePanel.svg";
+import fitSVG from "../svg/FitnessHomePanel.svg";
 
 const Panels = (props: Authorized) => {
-  console.log(props.isAuth);
-
-  async function checkAuthorization() {
-    try {
-      const result = await fetch(`${BACKEND_URL}/finance`, {
-        method: "GET",
-        credentials: "include",
-      });
-  
-      if (result.ok) {
-        const isAuth = await result.json();
-        return isAuth.success;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error checking authorization:", error);
-      return false;
-    }
-  }
-
-
+  const heightWidthSVGs = "120px"
   return (
     <>
       <div className="container text-center">
-        <div className="row">
+        <div className="row text-center">
           <div className="col">
+            <h3>Finance:</h3>
+            <p>
+              You can create a budget and manage your money using our tool and
+              discipline your expenses!
+            </p>
             {props.isAuth ? (
-              <Link to={Urls.finance}>
-                <button
-                  className="btn btn-success home-panels"
-                >
-                  Finance
+              <NavLink to={Urls.finance.index}>
+                <button className="btn btn-success home-panels">
+                  <img
+                    src={finSVG}
+                    alt="Finance"
+                    height={heightWidthSVGs}
+                    width={heightWidthSVGs}
+                  />
                 </button>
-              </Link>
+              </NavLink>
             ) : (
               <button className="btn btn-success home-panels" disabled>
-                Finance
+                <img src={finSVG} alt="Finance" height={heightWidthSVGs} width={heightWidthSVGs} />
               </button>
             )}
           </div>
 
           <div className="col">
-            <Link to={Urls.fitness}>
-              <button className="btn btn-success home-panels">Fitness</button>
-            </Link>
+            <h3>Fitness</h3>
+            <p>
+              Track your progress at the gym. Make every drop of your sweat
+              count and happy working out!
+            </p>
+            {props.isAuth ? (
+              <NavLink to={Urls.fitness}>
+                <button className="btn btn-success home-panels">
+                  <img
+                    src={fitSVG}
+                    alt="Finance"
+                    height={heightWidthSVGs}
+                    width={heightWidthSVGs}
+                  />
+                </button>
+              </NavLink>
+            ) : (
+              <button className="btn btn-success home-panels" disabled>
+                <img src={fitSVG} alt="Finance" height={heightWidthSVGs} width={heightWidthSVGs} />
+              </button>
+            )}
           </div>
         </div>
       </div>

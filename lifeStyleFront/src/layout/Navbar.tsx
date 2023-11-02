@@ -1,10 +1,20 @@
-import { Link } from "react-router-dom";
+import { NavLink, Outlet, useLoaderData } from "react-router-dom";
 import Urls from "../Urls";
+import BACKEND_URL from "../Config";
 
-const Navbar = (props: Authorized) => {
+const Navbar = () => {
+const isAuth = useLoaderData() as boolean;
+ async function handleSignOut() {
+  await fetch(`${BACKEND_URL}/signout`, {
+    method: "GET",
+    credentials: "include"
+  }) 
+ }
+ 
   return (
+    
     <>
-      <nav className="navbar bg-body-tertiary">
+      <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
           <a className="navbar-brand" style={{ fontSize: " 30px" }}>
             LifeStyle
@@ -12,48 +22,46 @@ const Navbar = (props: Authorized) => {
 
           <ul className="navbar-nav">
             <li className="nav-item">
-              <Link to={Urls.home}>
+              <NavLink to={Urls.home}>
                 <div className="nav-link">Home</div>
-              </Link>
+              </NavLink>
             </li>
 
             {/* Render Sign Out if the user is authenticated */}
-            {props.isAuth ? (
+            {isAuth ? (
               <li className="nav-item">
-                <Link to={Urls.signout}>
-                  <div className="nav-link">Sign Out</div>
-                </Link>
+                  <a className="nav-link active" onClick={handleSignOut} href="#">Sign Out</a>
               </li>
             ) : (
               <>
                 {/* Render Log In and Sign Up if the user is not authenticated */}
                 <li className="nav-item">
-                  <Link to={Urls.login}>
+                  <NavLink to={Urls.login}>
                     <div className="nav-link">Log In</div>
-                  </Link>
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <Link to={Urls.signup}>
+                  <NavLink to={Urls.signup}>
                     <div className="nav-link">Sign Up</div>
-                  </Link>
+                  </NavLink>
                 </li>
               </>
             )}
 
             <li className="nav-item">
-              <Link to={Urls.about}>
+              <NavLink to={Urls.about}>
                 <div className="nav-link">About</div>
-              </Link>
+              </NavLink>
             </li>
           </ul>
         </div>
       </nav>
+
+      <main>
+        <Outlet />
+      </main>
     </>
   );
 };
-
-interface Authorized {
-  isAuth: boolean;
-}
 
 export default Navbar;

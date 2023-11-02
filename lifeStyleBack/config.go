@@ -12,15 +12,19 @@ type ProjUrls struct {
 	PostNewBudget string
 	SignUp        string
 	Login         string
+	SignOut       string
 	Finance       string
+	ShowBudgets   string
 }
 
 var URLS = &ProjUrls{
 	Home:          "/",
-	PostNewBudget: "/new-budget",
+	PostNewBudget: "/finance/create-new-budget",
 	SignUp:        "/signup",
 	Login:         "/login",
+	SignOut:       "/signout",
 	Finance:       "/finance",
+	ShowBudgets:   "/finance/show-all-budgets",
 }
 
 type DotEnvVars struct {
@@ -28,6 +32,7 @@ type DotEnvVars struct {
 	port          string
 	mySqlPassword string
 	dataBaseName  string
+	JwtToken      string
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
@@ -41,5 +46,6 @@ func GetEnvVars() (*DotEnvVars, error) {
 		port:          os.Getenv("PORT"),
 		mySqlPassword: os.Getenv("MYSQLPASSWORD"),
 		dataBaseName:  os.Getenv("DATABASENAME"),
+		JwtToken:      os.Getenv("JWTTOKEN"),
 	}, nil
 }

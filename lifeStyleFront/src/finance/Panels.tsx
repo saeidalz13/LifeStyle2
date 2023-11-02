@@ -1,19 +1,10 @@
-import { useState } from "react";
-import NewBudget from "./NewBudget";
+import { useRouteLoaderData, NavLink, Outlet } from "react-router-dom";
+import Urls from "../Urls";
 
 const Panels = () => {
-  const [newBudget, setNewBudget] = useState(false);
-
-  function handleNewBudget() {
-    setNewBudget(!newBudget);
-  }
-
-  function handleAllBudgets() {
-    setNewBudget(false);
-  }
-
-  function handleSubmitExpenses() {
-    setNewBudget(false);
+  const isAuth = useRouteLoaderData("navbar") as boolean;
+  if (!isAuth) {
+    location.assign(Urls.login);
   }
 
   return (
@@ -23,33 +14,30 @@ const Panels = () => {
       <div className="container text-center mt-4 p-2">
         <div className="row">
           <div className="col">
-            <button
-              className="btn btn-danger budget-panels"
-              onClick={handleNewBudget}
-            >
-              New Budget
-            </button>
+            <NavLink to={`${Urls.finance.index}/${Urls.finance.newBudget}`}>
+              <button className="btn btn-danger budget-panels">
+                New Budget
+              </button>
+            </NavLink>
           </div>
           <div className="col">
-            <button
-              className="btn btn-danger budget-panels"
-              onClick={handleAllBudgets}
-            >
-              All Budgets
-            </button>
+            <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
+              <button className="btn btn-danger budget-panels">
+                All Budgets
+              </button>
+            </NavLink>
           </div>
           <div className="col">
-            <button
-              className="btn btn-danger budget-panels"
-              onClick={handleSubmitExpenses}
-            >
-              Submit Expenses
-            </button>
+            <NavLink to={`${Urls.finance.index}/${Urls.finance.submitExpense}`}>
+              <button className="btn btn-danger budget-panels">
+                Submit Expenses
+              </button>
+            </NavLink>
           </div>
         </div>
       </div>
 
-      <div>{newBudget ? <NewBudget /> : ""}</div>
+      <Outlet />
     </>
   );
 };

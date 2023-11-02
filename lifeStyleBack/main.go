@@ -1,9 +1,6 @@
 package main
 
 import (
-	// This contains lots of interfaces, necessary to have the db var
-	// Does not contain the drivers tho!
-	"database/sql"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -12,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-var db *sql.DB
+var ENVCONSTS *DotEnvVars
 
 func main() {
 	envConsts, err := GetEnvVars()
@@ -20,6 +17,7 @@ func main() {
 		log.Fatalln("Failed to retrieve data from dotenv file")
 		panic(err.Error())
 	}
+	ENVCONSTS = envConsts
 
 	ConnectToDb(envConsts)
 	app := fiber.New()
