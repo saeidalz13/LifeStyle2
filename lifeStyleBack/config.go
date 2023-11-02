@@ -33,6 +33,7 @@ type DotEnvVars struct {
 	mySqlPassword string
 	dataBaseName  string
 	JwtToken      string
+	IpIssuer      string
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
@@ -47,5 +48,6 @@ func GetEnvVars() (*DotEnvVars, error) {
 		mySqlPassword: os.Getenv("MYSQLPASSWORD"),
 		dataBaseName:  os.Getenv("DATABASENAME"),
 		JwtToken:      os.Getenv("JWTTOKEN"),
+		IpIssuer:      os.Getenv("IPISSUER"),
 	}, nil
 }

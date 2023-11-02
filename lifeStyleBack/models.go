@@ -12,10 +12,11 @@ type JsonRes struct {
 }
 
 type SqlStmts struct {
-	InsertSignUp  string
-	InsertBudget  string
-	SelectUser    string
-	SelectBudgets string
+	InsertSignUp   string
+	InsertBudget   string
+	InsertExpenses string
+	SelectUser     string
+	SelectBudgets  string
 }
 
 type ApiRes struct {
@@ -68,10 +69,11 @@ type DbBudget struct {
 }
 
 var SqlStatements = &SqlStmts{
-	InsertSignUp:  "INSERT INTO `users` (`email`, `password`) VALUES (?, ?);",
-	SelectUser:    "SELECT * FROM users WHERE email = ?;",
-	SelectBudgets: "SELECT * FROM budgets WHERE user_id = ?;",
-	InsertBudget:  "INSERT INTO `budgets` (`user_id`, `start_date`, `end_date`, `income`, `savings`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+	SelectUser:     "SELECT * FROM users WHERE email = ?;",
+	SelectBudgets:  "SELECT * FROM budgets WHERE user_id = ?;",
+	InsertBudget:   "INSERT INTO `budgets` (`user_id`, `start_date`, `end_date`, `income`, `savings`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+	InsertSignUp:   "INSERT INTO `users` (`email`, `password`) VALUES (?, ?);",
+	InsertExpenses: "INSERT INTO `expenses` (`user_id`, `budget_id`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?);",
 }
 
 var ResTypes = &ResTypesStruct{

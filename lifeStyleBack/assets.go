@@ -16,7 +16,7 @@ func GenerateToken(expirationTime time.Time, userEmail string) (string, error) {
 		Email: userEmail,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			Issuer:    "192.168.1.71",
+			Issuer:    ENVCONSTS.IpIssuer,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

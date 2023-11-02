@@ -14,7 +14,7 @@ var ENVCONSTS *DotEnvVars
 func main() {
 	envConsts, err := GetEnvVars()
 	if err != nil {
-		log.Fatalln("Failed to retrieve data from dotenv file")
+		log.Println("Failed to retrieve data from dotenv file")
 		panic(err.Error())
 	}
 	ENVCONSTS = envConsts
