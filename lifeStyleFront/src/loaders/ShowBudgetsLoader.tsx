@@ -10,6 +10,12 @@ export const FetchAllBudgets = async () => {
         credentials: "include",
       }
     );
+    if (!result.ok) {
+      if (result.status === 401) {
+        location.href = Urls.login
+      }
+      throw new Error('Network response was not ok.');
+    }
     return result.json();
   } catch (error) {
     console.log(error);

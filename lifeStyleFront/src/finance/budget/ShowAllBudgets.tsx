@@ -1,0 +1,122 @@
+import { useLoaderData, NavLink } from "react-router-dom";
+import sadFace from "../../svg/SadFaceNoBudgets.svg";
+import BACKEND_URL from "../../Config";
+import Urls from "../../Urls";
+import { useState } from "react";
+
+type Budgets = {
+  budgets: Array<{
+    budgetId: number;
+    capital: number;
+    eatout: number;
+    endDate: string;
+    entertainment: number;
+    income: number;
+    savings: number;
+    startDate: string;
+    userId: number;
+  }>;
+};
+
+const ShowAllBudgets = () => {
+  const result = useLoaderData() as Budgets;
+  const [budgets, setBudgets] = useState(result.budgets);
+
+  async function handleDeleteBudget(budgetId: number) {
+    const result = await fetch(
+      `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${budgetId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    const deletionValidation = await result.json();
+
+    if (deletionValidation.responseType === "error") {
+      console.error(deletionValidation.message);
+      return;
+    } else {
+      console.log(`${budgetId} was deleted successfully!`);
+      setBudgets((prevBudgets) =>
+        prevBudgets.filter((budget) => budget.budgetId !== budgetId)
+      );
+      return;
+    }
+  }
+
+  return (
+    <>
+      <div className="list-group mx-4 mt-4 mb-4 text-center">
+        {budgets && budgets.length > 0 ? (
+          budgets.map((budget) => (
+            <div
+              key={String(budget.budgetId)}
+              className="list-group-item list-group-item p-3"
+              style={{ borderColor: "rgba(255, 182, 193, 0.4)", boxShadow:"1px 1px 10px 1px rgba(0, 86, 86, 0.5)"}}
+            >
+              <button
+                onClick={() => handleDeleteBudget(budget.budgetId)}
+                key={crypto.randomUUID()}
+                className="btn btn-danger mb-3"
+              >
+                Delete
+              </button>
+              <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${budget.budgetId}`}
+              >
+                <button
+                  key={crypto.randomUUID()}
+                  className="btn btn-success mb-3 ms-1"
+                >
+                  Edit
+                </button>
+              </NavLink>
+              <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.expenses}/${budget.budgetId}`}
+              >
+                <button
+                  key={crypto.randomUUID()}
+                  className="btn btn-info mb-3 ms-1"
+                >
+                  Submit Expenses
+                </button>
+              </NavLink>
+              <button
+                key={crypto.randomUUID()}
+                className="btn btn-primary mb-3 ms-1"
+              >
+                Show Expenses
+              </button>
+              <h5>
+                Bugdet ID: {budget.budgetId} (&#128184; Income: ${budget.income}{" "}
+                | Savings: ${budget.savings} )<br />
+              </h5>
+              &#128337;{" "}
+              <span style={{ color: "greenyellow" }}>
+                Start Date:{" "}
+                {budget.startDate.substring(0, budget.startDate.length - 10)}{" "}
+                <br />
+              </span>
+              &#128337;{" "}
+              <span style={{ color: "hotpink" }}>
+                End Date:{" "}
+                {budget.endDate.substring(0, budget.endDate.length - 10)} <br />
+              </span>
+            </div>
+          ))
+        ) : (
+          <div>
+            <h1 style={{ color: "rgba(255,204,204, 0.8)" }}>
+              No Budgets To Show!
+            </h1>{" "}
+            <div className="text-center">
+              <img src={sadFace} />
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default ShowAllBudgets;

@@ -15,16 +15,20 @@ type ProjUrls struct {
 	SignOut       string
 	Finance       string
 	ShowBudgets   string
+	EachBudget    string
+	EachExpense   string
 }
 
 var URLS = &ProjUrls{
 	Home:          "/",
-	PostNewBudget: "/finance/create-new-budget",
 	SignUp:        "/signup",
 	Login:         "/login",
 	SignOut:       "/signout",
 	Finance:       "/finance",
 	ShowBudgets:   "/finance/show-all-budgets",
+	PostNewBudget: "/finance/create-new-budget",
+	EachBudget:    "/finance/show-all-budgets/:id",
+	EachExpense:   "/finance/submit-expenses/:id",
 }
 
 type DotEnvVars struct {

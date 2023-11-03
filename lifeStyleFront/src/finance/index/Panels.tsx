@@ -1,5 +1,5 @@
 import { useRouteLoaderData, NavLink, Outlet } from "react-router-dom";
-import Urls from "../Urls";
+import Urls from "../../Urls";
 
 const Panels = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -15,22 +15,15 @@ const Panels = () => {
         <div className="row">
           <div className="col">
             <NavLink to={`${Urls.finance.index}/${Urls.finance.newBudget}`}>
-              <button className="btn btn-danger budget-panels">
+              <button className="btn btn-warning budget-panels">
                 New Budget
               </button>
             </NavLink>
           </div>
           <div className="col">
             <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
-              <button className="btn btn-danger budget-panels">
+              <button className="btn btn-warning budget-panels">
                 All Budgets
-              </button>
-            </NavLink>
-          </div>
-          <div className="col">
-            <NavLink to={`${Urls.finance.index}/${Urls.finance.submitExpense}`}>
-              <button className="btn btn-danger budget-panels">
-                Submit Expenses
               </button>
             </NavLink>
           </div>

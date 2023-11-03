@@ -9,8 +9,11 @@ class Urls {
     index: "/finance",
     newBudget: "create-new-budget",
     showBudgets: "show-all-budgets",
-    submitExpense: "submit-expense",
+    showSingleBudget: "show-all-budgets/:id",
+    expenses: "submit-expenses",
+    submitExpenses: "submit-expenses/:id",
   };
+
   invalid = "*";
 }
 

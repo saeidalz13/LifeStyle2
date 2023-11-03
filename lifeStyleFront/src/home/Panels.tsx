@@ -4,10 +4,11 @@ import finSVG from "../svg/FinanceHomePanel.svg";
 import fitSVG from "../svg/FitnessHomePanel.svg";
 
 const Panels = (props: Authorized) => {
-  const heightWidthSVGs = "120px"
+  const heightWidthSVGs = "120px";
   return (
     <>
       <div className="container text-center">
+
         <div className="row text-center">
           <div className="col">
             <h3>Finance:</h3>
@@ -27,8 +28,13 @@ const Panels = (props: Authorized) => {
                 </button>
               </NavLink>
             ) : (
-              <button className="btn btn-success home-panels" disabled>
-                <img src={finSVG} alt="Finance" height={heightWidthSVGs} width={heightWidthSVGs} />
+              <button className="btn btn-danger home-panels" disabled>
+                <img
+                  src={finSVG}
+                  alt="Finance"
+                  height={heightWidthSVGs}
+                  width={heightWidthSVGs}
+                />
               </button>
             )}
           </div>
@@ -51,8 +57,13 @@ const Panels = (props: Authorized) => {
                 </button>
               </NavLink>
             ) : (
-              <button className="btn btn-success home-panels" disabled>
-                <img src={fitSVG} alt="Finance" height={heightWidthSVGs} width={heightWidthSVGs} />
+              <button className="btn btn-danger home-panels" disabled>
+                <img
+                  src={fitSVG}
+                  alt="Finance"
+                  height={heightWidthSVGs}
+                  width={heightWidthSVGs}
+                />
               </button>
             )}
           </div>

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import Panels from "./Panels";
-import Urls from "../Urls";
+import Urls from "../../Urls";
 
 const Finance = () => {
   return (

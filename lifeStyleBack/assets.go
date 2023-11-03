@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -50,7 +51,91 @@ func AddUser(newUser User, hashedPassword []byte, ctx context.Context, ch chan b
 	}
 }
 
-func AddNewBudget(ctx context.Context, ch chan bool, newBudget *NewBudget, startDate time.Time, endDate time.Time, userId int) {
+func ChooseUpdateSql(updateBudgetReq *UpdateBudgetReq) (string, error) {
+	if updateBudgetReq.BudgetType == "income" {
+		return SqlStatements.UpdateBudgetIncome, nil
+	} else if updateBudgetReq.BudgetType == "savings" {
+		return SqlStatements.UpdateBudgetSavings, nil
+	} else if updateBudgetReq.BudgetType == "capital" {
+		return SqlStatements.UpdateBudgetCapital, nil
+	} else if updateBudgetReq.BudgetType == "eatout" {
+		return SqlStatements.UpdateBudgetEatout, nil
+	} else if updateBudgetReq.BudgetType == "entertainment" {
+		return SqlStatements.UpdateBudgetEntertainment, nil
+	} else {
+		return "", errors.New("Invalid type of budget!")
+	}
+}
+
+func ChooseAddExpensesSql(newExpense *ExpenseReq) (string, error) {
+	if newExpense.ExpenseType == "capital" {
+		return SqlStatements.InsertCapitalExpenses, nil
+	} else if newExpense.ExpenseType == "eatout" {
+		return SqlStatements.InsertEatoutExpenses, nil
+	} else if newExpense.ExpenseType == "entertainment" {
+		return SqlStatements.InsertEntertainmentExpenses, nil
+	} else {
+		return "", errors.New("Invalid type of expense!")
+	}
+}
+
+func UpdateSingleBudget(ctx context.Context, ch chan bool, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) {
+	select {
+	case <-ctx.Done():
+		log.Println("Cancelled")
+		return
+
+	default:
+		seletedSql, err := ChooseUpdateSql(updateBudgetReq)
+		if err != nil {
+			log.Println("Failed to choose the update SQL statement")
+			ch <- false
+		}
+
+		var upd *sql.Stmt
+		upd, err = DB.PrepareContext(ctx, seletedSql)
+		if err != nil {
+			log.Println("Failed to initialize the sql query")
+			ch <- false
+		}
+		defer upd.Close()
+
+		res, err := upd.Exec(updateBudgetReq.BudgetAmount, budgetId, userId)
+		if err != nil {
+			log.Println("Failed to update the requested budget")
+			ch <- false
+		}
+
+		log.Println(res.RowsAffected())
+		ch <- true
+	}	
+
+}
+
+func DeleteRequestedBudget(ctx context.Context, ch chan bool, budgetId int, userId int) {
+	select {
+	case <-ctx.Done():
+		log.Println("Cancelled")
+		return
+	default:
+		// var del *sql.Stmt
+		del, err := DB.PrepareContext(ctx, SqlStatements.DeleteBudget)
+		if err != nil {
+			ch <- false
+		}
+		defer del.Close()
+
+		res, err := del.Exec(budgetId, userId)
+		if err != nil {
+			ch <- false
+		}
+		rowsAff, _ := res.RowsAffected()
+		log.Println(rowsAff)
+		ch <- true
+	}
+}
+
+func AddNewBudget(ctx context.Context, ch chan bool, newBudget *NewBudgetReq, startDate time.Time, endDate time.Time, userId int) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled!")
@@ -62,7 +147,40 @@ func AddNewBudget(ctx context.Context, ch chan bool, newBudget *NewBudget, start
 			ch <- false
 		}
 		defer ins.Close()
+
 		res, err := ins.Exec(userId, startDate, endDate, newBudget.Income, newBudget.Capital, newBudget.Savings, newBudget.Eatout, newBudget.Entertainment)
+		if err != nil {
+			ch <- false
+		}
+		log.Println(res.RowsAffected())
+		ch <- true
+	}
+}
+
+func AddNewBalance(ctx context.Context, ch chan bool, budgetId, userId int) {
+	
+}
+
+func AddExpenses(ctx context.Context, ch chan bool, budgetId ,userId int, newExpense *ExpenseReq) {
+	select {
+	case <-ctx.Done():
+		log.Println("Cancelled!")
+		return
+	default:
+		selectedSql, err := ChooseAddExpensesSql(newExpense)
+		if err != nil {
+			log.Println("Failed to choose the SQL statement")
+			ch <- false
+		}
+
+		var ins *sql.Stmt
+		ins, err = DB.PrepareContext(ctx, selectedSql)
+		if err != nil {
+			ch <- false
+		}
+		defer ins.Close()
+
+		res, err := ins.Exec(budgetId, userId, newExpense.ExpenseAmount, newExpense.ExpenseDesc)
 		if err != nil {
 			ch <- false
 		}
@@ -100,7 +218,7 @@ func FindUser(ctx context.Context, userEmail string, dbUser *DbUser) error {
 	return nil
 }
 
-func FindUserBudgets(ctx context.Context, userId int) ([]BudgetResponse, error) {
+func FindUserBudgets(ctx context.Context, userId int) ([]BudgetResp, error) {
 	rows, err := DB.QueryContext(ctx, SqlStatements.SelectBudgets, userId)
 	if err != nil {
 		return nil, err
@@ -108,9 +226,9 @@ func FindUserBudgets(ctx context.Context, userId int) ([]BudgetResponse, error) 
 	defer rows.Close()
 
 	var startDateUint, endDateUint []uint8
-	var userBudgets []BudgetResponse
+	var userBudgets []BudgetResp
 	for rows.Next() {
-		var eachBudget BudgetResponse
+		var eachBudget BudgetResp
 		if err := rows.Scan(
 			&eachBudget.BudgetId, &eachBudget.UserId, &startDateUint,
 			&endDateUint, &eachBudget.Income, &eachBudget.Savings,
@@ -129,6 +247,25 @@ func FindUserBudgets(ctx context.Context, userId int) ([]BudgetResponse, error) 
 	return userBudgets, nil
 }
 
+func FindSingleBudget(ctx context.Context, eachBudget *BudgetResp,budgetId int, userId int) error {
+	var startDateUint, endDateUint []uint8
+	row := DB.QueryRowContext(ctx, SqlStatements.SelectSingleBudget, budgetId, userId)
+	if err := row.Scan(
+		&eachBudget.BudgetId, &eachBudget.UserId, &startDateUint,
+		&endDateUint, &eachBudget.Income, &eachBudget.Savings, &eachBudget.Capital,
+		&eachBudget.Eatout, &eachBudget.Entertainment); err != nil {
+		return err
+	}
+	startDate, endDate, err := ConvertToDate(string(startDateUint), string(endDateUint))
+	if err != nil {
+		return err
+	}
+	eachBudget.StartDate = startDate
+	eachBudget.EndDate = endDate
+	return nil
+}
+
+
 func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time, error) {
 	startDate, err := time.Parse("2006-01-02", rawStartDate)
 	if err != nil {
@@ -139,4 +276,14 @@ func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time
 		return time.Time{}, time.Time{}, err
 	}
 	return startDate, endDate, nil
+}
+
+func FetchIntOfParamBudgetId(ftx *fiber.Ctx) (int, error) {
+	idString := ftx.Params("id")
+	budgetId, err := strconv.Atoi(idString)
+	if err != nil {
+		log.Println("Conversion error:", err)
+		return -1, err
+	}
+	return budgetId, nil
 }

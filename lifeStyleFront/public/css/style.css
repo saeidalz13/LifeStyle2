@@ -9,7 +9,6 @@ h1 {
     color: var(--beige-custom);
 }
 
-
 input {
     margin: 5px 0;
 }
@@ -37,7 +36,7 @@ input {
     border-radius: 20px;
 }
 
-#form-new-budget {
+#form-new-budget, #form-edit-budget, #form-submit-expenses {
     background-color: rgba(29, 0, 23,0.2);
     padding: 20px;
     border-radius: 20px;

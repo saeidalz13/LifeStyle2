@@ -1,10 +1,10 @@
 import { FormEvent, useRef, useState } from "react";
-import Constants from "./Constants";
-import rl from "../svg/RotatingLoad.svg";
-import BACKEND_URL from "../Config";
+import Constants from "../Constants";
+import rl from "../../svg/RotatingLoad.svg";
+import BACKEND_URL from "../../Config";
 
 const NewBudget = () => {
-  const minMoney = "1.00"
+  const minMoney = "1.00";
 
   const [serverRes, setServerRes] = useState(false);
   const [possibleErrs, setPossibleErrs] = useState(false);
@@ -22,6 +22,8 @@ const NewBudget = () => {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setPossibleErrs(false);
+    setServerRes(false);
     const allInputs = [
       startDateRef,
       endDateRef,
@@ -77,15 +79,18 @@ const NewBudget = () => {
         return;
       } else {
         try {
-          const response = await fetch(`${BACKEND_URL}/finance/create-new-budget`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json;charset=UTF-8",
-            },
-            body: JSON.stringify(dataReq),
-          });
+          const response = await fetch(
+            `${BACKEND_URL}/finance/create-new-budget`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json;charset=UTF-8",
+              },
+              body: JSON.stringify(dataReq),
+            }
+          );
           const dataRes = await response.json();
           console.log(dataRes);
           setServerRes(true);
@@ -106,7 +111,7 @@ const NewBudget = () => {
 
   return (
     <>
-      <div className="container ">
+      <div className="container">
         <div className="row mt-5">
           <div className="col">
             <form id="form-new-budget" onSubmit={handleSubmit}>
