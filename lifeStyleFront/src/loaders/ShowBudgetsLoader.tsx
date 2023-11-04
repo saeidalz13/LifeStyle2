@@ -19,5 +19,6 @@ export const FetchAllBudgets = async () => {
     return result.json();
   } catch (error) {
     console.log(error);
+    return {}
   }
 };

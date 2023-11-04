@@ -1,14 +1,22 @@
-import { FormEvent, useRef } from "react";
+import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
 import BACKEND_URL from "../Config";
+import rl from "../svg/RotatingLoad.svg";
 
 const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [err, setErr] = useState<boolean>(false);
+  const [errMsg, setErrMsg] = useState<string>("");
+  const [success, setSuccess] = useState<boolean>(false);
 
   async function handleSubmitSignup(e: FormEvent) {
     e.preventDefault();
+    setLoading(true);
+
     const newUser = {
       email: emailRef.current?.value,
       password: passwordRef.current?.value,
@@ -19,12 +27,32 @@ const Signup = () => {
         method: "POST",
         body: JSON.stringify(newUser),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
-      console.log(await result.text());
+      const resp = await result.json();
 
-      location.assign(Urls.home)
+      if (result.status === 200) {
+        setSuccess(true)
+        setLoading(false);
+        location.assign(Urls.home);
+        return;
+      } else if (result.status === 401) {
+        setErr(true);
+        setErrMsg(resp.message);
+        setLoading(false);
+        setTimeout(() => {
+          setErr(false);
+        }, 5000);
+      } else return;
     } catch (error) {
+      setErr(true);
+      setLoading(false);
+      setErrMsg("Something went wrong");
       console.log(error);
+      setTimeout(() => {
+        setErr(false);
+      }, 5000);
+      return;
     }
   }
 
@@ -63,7 +91,7 @@ const Signup = () => {
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
-                  Submit
+                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
             </form>
@@ -76,6 +104,16 @@ const Signup = () => {
             </button>
           </Link>
         </div>
+        {err && (
+          <div className="alert alert-warning mt-2 text-center mx-5 p-2">
+            {errMsg}
+          </div>
+        )}
+        {success && (
+          <div className="alert alert-success mt-2 text-center mx-5 p-2">
+            Signed in successfully! Redirecting to home page...
+          </div>
+        )}
       </div>
     </>
   );

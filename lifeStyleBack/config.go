@@ -8,27 +8,31 @@ import (
 )
 
 type ProjUrls struct {
-	Home          string
-	PostNewBudget string
-	SignUp        string
-	Login         string
-	SignOut       string
-	Finance       string
-	ShowBudgets   string
-	EachBudget    string
-	EachExpense   string
+	Home              string
+	PostNewBudget     string
+	SignUp            string
+	Login             string
+	SignOut           string
+	Finance           string
+	ShowBudgets       string
+	EachBudget        string
+	EachExpense       string
+	AllExpensesBudget string
+	EachBalance       string
 }
 
 var URLS = &ProjUrls{
-	Home:          "/",
-	SignUp:        "/signup",
-	Login:         "/login",
-	SignOut:       "/signout",
-	Finance:       "/finance",
-	ShowBudgets:   "/finance/show-all-budgets",
-	PostNewBudget: "/finance/create-new-budget",
-	EachBudget:    "/finance/show-all-budgets/:id",
-	EachExpense:   "/finance/submit-expenses/:id",
+	Home:              "/",
+	SignUp:            "/signup",
+	Login:             "/login",
+	SignOut:           "/signout",
+	Finance:           "/finance",
+	ShowBudgets:       "/finance/show-all-budgets",
+	PostNewBudget:     "/finance/create-new-budget",
+	EachBudget:        "/finance/show-all-budgets/:id",
+	EachExpense:       "/finance/submit-expenses/:id",
+	AllExpensesBudget: "/finance/show-expenses/:id",
+	EachBalance:       "/finance/balance/:id",
 }
 
 type DotEnvVars struct {
@@ -38,6 +42,10 @@ type DotEnvVars struct {
 	dataBaseName  string
 	JwtToken      string
 	IpIssuer      string
+}
+
+type SqlErrors struct {
+	ErrNoRows string
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
@@ -54,4 +62,8 @@ func GetEnvVars() (*DotEnvVars, error) {
 		JwtToken:      os.Getenv("JWTTOKEN"),
 		IpIssuer:      os.Getenv("IPISSUER"),
 	}, nil
+}
+
+var sqlErrors = &SqlErrors{
+	ErrNoRows: "sql: no rows in result set",
 }

@@ -19,17 +19,24 @@ type SqlStmts struct {
 	InsertEntertainmentExpenses string
 	InsertNewBalance            string
 
-	SelectUser         string
-	SelectBudgets      string
-	SelectSingleBudget string
+	SelectUser                  string
+	SelectBudgets               string
+	SelectCapitalExpenses       string
+	SelectEatoutExpenses        string
+	SelectEntertainmentExpenses string
+	SelectSingleBudget          string
+	SelectSingleBalance         string
 
 	DeleteBudget string
 
-	UpdateBudgetIncome        string
-	UpdateBudgetSavings       string
-	UpdateBudgetCapital       string
-	UpdateBudgetEatout        string
-	UpdateBudgetEntertainment string
+	UpdateBudgetIncome         string
+	UpdateBudgetSavings        string
+	UpdateBudgetCapital        string
+	UpdateBudgetEatout         string
+	UpdateBudgetEntertainment  string
+	UpdateBalanceCapital       string
+	UpdateBalanceEatout        string
+	UpdateBalanceEntertainment string
 }
 
 type ApiRes struct {
@@ -81,6 +88,75 @@ type NewExpensesReq struct {
 	Entertainment string `json:"entertainment"`
 }
 
+// type DbCapitalExpenses struct {
+// 	CapitalId   int
+// 	BudgetId    int
+// 	UserId      int
+// 	Expenses    float64
+// 	Description string
+// 	CreatedAt   []uint8
+// }
+
+type EntertainmentExpensesRes struct {
+	EntertainmentId int       `json:"entertainmentId"`
+	BudgetId        int       `json:"bugdetId"`
+	UserId          int       `json:"userId"`
+	Expenses        float64   `json:"expenses"`
+	Description     string    `json:"desc"`
+	CreatedAt       time.Time `json:"createdAt"`
+}
+
+func (en *EntertainmentExpensesRes) addCreationDate(rawDate []uint8) error {
+	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
+	if err != nil {
+		return err
+	}
+	en.CreatedAt = createdAt
+	return nil
+}
+
+type EatoutExpensesRes struct {
+	EatoutId    int       `json:"eatoutId"`
+	BudgetId    int       `json:"bugdetId"`
+	UserId      int       `json:"userId"`
+	Expenses    float64   `json:"expenses"`
+	Description string    `json:"desc"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
+func (e *EatoutExpensesRes) addCreationDate(rawDate []uint8) error {
+	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
+	if err != nil {
+		return err
+	}
+	e.CreatedAt = createdAt
+	return nil
+}
+
+type CapitalExpensesRes struct {
+	CapitalId   int       `json:"capitalId"`
+	BudgetId    int       `json:"bugdetId"`
+	UserId      int       `json:"userId"`
+	Expenses    float64   `json:"expenses"`
+	Description string    `json:"desc"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
+func (c *CapitalExpensesRes) addCreationDate(rawDate []uint8) error {
+	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
+	if err != nil {
+		return err
+	}
+	c.CreatedAt = createdAt
+	return nil
+}
+
+type AllExpensesRes struct {
+	CapitalExpenses       []CapitalExpensesRes       `json:"capitalExpenses"`
+	EatoutExpenses        []EatoutExpensesRes        `json:"eatoutExpenses"`
+	EntertainmentExpenses []EntertainmentExpensesRes `json:"entertainmentExpenses"`
+}
+
 type DbUser struct {
 	Id       int    `json:"id"`
 	Email    string `json:"email"`
@@ -99,25 +175,50 @@ type DbBudget struct {
 	Entertainment float64 `json:"entertainment"`
 }
 
-var SqlStatements = &SqlStmts{
-	SelectUser:         "SELECT * FROM users WHERE email = ?;",
-	SelectBudgets:      "SELECT * FROM budgets WHERE user_id = ?;",
-	SelectSingleBudget: "SELECT * FROM budgets WHERE budget_id = ? AND user_id = ?;",
+type DbBalance struct {
+	BalanceId     int     `json:"balanceId"`
+	BudgetId      int     `json:"budgetId"`
+	UserId        int     `json:"userId"`
+	Capital       float64 `json:"capital"`
+	Eatout        float64 `json:"eatout"`
+	Entertainment float64 `json:"entertainment"`
+	Total         float64 `json:"total"`
+	CreatedAt     []uint8 `json:"createdAt"`
+}
 
+var SqlStatements = &SqlStmts{
+
+	//// SELECT
+	SelectUser:                  "SELECT * FROM users WHERE email = ?;",
+	SelectBudgets:               "SELECT * FROM budgets WHERE user_id = ?;",
+	SelectSingleBudget:          "SELECT * FROM budgets WHERE budget_id = ? AND user_id = ?;",
+	SelectCapitalExpenses:       "SELECT * FROM capital_expenses WHERE budget_id = ? AND user_id = ?;",
+	SelectEatoutExpenses:        "SELECT * FROM eatout_expenses WHERE budget_id = ? AND user_id = ?;",
+	SelectEntertainmentExpenses: "SELECT * FROM entertainment_expenses WHERE budget_id = ? AND user_id = ?;",
+	SelectSingleBalance:         "SELECT * FROM balance WHERE budget_id = ? AND user_id = ?;",
+
+	//// INSERT
 	InsertBudget:                "INSERT INTO `budgets` (`user_id`, `start_date`, `end_date`, `income`, `savings`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 	InsertSignUp:                "INSERT INTO `users` (`email`, `password`) VALUES (?, ?);",
 	InsertCapitalExpenses:       "INSERT INTO `capital_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
 	InsertEatoutExpenses:        "INSERT INTO `eatout_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
 	InsertEntertainmentExpenses: "INSERT INTO `entertainment_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
-	InsertNewBalance:            "INSERT INTO `balance` (`budget_id`, `user_id`, `capital`, `eatout`, `entertainment`, `total_balance`) VALUES (?, ?, ?, ?, ?, ?);",
+	InsertNewBalance:            "INSERT INTO `balance` (`budget_id`, `user_id`, `capital`, `eatout`, `entertainment`, `total`) VALUES (?, ?, ?, ?, ?, ?);",
 
+	//// DELETE
 	DeleteBudget: "DELETE FROM `budgets` WHERE budget_id = ? AND user_id = ?;",
 
+	//// UPDATE
+	// Budget
 	UpdateBudgetIncome:        "UPDATE `budgets` SET income = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetSavings:       "UPDATE `budgets` SET savings = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetCapital:       "UPDATE `budgets` SET capital = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetEatout:        "UPDATE `budgets` SET eatout = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetEntertainment: "UPDATE `budgets` SET entertainment = ? WHERE budget_id = ? AND user_id = ?;",
+	// Balance
+	UpdateBalanceCapital:       "UPDATE balance SET capital = capital - ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEatout:        "UPDATE balance SET eatout = eatout - ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEntertainment: "UPDATE balance SET entertainment = entertainment - ? WHERE budget_id = ? AND user_id = ?;",
 }
 
 var ResTypes = &ResTypesStruct{

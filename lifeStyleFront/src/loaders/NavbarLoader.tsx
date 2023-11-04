@@ -1,4 +1,5 @@
 import BACKEND_URL from "../Config";
+import StatusCodes from "../StatusCodes";
 
 export const isAuthenticated = async () => {
   const result = await fetch(`${BACKEND_URL}/`, {
@@ -6,15 +7,8 @@ export const isAuthenticated = async () => {
     credentials: "include",
   });
 
-  // React will take care of the promise handling
-  const isAuth = (await result.json()) as IIfAuth;
-  if (isAuth.responseType === "error") {
-    return false;
+  if (result.status === StatusCodes.Ok) {
+    return true;
   }
-  return true;
+  return false;
 };
-
-interface IIfAuth {
-  responseType: string;
-  Msg: string;
-}

@@ -2,10 +2,11 @@ import { FormEvent, useRef, useState } from "react";
 import Constants from "../Constants";
 import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
+import StatusCodes from "../../StatusCodes";
 
 const NewBudget = () => {
   const minMoney = "1.00";
-
+  const step = "0.01";
   const [serverRes, setServerRes] = useState(false);
   const [possibleErrs, setPossibleErrs] = useState(false);
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
@@ -92,16 +93,30 @@ const NewBudget = () => {
             }
           );
           const dataRes = await response.json();
-          console.log(dataRes);
-          setServerRes(true);
           setLoading(false);
 
-          setTimeout(() => {
-            setServerRes(false);
-          }, 5000);
+          if (response.status === 500) {
+            setPossibleErrs(true);
+            setPossibleErrsMsg(dataRes.message);
+            setTimeout(() => {
+              setPossibleErrs(false);
+            }, 10000);
+            return;
+          } else if (response.status == StatusCodes.Accepted) {
+            setServerRes(true);
+            setTimeout(() => {
+              setServerRes(false);
+            }, 5000);
+          } else {
+            setPossibleErrs(true);
+            setPossibleErrsMsg("Unexpected error happened! Try again please");
+            setTimeout(() => {
+              setPossibleErrs(false);
+            }, 10000);
+          }
         } catch (error) {
           console.log(error);
-          setLoading(false);
+          return;
         }
       }
     } else {
@@ -145,6 +160,7 @@ const NewBudget = () => {
                 placeholder="$"
                 ref={incomeRef}
                 min={minMoney}
+                step={step}
               />
 
               <label htmlFor="savings">Savings:</label>
@@ -156,6 +172,7 @@ const NewBudget = () => {
                 placeholder="$"
                 ref={savingsRef}
                 min={minMoney}
+                step={step}
               />
 
               <label htmlFor="capital">Capital Budget:</label>
@@ -167,6 +184,7 @@ const NewBudget = () => {
                 placeholder="$"
                 ref={capitalRef}
                 min={minMoney}
+                step={step}
               />
 
               <label htmlFor="eatout">Eat Out Budget:</label>
@@ -178,6 +196,7 @@ const NewBudget = () => {
                 placeholder="$"
                 ref={eatoutRef}
                 min={minMoney}
+                step={step}
               />
 
               <label htmlFor="entertainment">Entertainment Budget:</label>
@@ -189,6 +208,7 @@ const NewBudget = () => {
                 placeholder="$"
                 ref={entertainmentRef}
                 min={minMoney}
+                step={step}
               />
               <div style={{ marginTop: "20px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-success submit-btn">

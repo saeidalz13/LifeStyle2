@@ -5,7 +5,9 @@ import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
 import SubmitExpenses from "./finance/expense/SubmitExpenses";
+import ShowExpenses from "./finance/expense/ShowExpenses";
 import EachBudget from "./finance/budget/UpdateBudget";
+import BalanceIndex from "./finance/balance/BalanceIndex";
 import {
   createBrowserRouter,
   Route,
@@ -25,7 +27,7 @@ const router = createBrowserRouter(
       <Route path={Urls.signup} element={<Signup />} />
       <Route path={Urls.login} element={<Login />} />
       <Route element={<Navbar />} loader={isAuthenticated} id="navbar">
-        <Route path={Urls.home} element={<Home />} />
+        <Route path={Urls.home} element={<Home />} loader={isAuthenticated} />
         <Route
           path={Urls.finance.index}
           element={<Finance />}
@@ -41,11 +43,17 @@ const router = createBrowserRouter(
           <Route
             path={Urls.finance.showSingleBudget}
             element={<EachBudget />}
+            loader={FetchAllBudgets}
           />
           <Route
-            path={Urls.finance.submitExpenses}
+            path={Urls.finance.submitExpensesEach}
             element={<SubmitExpenses />}
           />
+          <Route
+            path={Urls.finance.showExpensesEach}
+            element={<ShowExpenses />}
+          />
+          <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
         </Route>
         <Route path={Urls.fitness} element={<Fitness />} />
         <Route path={Urls.invalid} element={<Invalid />} />

@@ -1,9 +1,11 @@
 // import { useEffect, useRef } from "react";
 import Panels from "./Panels";
-import { useRouteLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 
 const Home = () => {
-  const isAuth = useRouteLoaderData("navbar") as boolean;
+  const isAuth = useLoaderData() as boolean;
+
+  // const isAuth = useRouteLoaderData("navbar") as boolean;
 
   return (
     <div>

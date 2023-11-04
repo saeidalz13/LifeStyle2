@@ -3,16 +3,15 @@ import Urls from "../Urls";
 import BACKEND_URL from "../Config";
 
 const Navbar = () => {
-const isAuth = useLoaderData() as boolean;
- async function handleSignOut() {
-  await fetch(`${BACKEND_URL}/signout`, {
-    method: "GET",
-    credentials: "include"
-  }) 
- }
- 
+  const isAuth = useLoaderData() as boolean;
+  async function handleSignOut() {
+    await fetch(`${BACKEND_URL}/signout`, {
+      method: "GET",
+      credentials: "include",
+    });
+  }
+
   return (
-    
     <>
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
@@ -30,7 +29,9 @@ const isAuth = useLoaderData() as boolean;
             {/* Render Sign Out if the user is authenticated */}
             {isAuth ? (
               <li className="nav-item">
-                  <a className="nav-link active" onClick={handleSignOut} href="#">Sign Out</a>
+                <a className="nav-link active" onClick={handleSignOut} href="#">
+                  Sign Out
+                </a>
               </li>
             ) : (
               <>

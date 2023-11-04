@@ -8,7 +8,7 @@ import (
 func IsLoggedIn(ftx *fiber.Ctx) error {
 	jwtCookie := ftx.Cookies("jwt")
 	if jwtCookie == "" {
-		return ftx.Redirect(URLS.Home, fiber.StatusUnauthorized)
+		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	claims := &Claims{}
@@ -16,11 +16,11 @@ func IsLoggedIn(ftx *fiber.Ctx) error {
 		return []byte(ENVCONSTS.JwtToken), nil
 	})
 	if err != nil {
-		return ftx.Redirect(URLS.Home, fiber.StatusUnauthorized)
+		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	if !token.Valid {
-		return ftx.Redirect(URLS.Home, fiber.StatusUnauthorized)
+		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
 	return ftx.Next()
 }

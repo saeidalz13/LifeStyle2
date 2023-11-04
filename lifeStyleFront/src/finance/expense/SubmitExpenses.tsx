@@ -6,7 +6,6 @@ import Urls from "../../Urls";
 
 const SubmitExpenses = () => {
   const { id } = useParams();
-  console.log(id);
   const minMoney = "1.00";
   const expenseTypeRef = useRef<HTMLSelectElement>(null);
   const expenseAmountRef = useRef<HTMLInputElement>(null);
@@ -27,7 +26,7 @@ const SubmitExpenses = () => {
     ) {
       try {
         const result = await fetch(
-          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.expenses}/${id}`,
+          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.submitExpenses}/${id}`,
           {
             method: "POST",
             credentials: "include",

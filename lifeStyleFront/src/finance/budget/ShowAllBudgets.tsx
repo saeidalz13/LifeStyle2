@@ -52,12 +52,15 @@ const ShowAllBudgets = () => {
             <div
               key={String(budget.budgetId)}
               className="list-group-item list-group-item p-3"
-              style={{ borderColor: "rgba(255, 182, 193, 0.4)", boxShadow:"1px 1px 10px 1px rgba(0, 86, 86, 0.5)"}}
+              style={{
+                borderColor: "rgba(255, 182, 193, 0.4)",
+                boxShadow: "1px 1px 10px 1px rgba(0, 86, 86, 0.5)",
+              }}
             >
               <button
                 onClick={() => handleDeleteBudget(budget.budgetId)}
                 key={crypto.randomUUID()}
-                className="btn btn-danger mb-3"
+                className="btn btn-outline-danger mb-3 all-budget-choices"
               >
                 Delete
               </button>
@@ -66,27 +69,41 @@ const ShowAllBudgets = () => {
               >
                 <button
                   key={crypto.randomUUID()}
-                  className="btn btn-success mb-3 ms-1"
+                  className="btn btn-outline-success mb-3 ms-1 all-budget-choices"
                 >
                   Edit
                 </button>
               </NavLink>
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.expenses}/${budget.budgetId}`}
+                to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget.budgetId}`}
               >
                 <button
                   key={crypto.randomUUID()}
-                  className="btn btn-info mb-3 ms-1"
+                  className="btn btn-outline-info mb-3 ms-1 all-budget-choices"
                 >
                   Submit Expenses
                 </button>
               </NavLink>
-              <button
-                key={crypto.randomUUID()}
-                className="btn btn-primary mb-3 ms-1"
+              <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budgetId}`}
               >
-                Show Expenses
-              </button>
+                <button
+                  key={crypto.randomUUID()}
+                  className="btn btn-outline-primary mb-3 ms-1 all-budget-choices"
+                >
+                  Show Expenses
+                </button>
+              </NavLink>
+              <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.balance}/${budget.budgetId}`}
+              >
+                <button
+                  key={crypto.randomUUID()}
+                  className="btn btn-outline-secondary mb-3 ms-1 all-budget-choices"
+                >
+                  Balance
+                </button>
+              </NavLink>
               <h5>
                 Bugdet ID: {budget.budgetId} (&#128184; Income: ${budget.income}{" "}
                 | Savings: ${budget.savings} )<br />

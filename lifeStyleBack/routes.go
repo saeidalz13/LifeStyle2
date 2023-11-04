@@ -9,6 +9,9 @@ func Setup(app *fiber.App) {
 	app.Get(URLS.SignOut, GetSignOut)
 	app.Get(URLS.ShowBudgets, IsLoggedIn, GetAllBudgets)
 	app.Get(URLS.EachBudget, IsLoggedIn, GetBudget)
+	app.Get(URLS.Finance, IsLoggedIn, GetFinance)
+	app.Get(URLS.AllExpensesBudget, IsLoggedIn, GetAllExpenses)
+	app.Get(URLS.EachBalance, IsLoggedIn, GetSingleBalance)
 
 	// Post
 	app.Post(URLS.SignUp, PostSignup)

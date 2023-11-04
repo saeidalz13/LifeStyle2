@@ -1,4 +1,4 @@
-import { NavLink, useParams, useRouteLoaderData } from "react-router-dom";
+import { NavLink, useParams, useLoaderData } from "react-router-dom";
 import { useState, useEffect, useRef, FormEvent } from "react";
 import rl from "../../svg/RotatingLoad.svg";
 import Urls from "../../Urls";
@@ -31,7 +31,7 @@ const EachBudget = () => {
   const budgetAmountRef = useRef<HTMLInputElement>(null);
 
   const [thisBudget, setThisBudget] = useState<SingleBudget | null>(null);
-  const result = useRouteLoaderData("finance") as Budgets;
+  const result = useLoaderData() as Budgets;
   const budgets = result.budgets;
   const { id } = useParams();
 

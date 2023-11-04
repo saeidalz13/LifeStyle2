@@ -7,11 +7,21 @@ class Urls {
   fitness = "/fitness";
   finance = {
     index: "/finance",
+    
+    // Budgets
     newBudget: "create-new-budget",
     showBudgets: "show-all-budgets",
     showSingleBudget: "show-all-budgets/:id",
-    expenses: "submit-expenses",
-    submitExpenses: "submit-expenses/:id",
+
+    // Expenses
+    submitExpenses: "submit-expenses",
+    showExpenses: "show-expenses",
+    showExpensesEach: "show-expenses/:id",
+    submitExpensesEach: "submit-expenses/:id",
+
+    // Balance
+    balance: "balance",
+    eachBalance: "balance/:id",
   };
 
   invalid = "*";
