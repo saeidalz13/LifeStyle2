@@ -121,14 +121,6 @@ const EachBudget = () => {
                 Budget ID: {thisBudget ? thisBudget.budgetId : ""}
               </legend>
               <ul className="list-group list-group-flush mx-1 mt-5 text-center">
-                {/* <li className="list-group-item">
-                  <span style={{ color: "greenyellow" }}>Income</span> (Current
-                  Value &#x1F449;
-                  <span style={{ color: "greenyellow" }}>
-                    ${thisBudget ? thisBudget.income : ""}
-                  </span>
-                  )
-                </li> */}
                 <li className="list-group-item">
                   {" "}
                   <span style={{ color: "yellow" }}>Savings</span> (Current
@@ -142,8 +134,9 @@ const EachBudget = () => {
                 <li className="list-group-item">
                   {" "}
                   <span style={{ color: "hotpink" }}>Capital</span> (Current
-                  Value 
-                  <span style={{ color: "hotpink" }}> {" "}
+                  Value
+                  <span style={{ color: "hotpink" }}>
+                    {" "}
                     &#x1F449; ${thisBudget ? thisBudget.capital : ""}
                   </span>
                   )
@@ -182,7 +175,7 @@ const EachBudget = () => {
                 <input
                   type="number"
                   className="form-control"
-                  placeholder="$ Enter the amount for the chosen budget type"
+                  placeholder="$ Enter amount to add to budget type"
                   min={minMoney}
                   ref={budgetAmountRef}
                 />

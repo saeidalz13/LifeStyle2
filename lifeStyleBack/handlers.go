@@ -88,6 +88,7 @@ func GetBudget(ftx *fiber.Ctx) error {
 
 	var eachBudget BudgetResp
 	if err := FindSingleBudget(ctx, &eachBudget, budgetId, dbUser.Id); err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Could not fetch the requested budget ID"})
 	}
 
@@ -170,16 +171,19 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 	var dbUser DbUser
 	userEmail, err := ExtractEmailFromClaim(ftx)
 	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extracting Budget ID
 	budgetId, err := FetchIntOfParamBudgetId(ftx)
 	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
@@ -194,7 +198,6 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 
 	log.Println(balanceRes)
 	return ftx.Status(fiber.StatusAccepted).JSON(balanceRes)
-
 }
 
 //////////////////////////

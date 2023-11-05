@@ -92,7 +92,7 @@ const BalanceIndex = () => {
           </NavLink>
         </div>
       </div>
-      <div className="mx-5">
+      <div className="mx-4 mb-5">
         <ul className="list-group text-center">
           <li className="list-group-item list-group-item-action list-group-balance list-item-capital-balance">
             &#128176; Capital &#x1F449; ${balance.capital}

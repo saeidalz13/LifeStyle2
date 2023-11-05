@@ -11,13 +11,7 @@ const Home = () => {
     <div>
       <h1>Discipline your life style...</h1>
       <div
-        className="mx-4 mb-3 p-3"
-        style={{
-          backgroundColor: "rgba(102,203,173,0.2)",
-          color: "lightgray",
-          borderRadius: "10px",
-          fontSize: "18px"
-        }}
+        className="mx-4 mb-4 p-3 page-explanations"
       >
         You and I will be a better person if we discipline our habbits. My plan
         is that we can do this more conveniently! <br />

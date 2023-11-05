@@ -61,6 +61,10 @@ const Navbar = () => {
       <main>
         <Outlet />
       </main>
+
+      <footer className="text-center text-secondary footer">
+        &#169; 2023 Saeid Alizadeh. All Rights Reserved.
+      </footer>
     </>
   );
 };

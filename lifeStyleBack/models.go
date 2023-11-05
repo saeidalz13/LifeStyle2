@@ -220,19 +220,19 @@ var SqlStatements = &SqlStmts{
 
 	//// UPDATE
 	// Budget
-	UpdateBudgetIncome:        "UPDATE `budgets` SET income = ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetSavings:       "UPDATE `budgets` SET savings = ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetCapital:       "UPDATE `budgets` SET capital = ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetEatout:        "UPDATE `budgets` SET eatout = ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetEntertainment: "UPDATE `budgets` SET entertainment = ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBudgetIncome:        "UPDATE `budgets` SET income = income + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBudgetSavings:       "UPDATE `budgets` SET savings = savings + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBudgetCapital:       "UPDATE `budgets` SET capital = capital + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBudgetEatout:        "UPDATE `budgets` SET eatout = eatout + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBudgetEntertainment: "UPDATE `budgets` SET entertainment = entertainment + ? WHERE budget_id = ? AND user_id = ?;",
 	// Balance with expense
-	UpdateBalanceCapital:       "UPDATE balance SET capital = capital - ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEatout:        "UPDATE balance SET eatout = eatout - ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEntertainment: "UPDATE balance SET entertainment = entertainment - ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceCapital:       "UPDATE balance SET capital = capital - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEatout:        "UPDATE balance SET eatout = eatout - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEntertainment: "UPDATE balance SET entertainment = entertainment - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
 	// Balance with budget
-	UpdateBalanceCapitalWBudg: "UPDATE balance SET capital = capital + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEatoutWBudg:  "UPDATE balance SET eatout = eatout + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEntertWBudg:  "UPDATE balance SET entertainment = entertainment + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceCapitalWBudg: "UPDATE balance SET capital = capital + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEatoutWBudg:  "UPDATE balance SET eatout = eatout + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEntertWBudg:  "UPDATE balance SET entertainment = entertainment + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
 }
 
 var ResTypes = &ResTypesStruct{

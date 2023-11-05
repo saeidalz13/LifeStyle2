@@ -1,7 +1,7 @@
 :root {
     --beige-custom: rgba(44, 42, 27, 0.5);
     --header-color: rgb(249, 215, 215);
-    --default-box-shadow: 1px 1px 10px 1px rgb(0, 86, 86)
+    --default-box-shadow: 1px 1px 10px 1px rgb(0, 86, 86);
 }
 
 h1 {
@@ -12,6 +12,10 @@ h1 {
 
 input {
     margin: 5px 0;
+}
+
+footer {
+ margin: 100px auto 20px;
 }
 
 .form-control:focus {
@@ -28,7 +32,6 @@ input {
 .all-budget-choices, .expenses-table {
     box-shadow: var(--default-box-shadow);
  }
-
 
 .budget-panels {
     width: 90%;
@@ -51,6 +54,19 @@ input {
 
 .btn-close.cross {
     font-size: 35px;
+}
+
+.page-explanations {
+    border-radius: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: var(--default-box-shadow);
+    color: lightgray;
+    font-size: 18px
+}
+
+.finance-explanations {
+    color: lightgray;
 }
 
 #new-budget-tips {

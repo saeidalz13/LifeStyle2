@@ -166,7 +166,7 @@ func ConvertStringToFloat(args ...interface{}) ([]float64, error) {
 /*
 Insertions
 */
-func AddNewBalance(ctx context.Context, tx *sql.Tx ,done chan bool, budgetId, userId int, newBudget *NewBudgetReq) {
+func AddNewBalance(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newBudget *NewBudgetReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -348,7 +348,7 @@ func UpdateSingleBalanceWithExpense(ctx context.Context, tx *sql.Tx, done chan b
 			return
 		}
 
-		res, err := tx.ExecContext(ctx, selectedSql, amount[0], budgetId, userId)
+		res, err := tx.ExecContext(ctx, selectedSql, amount[0], amount[0], budgetId, userId)
 		if err != nil {
 			log.Println("Failed to update the amount of balance", err)
 			tx.Rollback()
@@ -386,7 +386,7 @@ func UpdateSingleBalanceWithBudget(ctx context.Context, tx *sql.Tx, done chan bo
 			return err
 		}
 
-		_, err = tx.ExecContext(ctx, selectedSql, amount[0], budgetId, userId)
+		_, err = tx.ExecContext(ctx, selectedSql, amount[0], amount[0], budgetId, userId)
 		if err != nil {
 			log.Println("Failed to update the amount of balance", err)
 			tx.Rollback()
