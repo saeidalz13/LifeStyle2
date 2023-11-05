@@ -16,7 +16,7 @@ CREATE TABLE budgets (
     capital DECIMAL(10,2),
     eatout DECIMAL(10,2),
     entertainment DECIMAL(10,2),
-    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX budget_idx (budget_id)
 );
@@ -28,8 +28,8 @@ CREATE TABLE capital_expenses (
     expenses DECIMAL(10,2) NOT NULL,
     description varchar(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX cap_expenses_idx (budget_id)
 );
 
@@ -40,8 +40,8 @@ CREATE TABLE eatout_expenses (
     expenses DECIMAL(10,2) NOT NULL,
     description varchar(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX eat_expenses_idx (budget_id)
 );
 
@@ -52,8 +52,8 @@ CREATE TABLE entertainment_expenses (
     expenses DECIMAL(10,2) NOT NULL,
     description varchar(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX ent_expenses_idx (budget_id)
 );
 

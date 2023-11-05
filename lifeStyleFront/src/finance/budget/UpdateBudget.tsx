@@ -120,15 +120,15 @@ const EachBudget = () => {
               <legend style={{ textAlign: "center", color: "beige" }}>
                 Budget ID: {thisBudget ? thisBudget.budgetId : ""}
               </legend>
-              <ul className="list-group list-group-flush mx-1 mt-5">
-                <li className="list-group-item">
+              <ul className="list-group list-group-flush mx-1 mt-5 text-center">
+                {/* <li className="list-group-item">
                   <span style={{ color: "greenyellow" }}>Income</span> (Current
                   Value &#x1F449;
                   <span style={{ color: "greenyellow" }}>
                     ${thisBudget ? thisBudget.income : ""}
                   </span>
                   )
-                </li>
+                </li> */}
                 <li className="list-group-item">
                   {" "}
                   <span style={{ color: "yellow" }}>Savings</span> (Current
@@ -142,8 +142,8 @@ const EachBudget = () => {
                 <li className="list-group-item">
                   {" "}
                   <span style={{ color: "hotpink" }}>Capital</span> (Current
-                  Value
-                  <span style={{ color: "hotpink" }}>
+                  Value 
+                  <span style={{ color: "hotpink" }}> {" "}
                     &#x1F449; ${thisBudget ? thisBudget.capital : ""}
                   </span>
                   )
@@ -172,7 +172,6 @@ const EachBudget = () => {
 
               <div className="mt-4 mx-5 text-center">
                 <select className="form-select" ref={budgetTypeRef}>
-                  <option value="income">Income</option>
                   <option value="savings">Savings</option>
                   <option value="capital">Capital Budget</option>
                   <option value="eatout">Eat Out Budget</option>

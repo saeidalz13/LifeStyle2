@@ -3,6 +3,7 @@ import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { useState } from "react";
+import StatusCodes from "../../StatusCodes";
 
 type Budgets = {
   budgets: Array<{
@@ -32,15 +33,21 @@ const ShowAllBudgets = () => {
     );
     const deletionValidation = await result.json();
 
-    if (deletionValidation.responseType === "error") {
+    if (result.status === StatusCodes.InternalServerError) {
       console.error(deletionValidation.message);
       return;
-    } else {
+    } else if (result.status === StatusCodes.Accepted) {
       console.log(`${budgetId} was deleted successfully!`);
       setBudgets((prevBudgets) =>
         prevBudgets.filter((budget) => budget.budgetId !== budgetId)
       );
       return;
+    } else if (result.status === StatusCodes.UnAuthorized) {
+      location.href = Urls.login
+      console.log("Unexpected error happened!")
+      return;
+    } else {
+      location.href = Urls.login
     }
   }
 

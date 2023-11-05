@@ -95,7 +95,7 @@ func ChooseUpdateBudgetSql(updateBudgetReq *UpdateBudgetReq) (string, error) {
 	}
 }
 
-func ChooseUpdateBalanceSql(newExpense *ExpenseReq) (string, error) {
+func ChooseUpdateBalanceWExpSql(newExpense *ExpenseReq) (string, error) {
 	if newExpense.ExpenseType == "capital" {
 		return SqlStatements.UpdateBalanceCapital, nil
 
@@ -107,6 +107,19 @@ func ChooseUpdateBalanceSql(newExpense *ExpenseReq) (string, error) {
 
 	} else {
 		return "", errors.New("Invalid type of expense!")
+	}
+}
+
+func ChooseUpdateBalanceWBudgSql(balanceType string) (string, error) {
+	if balanceType == "capital" {
+		return SqlStatements.UpdateBalanceCapitalWBudg, nil
+	} else if balanceType == "eatout" {
+		return SqlStatements.UpdateBalanceEatoutWBudg, nil
+	} else if balanceType == "entertainment" {
+		return SqlStatements.UpdateBalanceEntertWBudg, nil
+	} else {
+		log.Println("Wrong type of balance type to be updated!")
+		return "", nil
 	}
 }
 
@@ -153,47 +166,40 @@ func ConvertStringToFloat(args ...interface{}) ([]float64, error) {
 /*
 Insertions
 */
-func AddNewBalance(ctx context.Context, done, ch chan bool, budgetId, userId int, newBudget *NewBudgetReq) {
+func AddNewBalance(ctx context.Context, tx *sql.Tx ,done chan bool, budgetId, userId int, newBudget *NewBudgetReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
+		tx.Rollback()
 		done <- false
-		ch <- false
 		return
-	default:
-		ins, err := DB.PrepareContext(ctx, SqlStatements.InsertNewBalance)
-		if err != nil {
-			log.Println(err)
-			done <- false
-			ch <- false
-			return
-		}
 
-		floatResults, err := ConvertStringToFloat("floatType64",newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
+	default:
+		floatResults, err := ConvertStringToFloat("floatType64", newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
 		if err != nil {
 			log.Println("Failed to convert each balance to float to calculate total!")
 			log.Println(err)
+			tx.Rollback()
 			done <- false
-			ch <- false
 			return
 		}
+
 		var total float64
 		for _, floatResult := range floatResults {
 			total += floatResult
 		}
 
-		res, err := ins.ExecContext(ctx, budgetId, userId, &newBudget.Capital, &newBudget.Eatout, &newBudget.Entertainment, total)
+		res, err := tx.ExecContext(ctx, SqlStatements.InsertNewBalance,budgetId, userId, &newBudget.Capital, &newBudget.Eatout, &newBudget.Entertainment, total)
 		if err != nil {
 			log.Println("Failed to add the new balance!", err)
+			tx.Rollback()
 			done <- false
-			ch <- false
 			return
 		}
 
 		log.Println("Balance was successfully ")
 		log.Println(res.LastInsertId())
 		done <- true
-		ch <- true
 		return
 	}
 }
@@ -266,37 +272,25 @@ func AddUser(newUser User, hashedPassword []byte, ctx context.Context, ch, done 
 	}
 }
 
-func AddNewBudget(ctx context.Context, done, ch chan bool, newBudget *NewBudgetReq, startDate time.Time, endDate time.Time, userId int) (int64, error) {
+func AddNewBudget(ctx context.Context, tx *sql.Tx, done chan bool, newBudget *NewBudgetReq, startDate time.Time, endDate time.Time, userId int) (int64, error) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled!")
 		done <- false
-		ch <- false
+		tx.Rollback()
 		return -1, errors.New("Process Cancelled")
 
 	default:
-		ins, err := DB.PrepareContext(ctx, SqlStatements.InsertBudget)
-		if err != nil {
-			log.Println("Failed to prepare the statement", err)
-			done <- false
-			ch <- false
-			return -1, err
-		}
-		defer ins.Close()
-
-		res, err := ins.Exec(userId, startDate, endDate, newBudget.Income, newBudget.Capital, newBudget.Savings, newBudget.Eatout, newBudget.Entertainment)
+		res, err := tx.ExecContext(ctx, SqlStatements.InsertBudget, userId, startDate, endDate, newBudget.Income, newBudget.Capital, newBudget.Savings, newBudget.Eatout, newBudget.Entertainment)
 		if err != nil {
 			log.Println("Failed to execute the SQL statement", err)
 			done <- false
-			ch <- false
+			tx.Rollback()
 			return -1, err
 		}
-
 		addBudgetId, _ := res.LastInsertId()
-
 		log.Println("Budget added successfully!")
 		done <- true
-		ch <- true
 		return addBudgetId, nil
 	}
 }
@@ -304,42 +298,34 @@ func AddNewBudget(ctx context.Context, done, ch chan bool, newBudget *NewBudgetR
 /*
 Updates
 */
-func UpdateSingleBudget(ctx context.Context, ch chan bool, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) {
+func UpdateSingleBudget(ctx context.Context, done chan bool, tx *sql.Tx, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) error {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
-		return
+		tx.Rollback()
+		return errors.New("Process cancelled or timeout")
 
 	default:
 		seletedSql, err := ChooseUpdateBudgetSql(updateBudgetReq)
 		if err != nil {
 			log.Println("Failed to choose the update SQL statement")
-			ch <- false
-			return
+			tx.Rollback()
+			return err
 		}
 
-		upd, err := DB.PrepareContext(ctx, seletedSql)
-		if err != nil {
-			log.Println("Failed to initialize the sql query")
-			ch <- false
-			return
-		}
-		defer upd.Close()
-
-		res, err := upd.Exec(updateBudgetReq.BudgetAmount, budgetId, userId)
+		_, err = tx.ExecContext(ctx, seletedSql, updateBudgetReq.BudgetAmount, budgetId, userId)
 		if err != nil {
 			log.Println("Failed to update the requested budget")
-			ch <- false
-			return
+			tx.Rollback()
+			return err
 		}
 
-		log.Println(res.RowsAffected())
-		ch <- true
-		return
+		done <- true
+		return nil
 	}
 }
 
-func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, userId int, newExpense *ExpenseReq) {
+func UpdateSingleBalanceWithExpense(ctx context.Context, done, ch chan bool, budgetId, userId int, newExpense *ExpenseReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -348,14 +334,14 @@ func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, user
 		return
 
 	default:
-		selectedSql, err := ChooseUpdateBalanceSql(newExpense)
+		selectedSql, err := ChooseUpdateBalanceWExpSql(newExpense)
 		if err != nil {
 			log.Println(err)
 			done <- false
 			ch <- false
 			return
 		}
-		
+
 		upd, err := DB.PrepareContext(ctx, selectedSql)
 		if err != nil {
 			log.Println(err)
@@ -363,10 +349,10 @@ func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, user
 			ch <- false
 			return
 		}
-		
+
 		amount, err := ConvertStringToFloat("floatType32", newExpense.ExpenseAmount)
 		if err != nil {
-			log.Println("Failed to convert the expense amount to float",err)
+			log.Println("Failed to convert the expense amount to float", err)
 			done <- false
 			ch <- false
 			return
@@ -374,7 +360,7 @@ func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, user
 
 		res, err := upd.ExecContext(ctx, amount[0], budgetId, userId)
 		if err != nil {
-			log.Println("Failed to update the amount of balance",err)
+			log.Println("Failed to update the amount of balance", err)
 			done <- false
 			ch <- false
 			return
@@ -383,6 +369,44 @@ func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, user
 		done <- true
 		ch <- true
 		return
+	}
+}
+
+func UpdateSingleBalanceWithBudget(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) error {
+	select {
+	case <-ctx.Done():
+		log.Println("Cancelled")
+		tx.Rollback()
+		done <- false
+		return errors.New("Cancelled or timeout")
+
+	default:
+		selectedSql, err := ChooseUpdateBalanceWBudgSql(updateBudgetReq.BudgetType)
+		if err != nil {
+			log.Println(err)
+			tx.Rollback()
+			done <- false
+			return err
+		}
+
+		amount, err := ConvertStringToFloat("floatType32", updateBudgetReq.BudgetAmount)
+		if err != nil {
+			log.Println("Failed to convert the expense amount to float", err)
+			tx.Rollback()
+			done <- false
+			return err
+		}
+
+		_, err = tx.ExecContext(ctx, selectedSql, amount[0], budgetId, userId)
+		if err != nil {
+			log.Println("Failed to update the amount of balance", err)
+			tx.Rollback()
+			done <- false
+			return err
+		}
+
+		done <- true
+		return nil
 	}
 }
 
@@ -398,6 +422,7 @@ func DeleteRequestedBudget(ctx context.Context, ch chan bool, budgetId int, user
 		// var del *sql.Stmt
 		del, err := DB.PrepareContext(ctx, SqlStatements.DeleteBudget)
 		if err != nil {
+			log.Println(err)
 			ch <- false
 			return
 		}
@@ -405,6 +430,7 @@ func DeleteRequestedBudget(ctx context.Context, ch chan bool, budgetId int, user
 
 		res, err := del.Exec(budgetId, userId)
 		if err != nil {
+			log.Println(err)
 			ch <- false
 			return
 		}

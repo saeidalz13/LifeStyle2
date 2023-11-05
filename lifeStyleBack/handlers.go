@@ -192,6 +192,7 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the balance!"})
 	}
 
+	log.Println(balanceRes)
 	return ftx.Status(fiber.StatusAccepted).JSON(balanceRes)
 
 }
@@ -316,6 +317,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 
 func PostNewBudget(ftx *fiber.Ctx) error {
 	// User Authentication
+	// TODO: Needs to be fixed! with tx *sql.Tx
 	var dbUser DbUser
 	userEmail, err := ExtractEmailFromClaim(ftx)
 	if err != nil {
@@ -339,25 +341,24 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
+	tx, err := DB.Begin()
+	if err != nil {
+		return nil
+	}
+	log.Printf("User Budget Raw Request: %#v", newBudget)
+
 	done := make(chan bool, 2)
 	defer close(done)
-	ch := make(chan bool, 1)
-	defer close(ch)
-	ch2 := make(chan bool, 1)
-	defer close(ch2)
 
-	addedBudgetId, err := AddNewBudget(ctx, done, ch, &newBudget, startDate, endDate, dbUser.Id)
+	addedBudgetId, err := AddNewBudget(ctx, tx, done, &newBudget, startDate, endDate, dbUser.Id)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget! Try again later"})
 	}
-	AddNewBalance(ctx, done, ch2, int(addedBudgetId), dbUser.Id, &newBudget)
+	AddNewBalance(ctx, tx, done, int(addedBudgetId), dbUser.Id, &newBudget)
 
 	select {
 	case <-done:
-		budgetAdded := <-ch
-		balanceAdded := <-ch2
-
-		if budgetAdded && balanceAdded {
+		if err := tx.Commit(); err != nil {
 			return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget Created Successfully!"})
 		}
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget! Try again later"})
@@ -403,7 +404,7 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	defer close(chBalance)
 
 	go AddExpenses(ctx, chAddExp, budgetId, dbUser.Id, &newExpense)
-	go UpdateSingleBalance(ctx, done, chBalance, budgetId, dbUser.Id, &newExpense)
+	go UpdateSingleBalanceWithExpense(ctx, done, chBalance, budgetId, dbUser.Id, &newExpense)
 
 	select {
 	case <-done:
@@ -421,17 +422,13 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	}
 }
 
-//////////////////////////
+////////////////////////
 
 /*
 DELETE Section
 */
 func DeleteBudget(ftx *fiber.Ctx) error {
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
-	if err != nil {
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
-	}
-
+	// User Authentication
 	var dbUser DbUser
 	userEmail, err := ExtractEmailFromClaim(ftx)
 	if err != nil {
@@ -444,15 +441,22 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
+	// Extract Budget ID
+	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	if err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
+	}
+
 	ch := make(chan bool, 1)
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel2()
+
 	DeleteRequestedBudget(ctx2, ch, budgetId, dbUser.Id)
 
 	select {
 	case result := <-ch:
 		if !result {
-			return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete the budget!"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete the budget!"})
 		}
 		log.Println("Deleted:", result)
 		return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget was deleted successfully!"})
@@ -492,21 +496,34 @@ func PatchBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
 	}
 
+	// Start a transaction
+	tx, err := DB.Begin()
+	if err != nil {
+		return nil
+	}
+
 	// Update Budget
-	ch := make(chan bool, 1)
-	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel2()
-	UpdateSingleBudget(ctx2, ch, budgetId, dbUser.Id, &updateBudgetReq)
+	done := make(chan bool, 2)
+	defer close(done)
+
+	if err := UpdateSingleBudget(ctx, done, tx, budgetId, dbUser.Id, &updateBudgetReq); err != nil {
+		return nil
+	}
+
+	if updateBudgetReq.BudgetType == BudgetUpdateOptions.Savings {
+		done <- true
+	} else {
+		UpdateSingleBalanceWithBudget(ctx, tx, done, budgetId, dbUser.Id, &updateBudgetReq)
+	}
 
 	select {
-	case result := <-ch:
-		if !result {
-			return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
+	case <-done:
+		if err := tx.Commit(); err != nil {
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 		}
-		log.Println("Deleted:", result)
 		return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget was updated successfully!"})
 
-	case <-ctx2.Done():
+	case <-ctx.Done():
 		log.Println("Request timed out or cancelled")
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Request cancelled or time out!"})
 	}

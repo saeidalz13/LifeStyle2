@@ -37,6 +37,9 @@ type SqlStmts struct {
 	UpdateBalanceCapital       string
 	UpdateBalanceEatout        string
 	UpdateBalanceEntertainment string
+	UpdateBalanceCapitalWBudg  string
+	UpdateBalanceEatoutWBudg   string
+	UpdateBalanceEntertWBudg   string
 }
 
 type ApiRes struct {
@@ -157,6 +160,13 @@ type AllExpensesRes struct {
 	EntertainmentExpenses []EntertainmentExpensesRes `json:"entertainmentExpenses"`
 }
 
+type BudgetUpdateOptionsType struct {
+	Savings string
+	Capital string
+	Eatout  string
+	Entert  string
+}
+
 type DbUser struct {
 	Id       int    `json:"id"`
 	Email    string `json:"email"`
@@ -215,13 +225,24 @@ var SqlStatements = &SqlStmts{
 	UpdateBudgetCapital:       "UPDATE `budgets` SET capital = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetEatout:        "UPDATE `budgets` SET eatout = ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBudgetEntertainment: "UPDATE `budgets` SET entertainment = ? WHERE budget_id = ? AND user_id = ?;",
-	// Balance
+	// Balance with expense
 	UpdateBalanceCapital:       "UPDATE balance SET capital = capital - ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBalanceEatout:        "UPDATE balance SET eatout = eatout - ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBalanceEntertainment: "UPDATE balance SET entertainment = entertainment - ? WHERE budget_id = ? AND user_id = ?;",
+	// Balance with budget
+	UpdateBalanceCapitalWBudg: "UPDATE balance SET capital = capital + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEatoutWBudg:  "UPDATE balance SET eatout = eatout + ? WHERE budget_id = ? AND user_id = ?;",
+	UpdateBalanceEntertWBudg:  "UPDATE balance SET entertainment = entertainment + ? WHERE budget_id = ? AND user_id = ?;",
 }
 
 var ResTypes = &ResTypesStruct{
 	Success: "success",
 	Err:     "error",
+}
+
+var BudgetUpdateOptions = &BudgetUpdateOptionsType{
+	Savings: "savings",
+	Capital: "capital",
+	Eatout:  "eatout",
+	Entert:  "entertainment",
 }
