@@ -3,6 +3,7 @@ import { useParams, NavLink } from "react-router-dom";
 import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
+import StatusCodes from "../../StatusCodes";
 
 const SubmitExpenses = () => {
   const { id } = useParams();
@@ -10,7 +11,7 @@ const SubmitExpenses = () => {
   const expenseTypeRef = useRef<HTMLSelectElement>(null);
   const expenseAmountRef = useRef<HTMLInputElement>(null);
   const expenseDescRef = useRef<HTMLInputElement>(null);
-
+  
   const [loading, setLoading] = useState<boolean>(false);
   const [possibleErrs, setPossibleErrs] = useState(false);
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
@@ -45,17 +46,31 @@ const SubmitExpenses = () => {
         const data = await result.json();
         setLoading(false);
 
-        if (data.responseType === "error") {
+        if (result.status === StatusCodes.InternalServerError) {
           setPossibleErrs(true);
           setPossibleErrsMsg(data.message);
           setTimeout(() => {
             setPossibleErrs(false);
           }, 5000);
           return;
-        } else {
+        } else if (result.status === StatusCodes.UnAuthorized) {
+          setPossibleErrs(true);
+          setPossibleErrsMsg("You have logged out! Login to continue");
+          setTimeout(() => {
+            setPossibleErrs(false);
+          }, 5000);
+          return;
+        } else if (result.status === StatusCodes.Created) {
           setSuccessRes(true);
           setTimeout(() => {
             setSuccessRes(false);
+          }, 5000);
+          return;
+        } else {
+          setPossibleErrs(true);
+          setPossibleErrsMsg("Something Went Wrong! Try again later please");
+          setTimeout(() => {
+            setPossibleErrs(false);
           }, 5000);
           return;
         }

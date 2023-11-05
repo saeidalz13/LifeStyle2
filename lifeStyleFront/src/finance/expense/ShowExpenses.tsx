@@ -87,7 +87,7 @@ const ShowExpenses = () => {
       fetchAllExpenses();
     }
   }, [id]);
-
+  
   if (allExpenses === "nodata") {
     console.log("REACHED")
     return (

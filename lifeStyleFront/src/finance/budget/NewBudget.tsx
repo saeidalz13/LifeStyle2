@@ -127,7 +127,55 @@ const NewBudget = () => {
   return (
     <>
       <div className="container">
-        <div className="row mt-5">
+        <div className="row mt-5 mb-2">
+          <div className="col">
+            <div className="col">
+              <div style={{ padding: "20px" }} id="new-budget-tips">
+                <h2>Tips:</h2>
+                <p>
+                  Here are some useful links to help you budget you finances
+                  more effecively!
+                </p>
+                <ul>
+                  <li>
+                    <a
+                      href={Constants.youTubeLinks.budgetingBasics.link}
+                      target="_blank"
+                    >
+                      {Constants.youTubeLinks.budgetingBasics.desc}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={Constants.youTubeLinks.saveMoneyLowIncome.link}
+                      target="_blank"
+                    >
+                      {Constants.youTubeLinks.saveMoneyLowIncome.desc}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={Constants.youTubeLinks.manageMoney.link}
+                      target="_blank"
+                    >
+                      {Constants.youTubeLinks.manageMoney.desc}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={Constants.youTubeLinks.eatOutMakesPoor.link}
+                      target="_blank"
+                    >
+                      {Constants.youTubeLinks.eatOutMakesPoor.desc}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3 mb-5">
           <div className="col">
             <form id="form-new-budget" onSubmit={handleSubmit}>
               <legend style={{ textAlign: "center", color: "beige" }}>
@@ -240,54 +288,6 @@ const NewBudget = () => {
                 </div>
               )}
             </form>
-          </div>
-        </div>
-
-        <div className="row mt-5 mb-5">
-          <div className="col">
-            <div className="col">
-              <div style={{ padding: "20px" }} id="new-budget-tips">
-                <h2>Tips:</h2>
-                <p>
-                  Here are some useful links to help you budget you finances
-                  more effecively!
-                </p>
-                <ul>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.budgetingBasics.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.budgetingBasics.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.saveMoneyLowIncome.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.saveMoneyLowIncome.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.manageMoney.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.manageMoney.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.eatOutMakesPoor.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.eatOutMakesPoor.desc}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
       </div>

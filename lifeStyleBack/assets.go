@@ -74,29 +74,52 @@ func GenerateToken(expirationTime time.Time, userEmail string) (string, error) {
 	return tokenString, nil
 }
 
-func ChooseUpdateSql(updateBudgetReq *UpdateBudgetReq) (string, error) {
+func ChooseUpdateBudgetSql(updateBudgetReq *UpdateBudgetReq) (string, error) {
 	if updateBudgetReq.BudgetType == "income" {
 		return SqlStatements.UpdateBudgetIncome, nil
+
 	} else if updateBudgetReq.BudgetType == "savings" {
 		return SqlStatements.UpdateBudgetSavings, nil
+
 	} else if updateBudgetReq.BudgetType == "capital" {
 		return SqlStatements.UpdateBudgetCapital, nil
+
 	} else if updateBudgetReq.BudgetType == "eatout" {
 		return SqlStatements.UpdateBudgetEatout, nil
+
 	} else if updateBudgetReq.BudgetType == "entertainment" {
 		return SqlStatements.UpdateBudgetEntertainment, nil
+
 	} else {
 		return "", errors.New("Invalid type of budget!")
+	}
+}
+
+func ChooseUpdateBalanceSql(newExpense *ExpenseReq) (string, error) {
+	if newExpense.ExpenseType == "capital" {
+		return SqlStatements.UpdateBalanceCapital, nil
+
+	} else if newExpense.ExpenseType == "eatout" {
+		return SqlStatements.UpdateBalanceEatout, nil
+
+	} else if newExpense.ExpenseType == "entertainment" {
+		return SqlStatements.UpdateBalanceEntertainment, nil
+
+	} else {
+		return "", errors.New("Invalid type of expense!")
 	}
 }
 
 func ChooseAddExpensesSql(newExpense *ExpenseReq) (string, error) {
 	if newExpense.ExpenseType == "capital" {
 		return SqlStatements.InsertCapitalExpenses, nil
+
 	} else if newExpense.ExpenseType == "eatout" {
 		return SqlStatements.InsertEatoutExpenses, nil
+
 	} else if newExpense.ExpenseType == "entertainment" {
 		return SqlStatements.InsertEntertainmentExpenses, nil
+
 	} else {
 		return "", errors.New("Invalid type of expense!")
 	}
@@ -104,15 +127,24 @@ func ChooseAddExpensesSql(newExpense *ExpenseReq) (string, error) {
 
 func ConvertStringToFloat(args ...interface{}) ([]float64, error) {
 	var results []float64
+	var floatType []int
 	for _, arg := range args {
-		if argStr, ok := arg.(string); ok {
-			f, err := strconv.ParseFloat(argStr, 64)
-			if err != nil {
-				return nil, err
-			}
-			results = append(results, f)
+		if arg == "floatType32" {
+			floatType = append(floatType, 32)
+			continue
+		} else if arg == "floatType64" {
+			floatType = append(floatType, 64)
+			continue
 		} else {
-			return nil, errors.New("One of the args is not string")
+			if argStr, ok := arg.(string); ok {
+				f, err := strconv.ParseFloat(argStr, floatType[0])
+				if err != nil {
+					return nil, err
+				}
+				results = append(results, f)
+			} else {
+				return nil, errors.New("One of the args is not string")
+			}
 		}
 	}
 	return results, nil
@@ -137,7 +169,7 @@ func AddNewBalance(ctx context.Context, done, ch chan bool, budgetId, userId int
 			return
 		}
 
-		floatResults, err := ConvertStringToFloat(newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
+		floatResults, err := ConvertStringToFloat("floatType64",newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
 		if err != nil {
 			log.Println("Failed to convert each balance to float to calculate total!")
 			log.Println(err)
@@ -279,15 +311,14 @@ func UpdateSingleBudget(ctx context.Context, ch chan bool, budgetId, userId int,
 		return
 
 	default:
-		seletedSql, err := ChooseUpdateSql(updateBudgetReq)
+		seletedSql, err := ChooseUpdateBudgetSql(updateBudgetReq)
 		if err != nil {
 			log.Println("Failed to choose the update SQL statement")
 			ch <- false
 			return
 		}
 
-		var upd *sql.Stmt
-		upd, err = DB.PrepareContext(ctx, seletedSql)
+		upd, err := DB.PrepareContext(ctx, seletedSql)
 		if err != nil {
 			log.Println("Failed to initialize the sql query")
 			ch <- false
@@ -303,6 +334,53 @@ func UpdateSingleBudget(ctx context.Context, ch chan bool, budgetId, userId int,
 		}
 
 		log.Println(res.RowsAffected())
+		ch <- true
+		return
+	}
+}
+
+func UpdateSingleBalance(ctx context.Context, done, ch chan bool, budgetId, userId int, newExpense *ExpenseReq) {
+	select {
+	case <-ctx.Done():
+		log.Println("Cancelled")
+		done <- false
+		ch <- true
+		return
+
+	default:
+		selectedSql, err := ChooseUpdateBalanceSql(newExpense)
+		if err != nil {
+			log.Println(err)
+			done <- false
+			ch <- false
+			return
+		}
+		
+		upd, err := DB.PrepareContext(ctx, selectedSql)
+		if err != nil {
+			log.Println(err)
+			done <- false
+			ch <- false
+			return
+		}
+		
+		amount, err := ConvertStringToFloat("floatType32", newExpense.ExpenseAmount)
+		if err != nil {
+			log.Println("Failed to convert the expense amount to float",err)
+			done <- false
+			ch <- false
+			return
+		}
+
+		res, err := upd.ExecContext(ctx, amount[0], budgetId, userId)
+		if err != nil {
+			log.Println("Failed to update the amount of balance",err)
+			done <- false
+			ch <- false
+			return
+		}
+		log.Printf("res: %v\n", res)
+		done <- true
 		ch <- true
 		return
 	}
