@@ -317,7 +317,6 @@ func PostLogin(ftx *fiber.Ctx) error {
 
 func PostNewBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	// TODO: Needs to be fixed! with tx *sql.Tx
 	var dbUser DbUser
 	userEmail, err := ExtractEmailFromClaim(ftx)
 	if err != nil {
@@ -343,9 +342,8 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 
 	tx, err := DB.Begin()
 	if err != nil {
-		return nil
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
-	log.Printf("User Budget Raw Request: %#v", newBudget)
 
 	done := make(chan bool, 2)
 	defer close(done)
@@ -359,9 +357,9 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 	select {
 	case <-done:
 		if err := tx.Commit(); err != nil {
-			return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget Created Successfully!"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget! Try again later"})
 		}
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget! Try again later"})
+		return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget Created Successfully!"})
 
 	case <-ctx.Done():
 		log.Println("Request timed out or cancelled")
@@ -369,9 +367,11 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 	}
 }
 
+// TODO: Needs to be fixed! with tx *sql.Tx
 func PostExpenses(ftx *fiber.Ctx) error {
 	var dbUser DbUser
 	// Authentication Stage
+	// TODO: Needs to be fixed! with tx *sql.Tx
 	userEmail, err := ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
@@ -395,25 +395,25 @@ func PostExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
 	}
 
+	// Start a transaction
+	tx, err := DB.Begin()
+	if err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
+	}
+
 	// Insertion To Expenses
 	done := make(chan bool, 2)
 	defer close(done)
-	chAddExp := make(chan bool, 1)
-	defer close(chAddExp)
-	chBalance := make(chan bool, 1)
-	defer close(chBalance)
 
-	go AddExpenses(ctx, chAddExp, budgetId, dbUser.Id, &newExpense)
-	go UpdateSingleBalanceWithExpense(ctx, done, chBalance, budgetId, dbUser.Id, &newExpense)
+	AddExpenses(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
+	UpdateSingleBalanceWithExpense(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
 
 	select {
 	case <-done:
-		resultAddExp := <-chAddExp
-		resultBalance := <-chBalance
-
-		if !resultAddExp || !resultBalance {
+		if err := tx.Commit(); err != nil {
 			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget!"})
 		}
+
 		return ftx.Status(fiber.StatusCreated).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Expense was added successfully!"})
 
 	case <-ctx.Done():
@@ -499,7 +499,7 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	// Start a transaction
 	tx, err := DB.Begin()
 	if err != nil {
-		return nil
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
 
 	// Update Budget
@@ -507,7 +507,7 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	defer close(done)
 
 	if err := UpdateSingleBudget(ctx, done, tx, budgetId, dbUser.Id, &updateBudgetReq); err != nil {
-		return nil
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
 
 	if updateBudgetReq.BudgetType == BudgetUpdateOptions.Savings {
