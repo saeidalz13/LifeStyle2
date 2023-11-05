@@ -91,15 +91,6 @@ type NewExpensesReq struct {
 	Entertainment string `json:"entertainment"`
 }
 
-// type DbCapitalExpenses struct {
-// 	CapitalId   int
-// 	BudgetId    int
-// 	UserId      int
-// 	Expenses    float64
-// 	Description string
-// 	CreatedAt   []uint8
-// }
-
 type EntertainmentExpensesRes struct {
 	EntertainmentId int       `json:"entertainmentId"`
 	BudgetId        int       `json:"bugdetId"`
