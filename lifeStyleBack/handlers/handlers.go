@@ -225,7 +225,7 @@ func PostSignup(ftx *fiber.Ctx) error {
 	defer cancel()
 	go assets.AddUser(newUser, hashedPassword, ctx, ch, done)
 
-	// JWT Settings
+	// Paseto Settings
 	go func(chan string) {
 		tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, Duration)
 		if err != nil {
@@ -242,11 +242,11 @@ func PostSignup(ftx *fiber.Ctx) error {
 	select {
 	case <-done:
 		resAdd := <-ch
-		resJwt := <-ch2
-		if resAdd && resJwt != "" {
+		resPaseto := <-ch2
+		if resAdd && resPaseto != "" {
 			ftx.Cookie(&fiber.Cookie{
 				Name:     "paseto",
-				Value:    resJwt,
+				Value:    resPaseto,
 				HTTPOnly: true,
 				Expires:  ExpirationTime,
 				SameSite: "Strict",

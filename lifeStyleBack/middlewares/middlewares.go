@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
@@ -10,12 +11,13 @@ import (
 func IsLoggedIn(ftx *fiber.Ctx) error {
 	cookie := ftx.Cookies("paseto")
 	if cookie == "" {
-		return errors.New("Invalid JWT")
+		return errors.New("Invalid Paseto token!")
 	}
 
 	_, err := token.PasetoMakerGlobal.VerifyToken(cookie)
 	if err != nil {
-		return errors.New("Invalid JWT")
+		log.Println(err)
+		return errors.New("Invalid Paseto token!")
 	}
 
 	return ftx.Next()
