@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"context"
@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/assets"
+	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,27 +19,15 @@ type UserHandler struct {
 	DB *sql.DB // Declare DB as a field in the handler struct
 }
 
-type Claims struct {
-	Email string `json:"email"`
-	jwt.RegisteredClaims
-}
-
 /*
 GET Section
 */
 func GetHome(ftx *fiber.Ctx) error {
 	// User Authentication
-	_, err := ExtractEmailFromClaim(ftx)
+	_, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
-
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
-	// if err := FindUser(ctx, userEmail, &dbUser); err != nil {
-	// 	return ftx.SendStatus(fiber.StatusUnauthorized)
-	// }
-
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
@@ -44,21 +36,21 @@ func GetFinance(ftx *fiber.Ctx) error {
 }
 
 func GetAllBudgets(ftx *fiber.Ctx) error {
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel2()
-	userBudgets, err := FindUserAllBudgets(ctx2, dbUser.Id)
+	userBudgets, err := assets.FindUserAllBudgets(ctx2, dbUser.Id)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budgets from database"})
@@ -69,25 +61,25 @@ func GetAllBudgets(ftx *fiber.Ctx) error {
 
 func GetBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
-	var eachBudget BudgetResp
-	if err := FindSingleBudget(ctx, &eachBudget, budgetId, dbUser.Id); err != nil {
+	var eachBudget models.BudgetResp
+	if err := assets.FindSingleBudget(ctx, &eachBudget, budgetId, dbUser.Id); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Could not fetch the requested budget ID"})
 	}
@@ -97,13 +89,12 @@ func GetBudget(ftx *fiber.Ctx) error {
 
 func GetSignOut(ftx *fiber.Ctx) error {
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "jwt",                        // Replace with your cookie name
+		Name:     "paseto",                        // Replace with your cookie name
 		Value:    "",                           // Clear the cookie value
 		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
 		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
 	})
-
-	return ftx.Redirect(URLS.Home)
+	return ftx.Redirect(cn.URLS.Home)
 }
 
 func GetAllExpenses(ftx *fiber.Ctx) error {
@@ -111,34 +102,34 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 	defer cancel()
 
 	// User Authorization
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extracting Budget ID
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
 	done := make(chan bool, 3)
 	defer close(done)
-	chCap := make(chan []CapitalExpensesRes, 1)
+	chCap := make(chan []models.CapitalExpensesRes, 1)
 	defer close(chCap)
-	chEat := make(chan []EatoutExpensesRes, 1)
+	chEat := make(chan []models.EatoutExpensesRes, 1)
 	defer close(chEat)
-	chEnter := make(chan []EntertainmentExpensesRes, 1)
+	chEnter := make(chan []models.EntertainmentExpensesRes, 1)
 	defer close(chEnter)
 
-	go FindUserAllCapitalExpenses(ctx, budgetId, dbUser.Id, done, chCap)
-	go FindUserAllEatoutExpenses(ctx, budgetId, dbUser.Id, done, chEat)
-	go FindUserAllEntertainmentExpenses(ctx, budgetId, dbUser.Id, done, chEnter)
+	go assets.FindUserAllCapitalExpenses(ctx, budgetId, dbUser.Id, done, chCap)
+	go assets.FindUserAllEatoutExpenses(ctx, budgetId, dbUser.Id, done, chEat)
+	go assets.FindUserAllEntertainmentExpenses(ctx, budgetId, dbUser.Id, done, chEnter)
 
 	// Wait for all the processes to complete
 	select {
@@ -151,7 +142,7 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 			return ftx.SendStatus(fiber.StatusNoContent)
 		}
 
-		return ftx.Status(fiber.StatusAccepted).JSON(map[string]interface{}{"allExpenses": &AllExpensesRes{
+		return ftx.Status(fiber.StatusAccepted).JSON(map[string]interface{}{"allExpenses": &models.AllExpensesRes{
 			CapitalExpenses:       capitalExpenses,
 			EatoutExpenses:        eatoutExpenses,
 			EntertainmentExpenses: entertainmentExpenses,
@@ -168,29 +159,29 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 	defer cancel()
 
 	// User Authorization
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extracting Budget ID
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
 	// Extracting Balance
-	var balanceRes DbBalance
-	if err := FindSingleBalance(ctx, budgetId, dbUser.Id, &balanceRes); err != nil {
-		if err.Error() == sqlErrors.ErrNoRows {
+	var balanceRes models.DbBalance
+	if err := assets.FindSingleBalance(ctx, budgetId, dbUser.Id, &balanceRes); err != nil {
+		if err.Error() == SqlErrors.ErrNoRows {
 			return ftx.Status(fiber.StatusNoContent).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 		}
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the balance!"})
@@ -206,7 +197,7 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 POST Section
 */
 func PostSignup(ftx *fiber.Ctx) error {
-	var newUser User
+	var newUser models.User
 	if contentType := ftx.Get("Content-Type"); contentType != "application/json" {
 		log.Println("Unsupported Content-Type:", contentType)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Incorrect request data (not JSON)"})
@@ -232,12 +223,11 @@ func PostSignup(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	go AddUser(newUser, hashedPassword, ctx, ch, done)
+	go assets.AddUser(newUser, hashedPassword, ctx, ch, done)
 
 	// JWT Settings
-	expirationTime := time.Now().Add(100 * time.Minute)
 	go func(chan string) {
-		tokenString, err := GenerateToken(expirationTime, newUser.Email)
+		tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, Duration)
 		if err != nil {
 			log.Println("Failed to generate token string:", err)
 			ch2 <- ""
@@ -255,10 +245,10 @@ func PostSignup(ftx *fiber.Ctx) error {
 		resJwt := <-ch2
 		if resAdd && resJwt != "" {
 			ftx.Cookie(&fiber.Cookie{
-				Name:     "jwt",
+				Name:     "paseto",
 				Value:    resJwt,
 				HTTPOnly: true,
-				Expires:  expirationTime,
+				Expires:  ExpirationTime,
 				SameSite: "Strict",
 			})
 			return ftx.Status(fiber.StatusOK).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Successful signing in!"})
@@ -272,8 +262,8 @@ func PostSignup(ftx *fiber.Ctx) error {
 }
 
 func PostLogin(ftx *fiber.Ctx) error {
-	var loginUser User
-	var availUser User
+	var loginUser models.User
+	var availUser models.User
 	var id int
 	if contentType := ftx.Get("Content-Type"); contentType != "application/json" {
 		log.Println("Unsupported Content-Type:", contentType)
@@ -288,7 +278,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 	var createdAt []uint8
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	row := DB.QueryRowContext(ctx, SqlStatements.SelectUser, loginUser.Email)
+	row := database.DB.QueryRowContext(ctx, models.SqlStatements.SelectUser, loginUser.Email)
 	if err := row.Scan(&id, &availUser.Email, &availUser.Password, &createdAt); err != nil {
 		log.Println("Failed to read the row: ", err)
 		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong Email Address! Try Again Please!"})
@@ -299,19 +289,18 @@ func PostLogin(ftx *fiber.Ctx) error {
 		return ftx.JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong Password! Try Again Please!"})
 	}
 
-	// JWT Settings
-	expirationTime := time.Now().Add(100 * time.Minute)
-	tokenString, err := GenerateToken(expirationTime, availUser.Email)
+	// Paseto Settings
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(availUser.Email, Duration)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "jwt",
+		Name:     "paseto",
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  expirationTime,
+		Expires:  ExpirationTime,
 		SameSite: "Strict",
 	})
 
@@ -320,30 +309,30 @@ func PostLogin(ftx *fiber.Ctx) error {
 
 func PostNewBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Budget Data
-	var newBudget NewBudgetReq
+	var newBudget models.NewBudgetReq
 	if err := ftx.BodyParser(&newBudget); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the requested budget JSON"})
 	}
 
-	startDate, endDate, err := ConvertToDate(newBudget.StartDate, newBudget.EndDate)
+	startDate, endDate, err := assets.ConvertToDate(newBudget.StartDate, newBudget.EndDate)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
-	tx, err := DB.Begin()
+	tx, err := database.DB.Begin()
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
@@ -351,11 +340,11 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 	done := make(chan bool, 2)
 	defer close(done)
 
-	addedBudgetId, err := AddNewBudget(ctx, tx, done, &newBudget, startDate, endDate, dbUser.Id)
+	addedBudgetId, err := assets.AddNewBudget(ctx, tx, done, &newBudget, startDate, endDate, dbUser.Id)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the new budget! Try again later"})
 	}
-	AddNewBalance(ctx, tx, done, int(addedBudgetId), dbUser.Id, &newBudget)
+	assets.AddNewBalance(ctx, tx, done, int(addedBudgetId), dbUser.Id, &newBudget)
 
 	select {
 	case <-done:
@@ -372,26 +361,26 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 
 // TODO: Needs to be fixed! with tx *sql.Tx
 func PostExpenses(ftx *fiber.Ctx) error {
-	var dbUser DbUser
+	var dbUser models.DbUser
 	// Authentication Stage
 	// TODO: Needs to be fixed! with tx *sql.Tx
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 	// User ID Extraction
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extracting Budget ID
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
-	var newExpense ExpenseReq
+	var newExpense models.ExpenseReq
 
 	// JSON Parsing Stage
 	if err := ftx.BodyParser(&newExpense); err != nil {
@@ -399,7 +388,7 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	}
 
 	// Start a transaction
-	tx, err := DB.Begin()
+	tx, err := database.DB.Begin()
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
@@ -408,8 +397,8 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	done := make(chan bool, 2)
 	defer close(done)
 
-	AddExpenses(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
-	UpdateSingleBalanceWithExpense(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
+	assets.AddExpenses(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
+	assets.UpdateSingleBalanceWithExpense(ctx, tx, done, budgetId, dbUser.Id, &newExpense)
 
 	select {
 	case <-done:
@@ -432,20 +421,20 @@ DELETE Section
 */
 func DeleteBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	var dbUser DbUser
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	var dbUser models.DbUser
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extract Budget ID
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
@@ -454,7 +443,7 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel2()
 
-	DeleteRequestedBudget(ctx2, ch, budgetId, dbUser.Id)
+	assets.DeleteRequestedBudget(ctx2, ch, budgetId, dbUser.Id)
 
 	select {
 	case result := <-ch:
@@ -476,31 +465,31 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 PATCH Section
 */
 func PatchBudget(ftx *fiber.Ctx) error {
-	var dbUser DbUser
+	var dbUser models.DbUser
 
 	// Authenticate User
-	userEmail, err := ExtractEmailFromClaim(ftx)
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := FindUser(ctx, userEmail, &dbUser); err != nil {
+	if err := assets.FindUser(ctx, userEmail, &dbUser); err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
 	}
 
 	// Extract Request Information
-	budgetId, err := FetchIntOfParamBudgetId(ftx)
+	budgetId, err := assets.FetchIntOfParamBudgetId(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
-	var updateBudgetReq UpdateBudgetReq
+	var updateBudgetReq models.UpdateBudgetReq
 	if err := ftx.BodyParser(&updateBudgetReq); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
 	}
 
 	// Start a transaction
-	tx, err := DB.Begin()
+	tx, err := database.DB.Begin()
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
@@ -509,14 +498,14 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	done := make(chan bool, 2)
 	defer close(done)
 
-	if err := UpdateSingleBudget(ctx, done, tx, budgetId, dbUser.Id, &updateBudgetReq); err != nil {
+	if err := assets.UpdateSingleBudget(ctx, done, tx, budgetId, dbUser.Id, &updateBudgetReq); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to update the budget!"})
 	}
 
-	if updateBudgetReq.BudgetType == BudgetUpdateOptions.Savings {
+	if updateBudgetReq.BudgetType == models.BudgetUpdateOptions.Savings {
 		done <- true
 	} else {
-		UpdateSingleBalanceWithBudget(ctx, tx, done, budgetId, dbUser.Id, &updateBudgetReq)
+		assets.UpdateSingleBalanceWithBudget(ctx, tx, done, budgetId, dbUser.Id, &updateBudgetReq)
 	}
 
 	select {
@@ -531,5 +520,3 @@ func PatchBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Request cancelled or time out!"})
 	}
 }
-
-

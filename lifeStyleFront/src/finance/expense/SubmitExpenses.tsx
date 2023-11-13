@@ -21,7 +21,7 @@ const SubmitExpenses = () => {
   const mounted = useRef(true);
   const [balance, setBalance] = useState<IBalance | null >(null);
 
-  const minMoney = "1.00";
+  const minMoney = "0.01";
   const expenseTypeRef = useRef<HTMLSelectElement>(null);
   const expenseAmountRef = useRef<HTMLInputElement>(null);
   const expenseDescRef = useRef<HTMLInputElement>(null);
@@ -181,6 +181,7 @@ const SubmitExpenses = () => {
                   className="form-control"
                   placeholder="$ Enter the amount for the chosen expense type"
                   min={minMoney}
+                  step={0.01}
                   ref={expenseAmountRef}
                   required
                 />

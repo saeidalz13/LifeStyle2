@@ -8,7 +8,6 @@ const Panels = (props: Authorized) => {
   return (
     <>
       <div className="container text-center">
-
         <div className="row text-center">
           <div className="col">
             <h3>Finance:</h3>
@@ -46,7 +45,7 @@ const Panels = (props: Authorized) => {
               count and happy working out!
             </p>
             {props.isAuth ? (
-              <NavLink to={Urls.fitness}>
+              <NavLink to={Urls.fitness.index}>
                 <button className="btn btn-success home-panels">
                   <img
                     src={fitSVG}

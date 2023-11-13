@@ -69,6 +69,5 @@ CREATE TABLE balance (
     FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX balance_idx (balance_id)
-
 );
 

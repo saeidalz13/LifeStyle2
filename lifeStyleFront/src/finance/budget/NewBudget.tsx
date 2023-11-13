@@ -5,7 +5,8 @@ import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 
 const NewBudget = () => {
-  const minMoney = "1.00";
+  const minMoney = "0.01";
+  const minSave = "0.00"
   const step = "0.01";
   const [serverRes, setServerRes] = useState(false);
   const [possibleErrs, setPossibleErrs] = useState(false);
@@ -129,48 +130,46 @@ const NewBudget = () => {
       <div className="container">
         <div className="row mt-5 mb-2">
           <div className="col">
-            <div className="col">
-              <div style={{ padding: "20px" }} id="new-budget-tips">
-                <h2>Tips:</h2>
-                <p>
-                  Here are some useful links to help you budget you finances
-                  more effecively!
-                </p>
-                <ul>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.budgetingBasics.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.budgetingBasics.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.saveMoneyLowIncome.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.saveMoneyLowIncome.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.manageMoney.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.manageMoney.desc}
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href={Constants.youTubeLinks.eatOutMakesPoor.link}
-                      target="_blank"
-                    >
-                      {Constants.youTubeLinks.eatOutMakesPoor.desc}
-                    </a>
-                  </li>
-                </ul>
-              </div>
+            <div style={{ padding: "20px" }} id="new-budget-tips">
+              <h2>Tips:</h2>
+              <p>
+                Here are some useful links to help you budget you finances more
+                effecively!
+              </p>
+              <ul>
+                <li>
+                  <a
+                    href={Constants.youTubeLinks.budgetingBasics.link}
+                    target="_blank"
+                  >
+                    {Constants.youTubeLinks.budgetingBasics.desc}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={Constants.youTubeLinks.saveMoneyLowIncome.link}
+                    target="_blank"
+                  >
+                    {Constants.youTubeLinks.saveMoneyLowIncome.desc}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={Constants.youTubeLinks.manageMoney.link}
+                    target="_blank"
+                  >
+                    {Constants.youTubeLinks.manageMoney.desc}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={Constants.youTubeLinks.eatOutMakesPoor.link}
+                    target="_blank"
+                  >
+                    {Constants.youTubeLinks.eatOutMakesPoor.desc}
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -209,6 +208,7 @@ const NewBudget = () => {
                 ref={incomeRef}
                 min={minMoney}
                 step={step}
+                // onChange={(e) => changeRemaing(e)}
               />
 
               <label htmlFor="savings">Savings:</label>
@@ -219,8 +219,9 @@ const NewBudget = () => {
                 className="form-control"
                 placeholder="$"
                 ref={savingsRef}
-                min={minMoney}
+                min={minSave}
                 step={step}
+                // onChange={(e) => changeRemainSaving(e)}
               />
 
               <label htmlFor="capital">Capital Budget:</label>

@@ -6,7 +6,7 @@ type TCapitalExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
 type TEatoutExpenses = Array<{
@@ -15,7 +15,7 @@ type TEatoutExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
 type TEntertainmentExpenses = Array<{
@@ -24,11 +24,17 @@ type TEntertainmentExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
+type Expenses = {
+  capitalExpenses: TCapitalExpenses;
+  eatoutExpenses: TEatoutExpenses;
+  entertainmentExpenses: TEntertainmentExpenses;
+};
+
 const ExpensesRows: React.FC<{
-  expenses: any;
+  expenses: Expenses;
   expenseType: string;
 }> = ({ expenses, expenseType }) => {
   const customSpan = 3;

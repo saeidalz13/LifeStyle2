@@ -112,8 +112,7 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <h5>
-                Bugdet ID: {budget.budgetId} (&#128184; Income: ${budget.income}{" "}
-                | Savings: ${budget.savings} )<br />
+              &#128184; Bugdet ID: {budget.budgetId} (Savings: ${budget.savings})<br />
               </h5>
               &#128337;{" "}
               <span style={{ color: "greenyellow" }}>

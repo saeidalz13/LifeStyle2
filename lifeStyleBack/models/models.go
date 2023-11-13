@@ -1,4 +1,4 @@
-package main
+package models
 
 import "time"
 
@@ -42,15 +42,6 @@ type SqlStmts struct {
 	UpdateBalanceEntertWBudg   string
 }
 
-type ApiRes struct {
-	ResType string `json:"responseType"`
-	Msg     string `json:"message"`
-}
-
-type ResTypesStruct struct {
-	Success string
-	Err     string
-}
 type BudgetResp struct {
 	UserId        int16     `json:"userId"`
 	BudgetId      int16     `json:"budgetId"`
@@ -100,7 +91,7 @@ type EntertainmentExpensesRes struct {
 	CreatedAt       time.Time `json:"createdAt"`
 }
 
-func (en *EntertainmentExpensesRes) addCreationDate(rawDate []uint8) error {
+func (en *EntertainmentExpensesRes) AddCreationDate(rawDate []uint8) error {
 	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
 	if err != nil {
 		return err
@@ -118,7 +109,7 @@ type EatoutExpensesRes struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
-func (e *EatoutExpensesRes) addCreationDate(rawDate []uint8) error {
+func (e *EatoutExpensesRes) AddCreationDate(rawDate []uint8) error {
 	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
 	if err != nil {
 		return err
@@ -136,7 +127,7 @@ type CapitalExpensesRes struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
-func (c *CapitalExpensesRes) addCreationDate(rawDate []uint8) error {
+func (c *CapitalExpensesRes) AddCreationDate(rawDate []uint8) error {
 	createdAt, err := time.Parse("2006-01-02 15:04:05", string(rawDate))
 	if err != nil {
 		return err
@@ -224,11 +215,6 @@ var SqlStatements = &SqlStmts{
 	UpdateBalanceCapitalWBudg: "UPDATE balance SET capital = capital + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBalanceEatoutWBudg:  "UPDATE balance SET eatout = eatout + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
 	UpdateBalanceEntertWBudg:  "UPDATE balance SET entertainment = entertainment + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
-}
-
-var ResTypes = &ResTypesStruct{
-	Success: "success",
-	Err:     "error",
 }
 
 var BudgetUpdateOptions = &BudgetUpdateOptionsType{

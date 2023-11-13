@@ -1,6 +1,6 @@
 import Home from "./home/Home";
 import Finance from "./finance/index/Finance";
-import Fitness from "./fitness/Fitness";
+import Fitness from "./fitness/index/Fitness";
 import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
@@ -20,6 +20,8 @@ import Invalid from "./Invalid";
 import { isAuthenticated } from "./loaders/NavbarLoader";
 import { FetchAllBudgets } from "./loaders/ShowBudgetsLoader";
 import ShowAllBudgets from "./finance/budget/ShowAllBudgets";
+import NewPlan from "./fitness/newPlan/NewPlan";
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -55,7 +57,9 @@ const router = createBrowserRouter(
           />
           <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
         </Route>
-        <Route path={Urls.fitness} element={<Fitness />} />
+        <Route path={Urls.fitness.index} element={<Fitness />}>
+          <Route path={Urls.fitness.newPlan} element={<NewPlan />} />
+        </Route>
         <Route path={Urls.invalid} element={<Invalid />} />
       </Route>
     </Route>

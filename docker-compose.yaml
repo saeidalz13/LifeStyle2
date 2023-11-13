@@ -1,0 +1,17 @@
+version: '4.21.1'
+services:
+  frontend:
+    build: ./lifeStyleFront
+    image: lifestylefrontend:1.0
+    container_name: lifestylefrontend_1
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+
+  backend:
+    build: ./lifeStyleBack
+    image: lifestylebackend:1.0
+    container_name: lifestylebackend_1
+    ports:
+      - "1300:1300"

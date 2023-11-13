@@ -1,1 +1,4 @@
 .DS_Store
+archive
+
+az webapp log tail --name lifestylefrontend --resource-group lifestylefrontend_group

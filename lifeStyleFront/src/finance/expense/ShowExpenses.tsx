@@ -22,7 +22,7 @@ type TCapitalExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
 type TEatoutExpenses = Array<{
@@ -31,7 +31,7 @@ type TEatoutExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
 type TEntertainmentExpenses = Array<{
@@ -40,7 +40,7 @@ type TEntertainmentExpenses = Array<{
   userId: number;
   expenses: number;
   desc: string;
-  createdAt: Date;
+  createdAt: string;
 }>;
 
 const ShowExpenses = () => {

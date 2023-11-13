@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"context"
@@ -9,31 +9,25 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 )
 
 /*
 Assets and Auxilary
 */
 func ExtractEmailFromClaim(ftx *fiber.Ctx) (string, error) {
-	jwtCookie := ftx.Cookies("jwt")
-	if jwtCookie == "" {
-		return "", errors.New("Invalid JWT")
+	cookie := ftx.Cookies("paseto")
+	if cookie == "" {
+		return "", errors.New("Invalid Paseto")
 	}
 
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(jwtCookie, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(ENVCONSTS.JwtToken), nil
-	})
+	payload, err := token.PasetoMakerGlobal.VerifyToken(cookie)
 	if err != nil {
-		return "", err
+		return "", errors.New("Invalid Paseto")
 	}
-
-	if !token.Valid {
-		return "", err
-	}
-
-	return claims.Email, nil
+	return payload.Email, nil
 }
 
 func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time, error) {
@@ -58,52 +52,36 @@ func FetchIntOfParamBudgetId(ftx *fiber.Ctx) (int, error) {
 	return budgetId, nil
 }
 
-func GenerateToken(expirationTime time.Time, userEmail string) (string, error) {
-	claims := &Claims{
-		Email: userEmail,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			Issuer:    ENVCONSTS.IpIssuer,
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(ENVCONSTS.JwtToken))
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func ChooseUpdateBudgetSql(updateBudgetReq *UpdateBudgetReq) (string, error) {
+func ChooseUpdateBudgetSql(updateBudgetReq *models.UpdateBudgetReq) (string, error) {
 	if updateBudgetReq.BudgetType == "income" {
-		return SqlStatements.UpdateBudgetIncome, nil
+		return models.SqlStatements.UpdateBudgetIncome, nil
 
 	} else if updateBudgetReq.BudgetType == "savings" {
-		return SqlStatements.UpdateBudgetSavings, nil
+		return models.SqlStatements.UpdateBudgetSavings, nil
 
 	} else if updateBudgetReq.BudgetType == "capital" {
-		return SqlStatements.UpdateBudgetCapital, nil
+		return models.SqlStatements.UpdateBudgetCapital, nil
 
 	} else if updateBudgetReq.BudgetType == "eatout" {
-		return SqlStatements.UpdateBudgetEatout, nil
+		return models.SqlStatements.UpdateBudgetEatout, nil
 
 	} else if updateBudgetReq.BudgetType == "entertainment" {
-		return SqlStatements.UpdateBudgetEntertainment, nil
+		return models.SqlStatements.UpdateBudgetEntertainment, nil
 
 	} else {
 		return "", errors.New("Invalid type of budget!")
 	}
 }
 
-func ChooseUpdateBalanceWExpSql(newExpense *ExpenseReq) (string, error) {
+func ChooseUpdateBalanceWExpSql(newExpense *models.ExpenseReq) (string, error) {
 	if newExpense.ExpenseType == "capital" {
-		return SqlStatements.UpdateBalanceCapital, nil
+		return models.SqlStatements.UpdateBalanceCapital, nil
 
 	} else if newExpense.ExpenseType == "eatout" {
-		return SqlStatements.UpdateBalanceEatout, nil
+		return models.SqlStatements.UpdateBalanceEatout, nil
 
 	} else if newExpense.ExpenseType == "entertainment" {
-		return SqlStatements.UpdateBalanceEntertainment, nil
+		return models.SqlStatements.UpdateBalanceEntertainment, nil
 
 	} else {
 		return "", errors.New("Invalid type of expense!")
@@ -112,26 +90,26 @@ func ChooseUpdateBalanceWExpSql(newExpense *ExpenseReq) (string, error) {
 
 func ChooseUpdateBalanceWBudgSql(balanceType string) (string, error) {
 	if balanceType == "capital" {
-		return SqlStatements.UpdateBalanceCapitalWBudg, nil
+		return models.SqlStatements.UpdateBalanceCapitalWBudg, nil
 	} else if balanceType == "eatout" {
-		return SqlStatements.UpdateBalanceEatoutWBudg, nil
+		return models.SqlStatements.UpdateBalanceEatoutWBudg, nil
 	} else if balanceType == "entertainment" {
-		return SqlStatements.UpdateBalanceEntertWBudg, nil
+		return models.SqlStatements.UpdateBalanceEntertWBudg, nil
 	} else {
 		log.Println("Wrong type of balance type to be updated!")
 		return "", nil
 	}
 }
 
-func ChooseAddExpensesSql(newExpense *ExpenseReq) (string, error) {
+func ChooseAddExpensesSql(newExpense *models.ExpenseReq) (string, error) {
 	if newExpense.ExpenseType == "capital" {
-		return SqlStatements.InsertCapitalExpenses, nil
+		return models.SqlStatements.InsertCapitalExpenses, nil
 
 	} else if newExpense.ExpenseType == "eatout" {
-		return SqlStatements.InsertEatoutExpenses, nil
+		return models.SqlStatements.InsertEatoutExpenses, nil
 
 	} else if newExpense.ExpenseType == "entertainment" {
-		return SqlStatements.InsertEntertainmentExpenses, nil
+		return models.SqlStatements.InsertEntertainmentExpenses, nil
 
 	} else {
 		return "", errors.New("Invalid type of expense!")
@@ -166,7 +144,7 @@ func ConvertStringToFloat(args ...interface{}) ([]float64, error) {
 /*
 Insertions
 */
-func AddNewBalance(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newBudget *NewBudgetReq) {
+func AddNewBalance(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newBudget *models.NewBudgetReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -189,7 +167,7 @@ func AddNewBalance(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, us
 			total += floatResult
 		}
 
-		res, err := tx.ExecContext(ctx, SqlStatements.InsertNewBalance, budgetId, userId, newBudget.Capital, newBudget.Eatout, newBudget.Entertainment, total)
+		res, err := tx.ExecContext(ctx, models.SqlStatements.InsertNewBalance, budgetId, userId, newBudget.Capital, newBudget.Eatout, newBudget.Entertainment, total)
 		if err != nil {
 			log.Println("Failed to add the new balance!", err)
 			tx.Rollback()
@@ -204,7 +182,7 @@ func AddNewBalance(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, us
 	}
 }
 
-func AddExpenses(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newExpense *ExpenseReq) {
+func AddExpenses(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newExpense *models.ExpenseReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled!")
@@ -234,7 +212,7 @@ func AddExpenses(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, user
 	}
 }
 
-func AddUser(newUser User, hashedPassword []byte, ctx context.Context, ch, done chan bool) {
+func AddUser(newUser models.User, hashedPassword []byte, ctx context.Context, ch, done chan bool) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled!")
@@ -242,7 +220,7 @@ func AddUser(newUser User, hashedPassword []byte, ctx context.Context, ch, done 
 		return
 
 	default:
-		ins, err := DB.PrepareContext(ctx, SqlStatements.InsertSignUp)
+		ins, err := database.DB.PrepareContext(ctx, models.SqlStatements.InsertSignUp)
 		if err != nil {
 			log.Println("Error preparing statement:", err)
 			ch <- false
@@ -270,7 +248,7 @@ func AddUser(newUser User, hashedPassword []byte, ctx context.Context, ch, done 
 	}
 }
 
-func AddNewBudget(ctx context.Context, tx *sql.Tx, done chan bool, newBudget *NewBudgetReq, startDate time.Time, endDate time.Time, userId int) (int64, error) {
+func AddNewBudget(ctx context.Context, tx *sql.Tx, done chan bool, newBudget *models.NewBudgetReq, startDate time.Time, endDate time.Time, userId int) (int64, error) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled!")
@@ -279,24 +257,24 @@ func AddNewBudget(ctx context.Context, tx *sql.Tx, done chan bool, newBudget *Ne
 		return -1, errors.New("Process Cancelled")
 
 	default:
-		res, err := tx.ExecContext(ctx, SqlStatements.InsertBudget, userId, startDate, endDate, newBudget.Income, newBudget.Savings, newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
+		res, err := tx.ExecContext(ctx, models.SqlStatements.InsertBudget, userId, startDate, endDate, newBudget.Income, newBudget.Savings, newBudget.Capital, newBudget.Eatout, newBudget.Entertainment)
 		if err != nil {
 			log.Println("Failed to execute the SQL statement", err)
 			done <- false
 			tx.Rollback()
 			return -1, err
 		}
-		addBudgetId, _ := res.LastInsertId()
+		BudgetId, _ := res.LastInsertId()
 		log.Println("Budget added successfully!")
 		done <- true
-		return addBudgetId, nil
+		return BudgetId, nil
 	}
 }
 
 /*
 Updates
 */
-func UpdateSingleBudget(ctx context.Context, done chan bool, tx *sql.Tx, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) error {
+func UpdateSingleBudget(ctx context.Context, done chan bool, tx *sql.Tx, budgetId, userId int, updateBudgetReq *models.UpdateBudgetReq) error {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -323,7 +301,7 @@ func UpdateSingleBudget(ctx context.Context, done chan bool, tx *sql.Tx, budgetI
 	}
 }
 
-func UpdateSingleBalanceWithExpense(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newExpense *ExpenseReq) {
+func UpdateSingleBalanceWithExpense(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, newExpense *models.ExpenseReq) {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -361,7 +339,7 @@ func UpdateSingleBalanceWithExpense(ctx context.Context, tx *sql.Tx, done chan b
 	}
 }
 
-func UpdateSingleBalanceWithBudget(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, updateBudgetReq *UpdateBudgetReq) error {
+func UpdateSingleBalanceWithBudget(ctx context.Context, tx *sql.Tx, done chan bool, budgetId, userId int, updateBudgetReq *models.UpdateBudgetReq) error {
 	select {
 	case <-ctx.Done():
 		log.Println("Cancelled")
@@ -409,7 +387,7 @@ func DeleteRequestedBudget(ctx context.Context, ch chan bool, budgetId int, user
 		return
 	default:
 		// var del *sql.Stmt
-		del, err := DB.PrepareContext(ctx, SqlStatements.DeleteBudget)
+		del, err := database.DB.PrepareContext(ctx, models.SqlStatements.DeleteBudget)
 		if err != nil {
 			log.Println(err)
 			ch <- false
@@ -433,20 +411,20 @@ func DeleteRequestedBudget(ctx context.Context, ch chan bool, budgetId int, user
 /*
 Read/Fetch
 */
-func FindUser(ctx context.Context, userEmail string, dbUser *DbUser) error {
+func FindUser(ctx context.Context, userEmail string, DBUser *models.DbUser) error {
 	var createdAt []uint8
-	row := DB.QueryRowContext(ctx, SqlStatements.SelectUser, userEmail)
-	if err := row.Scan(&dbUser.Id, &dbUser.Email, &dbUser.Password, &createdAt); err != nil {
+	row := database.DB.QueryRowContext(ctx, models.SqlStatements.SelectUser, userEmail)
+	if err := row.Scan(&DBUser.Id, &DBUser.Email, &DBUser.Password, &createdAt); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func FindUserAllBudgets(ctx context.Context, userId int) ([]BudgetResp, error) {
+func FindUserAllBudgets(ctx context.Context, userId int) ([]models.BudgetResp, error) {
 	var createdAt []uint8
 
-	rows, err := DB.QueryContext(ctx, SqlStatements.SelectBudgets, userId)
+	rows, err := database.DB.QueryContext(ctx, models.SqlStatements.SelectBudgets, userId)
 	if err != nil {
 		log.Println("Failed to find the rows of the budgets", err)
 		return nil, err
@@ -454,9 +432,9 @@ func FindUserAllBudgets(ctx context.Context, userId int) ([]BudgetResp, error) {
 	defer rows.Close()
 
 	var startDateUint, endDateUint []uint8
-	var userBudgets []BudgetResp
+	var userBudgets []models.BudgetResp
 	for rows.Next() {
-		var eachBudget BudgetResp
+		var eachBudget models.BudgetResp
 		if err := rows.Scan(
 			&eachBudget.BudgetId, &eachBudget.UserId, &startDateUint,
 			&endDateUint, &eachBudget.Income, &eachBudget.Savings,
@@ -478,33 +456,33 @@ func FindUserAllBudgets(ctx context.Context, userId int) ([]BudgetResp, error) {
 	return userBudgets, nil
 }
 
-func FindUserAllCapitalExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []CapitalExpensesRes) {
-	rows, err := DB.QueryContext(ctx, SqlStatements.SelectCapitalExpenses, budgetId, userId)
+func FindUserAllCapitalExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []models.CapitalExpensesRes) {
+	rows, err := database.DB.QueryContext(ctx, models.SqlStatements.SelectCapitalExpenses, budgetId, userId)
 	if err != nil {
 		log.Println("Failed to find the rows of the capital expenses", err)
 		done <- false
-		ch <- []CapitalExpensesRes{}
+		ch <- []models.CapitalExpensesRes{}
 		return
 	}
 	defer rows.Close()
 
 	var createdAt []uint8
-	var capitalExpenses []CapitalExpensesRes
+	var capitalExpenses []models.CapitalExpensesRes
 	for rows.Next() {
-		var eachCapital CapitalExpensesRes
+		var eachCapital models.CapitalExpensesRes
 		if err := rows.Scan(
 			&eachCapital.CapitalId, &eachCapital.BudgetId, &eachCapital.UserId,
 			&eachCapital.Expenses, &eachCapital.Description, &createdAt,
 		); err != nil {
 			done <- false
-			ch <- []CapitalExpensesRes{}
+			ch <- []models.CapitalExpensesRes{}
 			log.Println("Failed to scan the rows of the capital expenses", err)
 			return
 		}
 
-		if err := eachCapital.addCreationDate(createdAt); err != nil {
+		if err := eachCapital.AddCreationDate(createdAt); err != nil {
 			done <- false
-			ch <- []CapitalExpensesRes{}
+			ch <- []models.CapitalExpensesRes{}
 			log.Println("Failed to finalize the capital expenses data", err)
 			return
 		}
@@ -516,34 +494,34 @@ func FindUserAllCapitalExpenses(ctx context.Context, budgetId, userId int, done 
 	return
 }
 
-func FindUserAllEatoutExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []EatoutExpensesRes) {
-	rows, err := DB.QueryContext(ctx, SqlStatements.SelectEatoutExpenses, budgetId, userId)
+func FindUserAllEatoutExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []models.EatoutExpensesRes) {
+	rows, err := database.DB.QueryContext(ctx, models.SqlStatements.SelectEatoutExpenses, budgetId, userId)
 	if err != nil {
 		log.Println("Failed to find the rows of the eatout expenses", err)
 		done <- false
-		ch <- []EatoutExpensesRes{}
+		ch <- []models.EatoutExpensesRes{}
 		return
 	}
 	defer rows.Close()
 
 	var createdAt []uint8
-	var eatoutExpensesRes []EatoutExpensesRes
+	var eatoutExpensesRes []models.EatoutExpensesRes
 	for rows.Next() {
-		var eachEatout EatoutExpensesRes
+		var eachEatout models.EatoutExpensesRes
 		if err := rows.Scan(
 			&eachEatout.EatoutId, &eachEatout.BudgetId, &eachEatout.UserId,
 			&eachEatout.Expenses, &eachEatout.Description, &createdAt,
 		); err != nil {
 			done <- false
-			ch <- []EatoutExpensesRes{}
+			ch <- []models.EatoutExpensesRes{}
 			log.Println("Failed to scan the rows of the eatout expenses", err)
 			return
 		}
 
-		if err := eachEatout.addCreationDate(createdAt); err != nil {
+		if err := eachEatout.AddCreationDate(createdAt); err != nil {
 			log.Println("Failed to scan the rows of the eatout expenses", err)
 			done <- false
-			ch <- []EatoutExpensesRes{}
+			ch <- []models.EatoutExpensesRes{}
 			return
 		}
 		eatoutExpensesRes = append(eatoutExpensesRes, eachEatout)
@@ -554,33 +532,33 @@ func FindUserAllEatoutExpenses(ctx context.Context, budgetId, userId int, done c
 	return
 }
 
-func FindUserAllEntertainmentExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []EntertainmentExpensesRes) {
-	rows, err := DB.QueryContext(ctx, SqlStatements.SelectEntertainmentExpenses, budgetId, userId)
+func FindUserAllEntertainmentExpenses(ctx context.Context, budgetId, userId int, done chan bool, ch chan []models.EntertainmentExpensesRes) {
+	rows, err := database.DB.QueryContext(ctx, models.SqlStatements.SelectEntertainmentExpenses, budgetId, userId)
 	if err != nil {
 		log.Println("Failed to find the rows of the entertainment expenses", err)
 		done <- false
-		ch <- []EntertainmentExpensesRes{}
+		ch <- []models.EntertainmentExpensesRes{}
 		return
 	}
 
 	var createdAt []uint8
-	var entertainmentExpensesRes []EntertainmentExpensesRes
+	var entertainmentExpensesRes []models.EntertainmentExpensesRes
 	for rows.Next() {
-		var eachEntertainment EntertainmentExpensesRes
+		var eachEntertainment models.EntertainmentExpensesRes
 		if err := rows.Scan(
 			&eachEntertainment.EntertainmentId, &eachEntertainment.BudgetId, &eachEntertainment.UserId,
 			&eachEntertainment.Expenses, &eachEntertainment.Description, &createdAt,
 		); err != nil {
 			log.Println("Failed to scan the rows of entertainment expenses", err)
 			done <- false
-			ch <- []EntertainmentExpensesRes{}
+			ch <- []models.EntertainmentExpensesRes{}
 			return
 		}
 
-		if err := eachEntertainment.addCreationDate(createdAt); err != nil {
+		if err := eachEntertainment.AddCreationDate(createdAt); err != nil {
 			log.Println("Failed to scan the row of entertainment expenses", err)
 			done <- false
-			ch <- []EntertainmentExpensesRes{}
+			ch <- []models.EntertainmentExpensesRes{}
 			return
 		}
 		entertainmentExpensesRes = append(entertainmentExpensesRes, eachEntertainment)
@@ -591,10 +569,10 @@ func FindUserAllEntertainmentExpenses(ctx context.Context, budgetId, userId int,
 	return
 }
 
-func FindSingleBudget(ctx context.Context, eachBudget *BudgetResp, budgetId int, userId int) error {
+func FindSingleBudget(ctx context.Context, eachBudget *models.BudgetResp, budgetId int, userId int) error {
 	var startDateUint, endDateUint []uint8
 	var createdAt []uint8
-	row := DB.QueryRowContext(ctx, SqlStatements.SelectSingleBudget, budgetId, userId)
+	row := database.DB.QueryRowContext(ctx, models.SqlStatements.SelectSingleBudget, budgetId, userId)
 	if err := row.Scan(
 		&eachBudget.BudgetId, &eachBudget.UserId, &startDateUint,
 		&endDateUint, &eachBudget.Income, &eachBudget.Savings, &eachBudget.Capital,
@@ -610,14 +588,14 @@ func FindSingleBudget(ctx context.Context, eachBudget *BudgetResp, budgetId int,
 	return nil
 }
 
-func FindSingleBalance(ctx context.Context, budgetId, userId int, balanceRes *DbBalance) error {
+func FindSingleBalance(ctx context.Context, budgetId, userId int, balanceRes *models.DbBalance) error {
 	select {
 	case <-ctx.Done():
 		log.Println("Process cancelled or time out!")
 		return errors.New("Process cancelled or time out!")
 
 	default:
-		row := DB.QueryRowContext(ctx, SqlStatements.SelectSingleBalance, budgetId, userId)
+		row := database.DB.QueryRowContext(ctx, models.SqlStatements.SelectSingleBalance, budgetId, userId)
 		if err := row.Scan(&balanceRes.BalanceId, &balanceRes.BudgetId, &balanceRes.UserId,
 			&balanceRes.Capital, &balanceRes.Eatout, &balanceRes.Entertainment, &balanceRes.Total, &balanceRes.CreatedAt,
 		); err != nil {

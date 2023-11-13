@@ -24,3 +24,4 @@ bin
 
 # Go workspace file
 go.work
+archive

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log"
@@ -6,6 +6,18 @@ import (
 
 	"github.com/joho/godotenv"
 )
+
+var EnvVars *DotEnvVars
+
+type DotEnvVars struct {
+	FrontEndUrl   string
+	Port          string
+	MySqlPassword string
+	DataBaseName  string
+	JwtToken      string
+	IpIssuer      string
+	PasetoKey     string
+}
 
 type ProjUrls struct {
 	Home              string
@@ -35,35 +47,34 @@ var URLS = &ProjUrls{
 	EachBalance:       "/finance/balance/:id",
 }
 
-type DotEnvVars struct {
-	frontEndUrl   string
-	port          string
-	mySqlPassword string
-	dataBaseName  string
-	JwtToken      string
-	IpIssuer      string
-}
-
-type SqlErrors struct {
-	ErrNoRows string
-}
-
 func GetEnvVars() (*DotEnvVars, error) {
+	// // Set the working directory
+	// err := os.Chdir("/app")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 		return nil, err
 	}
 
 	return &DotEnvVars{
-		frontEndUrl:   os.Getenv("FRONTENDURL"),
-		port:          os.Getenv("PORT"),
-		mySqlPassword: os.Getenv("MYSQLPASSWORD"),
-		dataBaseName:  os.Getenv("DATABASENAME"),
+		FrontEndUrl:   os.Getenv("FRONTENDURL"),
+		Port:          os.Getenv("PORT"),
+		MySqlPassword: os.Getenv("MYSQLPASSWORD"),
+		DataBaseName:  os.Getenv("DATABASENAME"),
 		JwtToken:      os.Getenv("JWTTOKEN"),
 		IpIssuer:      os.Getenv("IPISSUER"),
+		PasetoKey:     os.Getenv("PASETO_KEY"),
 	}, nil
 }
 
-var sqlErrors = &SqlErrors{
-	ErrNoRows: "sql: no rows in result set",
+func init() {
+	envConsts, err := GetEnvVars()
+	if err != nil {
+		log.Println("Failed to retrieve data from dotenv file")
+		panic(err.Error())
+	}
+	EnvVars = envConsts
 }
