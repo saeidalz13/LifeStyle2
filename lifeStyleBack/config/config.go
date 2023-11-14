@@ -12,11 +12,9 @@ var EnvVars *DotEnvVars
 type DotEnvVars struct {
 	FrontEndUrl   string
 	Port          string
-	MySqlPassword string
-	DataBaseName  string
-	JwtToken      string
 	IpIssuer      string
 	PasetoKey     string
+	DbConn        string
 }
 
 type ProjUrls struct {
@@ -62,11 +60,9 @@ func GetEnvVars() (*DotEnvVars, error) {
 	return &DotEnvVars{
 		FrontEndUrl:   os.Getenv("FRONTENDURL"),
 		Port:          os.Getenv("PORT"),
-		MySqlPassword: os.Getenv("MYSQLPASSWORD"),
-		DataBaseName:  os.Getenv("DATABASENAME"),
-		JwtToken:      os.Getenv("JWTTOKEN"),
 		IpIssuer:      os.Getenv("IPISSUER"),
 		PasetoKey:     os.Getenv("PASETO_KEY"),
+		DbConn:        os.Getenv("DB_CONNECTION"),
 	}, nil
 }
 

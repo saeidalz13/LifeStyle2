@@ -10,7 +10,6 @@ helm-charts
 coverage*
 .dockerignore
 .gitignore
-config
 build
 docker-compose.yaml
 Dockerfile

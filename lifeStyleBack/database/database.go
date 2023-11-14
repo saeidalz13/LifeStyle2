@@ -11,7 +11,7 @@ import (
 var DB *sql.DB
 
 func ConnectToDb() {
-	db, err := sql.Open("mysql", "root:"+cn.EnvVars.MySqlPassword+"@tcp(localhost:3306)/"+cn.EnvVars.DataBaseName)
+	db, err := sql.Open("mysql", cn.EnvVars.DbConn)
 	if err != nil {
 		log.Fatalln("Failed to connect to MySQL database")
 	}

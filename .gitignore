@@ -1,4 +1,4 @@
 .DS_Store
 archive
-
+Makefile
 az webapp log tail --name lifestylefrontend --resource-group lifestylefrontend_group

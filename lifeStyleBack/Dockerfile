@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o lifestyle main.go handlers.go middlewares.go models.go routes.go config.go database.go assets.go
+RUN go build -o lifestyle main.go
 
 
 # Run stage
