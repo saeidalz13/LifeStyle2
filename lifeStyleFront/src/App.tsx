@@ -4,10 +4,10 @@ import Fitness from "./fitness/index/Fitness";
 import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
-import SubmitExpenses from "./finance/expense/SubmitExpenses";
-import ShowExpenses from "./finance/expense/ShowExpenses";
-import EachBudget from "./finance/budget/UpdateBudget";
-import BalanceIndex from "./finance/balance/BalanceIndex";
+// import SubmitExpenses from "./finance/expense/SubmitExpenses";
+// import ShowExpenses from "./finance/expense/ShowExpenses";
+// import EachBudget from "./finance/budget/UpdateBudget";
+// import BalanceIndex from "./finance/balance/BalanceIndex";
 import {
   createBrowserRouter,
   Route,
@@ -20,48 +20,45 @@ import Invalid from "./Invalid";
 import { isAuthenticated } from "./loaders/NavbarLoader";
 import { FetchAllBudgets } from "./loaders/ShowBudgetsLoader";
 import ShowAllBudgets from "./finance/budget/ShowAllBudgets";
-import NewPlan from "./fitness/newPlan/NewPlan";
-
+import Index from "./fitness/newPlan/Index";
+import About from "./misc/About";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
       <Route path={Urls.signup} element={<Signup />} />
       <Route path={Urls.login} element={<Login />} />
+
       <Route element={<Navbar />} loader={isAuthenticated} id="navbar">
-        <Route path={Urls.home} element={<Home />} loader={isAuthenticated} />
-        <Route
-          path={Urls.finance.index}
-          element={<Finance />}
-          loader={FetchAllBudgets}
-          id="finance"
-        >
+        <Route path={Urls.home} element={<Home />} />
+
+        {/* Finance */}
+        <Route path={Urls.finance.index} element={<Finance />} id="finance">
           <Route path={Urls.finance.newBudget} element={<NewBudget />} />
-          <Route
-            path={Urls.finance.showBudgets}
-            element={<ShowAllBudgets />}
-            loader={FetchAllBudgets}
-          />
-          <Route
-            path={Urls.finance.showSingleBudget}
-            element={<EachBudget />}
-            loader={FetchAllBudgets}
-          />
-          <Route
-            path={Urls.finance.submitExpensesEach}
-            element={<SubmitExpenses />}
-          />
-          <Route
-            path={Urls.finance.showExpensesEach}
-            element={<ShowExpenses />}
-          />
-          <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
+          <Route path={Urls.finance.showBudgets} loader={FetchAllBudgets} element={<ShowAllBudgets />} />
         </Route>
+
+        {/* Fitness */}
         <Route path={Urls.fitness.index} element={<Fitness />}>
-          <Route path={Urls.fitness.newPlan} element={<NewPlan />} />
+          <Route path={Urls.fitness.newPlan} element={<Index />} />
         </Route>
+
+        <Route path={Urls.about} element={<About />} />
         <Route path={Urls.invalid} element={<Invalid />} />
       </Route>
+
+      {/* 
+        
+        <Route path={Urls.finance.showSingleBudget} element={<EachBudget />} />
+        <Route
+          path={Urls.finance.submitExpensesEach}
+          element={<SubmitExpenses />}
+        />
+        <Route
+          path={Urls.finance.showExpensesEach}
+          element={<ShowExpenses />}
+        />
+        <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} /> */}
     </Route>
   )
 );

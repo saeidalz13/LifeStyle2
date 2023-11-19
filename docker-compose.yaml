@@ -16,6 +16,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=Goldendragon1375
       - MYSQL_DATABASE=lifestyle
+    ports:
+      - "3306:3306"
 
   backend:
     build: 
@@ -26,4 +28,6 @@ services:
       - "1300:1300"
     environment:
       - DB_CONNECTION=root:Goldendragon1375@tcp(mysql:3306)/lifestyle
+    depends_on:
+      - mysql
   

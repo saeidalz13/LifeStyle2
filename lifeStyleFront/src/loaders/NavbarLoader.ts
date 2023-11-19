@@ -11,9 +11,13 @@ export const isAuthenticated = async () => {
     if (result.status === StatusCodes.Ok) {
       return true;
     }
+    
+    console.log("USER not logged in!")
     return false;
+    
   } catch (error) {
     console.log(error);
+    console.log("USER not logged in!")
     return false;
   }
 };

@@ -3,10 +3,17 @@ import Constants from "../Constants";
 import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
+import Urls from "../../Urls";
+import { useRouteLoaderData } from "react-router-dom";
 
 const NewBudget = () => {
-  const minMoney = "0.01";
-  const minSave = "0.00"
+  const isAuth = useRouteLoaderData("navbar") as boolean;
+  if (!isAuth) {
+    location.assign(Urls.login);
+  }
+
+  const minMoney = "0.00";
+  const minSave = "0.00";
   const step = "0.01";
   const [serverRes, setServerRes] = useState(false);
   const [possibleErrs, setPossibleErrs] = useState(false);
@@ -58,8 +65,8 @@ const NewBudget = () => {
       entertainmentRef.current?.value
     ) {
       const dataReq = {
-        startDate: startDateRef.current?.value,
-        endDate: endDateRef.current?.value,
+        start_date: new Date(startDateRef.current?.value),
+        end_date: new Date(endDateRef.current?.value),
         income: incomeRef.current?.value,
         savings: savingsRef.current?.value,
         capital: capitalRef.current?.value,
@@ -96,14 +103,14 @@ const NewBudget = () => {
           const dataRes = await response.json();
           setLoading(false);
 
-          if (response.status === 500) {
+          if (response.status === StatusCodes.InternalServerError) {
             setPossibleErrs(true);
             setPossibleErrsMsg(dataRes.message);
             setTimeout(() => {
               setPossibleErrs(false);
             }, 10000);
             return;
-          } else if (response.status == StatusCodes.Accepted) {
+          } else if (response.status == StatusCodes.Created) {
             setServerRes(true);
             setTimeout(() => {
               setServerRes(false);

@@ -9,12 +9,23 @@ import (
 
 var EnvVars *DotEnvVars
 
+var DevStages = &DevStagesStruct{
+	Development: "dev",
+	Production:  "prod",
+}
+
 type DotEnvVars struct {
-	FrontEndUrl   string
-	Port          string
-	IpIssuer      string
-	PasetoKey     string
-	DbConn        string
+	FrontEndUrl string
+	Port        string
+	PasetoKey   string
+	DbConn      string
+	DbUrl       string
+	DevStage    string
+}
+
+type DevStagesStruct struct {
+	Development string
+	Production  string
 }
 
 type ProjUrls struct {
@@ -46,23 +57,18 @@ var URLS = &ProjUrls{
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
-	// // Set the working directory
-	// err := os.Chdir("/app")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 		return nil, err
 	}
 
 	return &DotEnvVars{
-		FrontEndUrl:   os.Getenv("FRONTENDURL"),
-		Port:          os.Getenv("PORT"),
-		IpIssuer:      os.Getenv("IPISSUER"),
-		PasetoKey:     os.Getenv("PASETO_KEY"),
-		DbConn:        os.Getenv("DB_CONNECTION"),
+		FrontEndUrl: os.Getenv("FRONTENDURL"),
+		Port:        os.Getenv("PORT"),
+		PasetoKey:   os.Getenv("PASETO_KEY"),
+		DbConn:      os.Getenv("DB_CONNECTION"),
+		DbUrl:       os.Getenv("DATABASE_URL"),
+		DevStage:    os.Getenv("DEV_STAGE"),
 	}, nil
 }
 

@@ -12,6 +12,7 @@ FROM alpine:3.18 AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/lifestyle /app
+COPY --from=builder /app/db /app
 COPY .env /app
 
 EXPOSE 1300

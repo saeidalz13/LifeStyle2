@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -11,10 +10,11 @@ import (
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/routes"
-
 )
 
 func main() {
+	// log.Println("FUUUUUUCKKKKKKKKKKKK!!!!!")
+
 	database.ConnectToDb()
 	app := fiber.New()
 	app.Use(logger.New())

@@ -1,14 +1,23 @@
 import { NavLink, Outlet, useLoaderData } from "react-router-dom";
 import Urls from "../Urls";
 import BACKEND_URL from "../Config";
+import StatusCodes from "../StatusCodes";
 
 const Navbar = () => {
   const isAuth = useLoaderData() as boolean;
+
   async function handleSignOut() {
-    await fetch(`${BACKEND_URL}/signout`, {
+    const result = await fetch(`${BACKEND_URL}/signout`, {
       method: "GET",
       credentials: "include",
     });
+
+    if (result.status === StatusCodes.Ok) {
+      location.assign(Urls.home)
+      return
+    }
+
+    console.log("Failed to sign out the user!")
   }
 
   return (

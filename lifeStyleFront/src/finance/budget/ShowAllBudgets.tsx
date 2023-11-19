@@ -1,4 +1,5 @@
 import { useLoaderData, NavLink } from "react-router-dom";
+
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
@@ -7,15 +8,16 @@ import StatusCodes from "../../StatusCodes";
 
 type Budgets = {
   budgets: Array<{
-    budgetId: number;
+    budget_id: number;
+    user_id: number;
+    start_date: string;
+    end_date: string;
     capital: number;
     eatout: number;
-    endDate: string;
     entertainment: number;
     income: number;
     savings: number;
-    startDate: string;
-    userId: number;
+    created_at: string;
   }>;
 };
 
@@ -23,9 +25,9 @@ const ShowAllBudgets = () => {
   const result = useLoaderData() as Budgets;
   const [budgets, setBudgets] = useState(result.budgets);
 
-  async function handleDeleteBudget(budgetId: number) {
+  async function handleDeleteBudget(budget_id: number) {
     const result = await fetch(
-      `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${budgetId}`,
+      `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${budget_id}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -37,9 +39,9 @@ const ShowAllBudgets = () => {
       console.error(deletionValidation.message);
       return;
     } else if (result.status === StatusCodes.Accepted) {
-      console.log(`${budgetId} was deleted successfully!`);
+      console.log(`${budget_id} was deleted successfully!`);
       setBudgets((prevBudgets) =>
-        prevBudgets.filter((budget) => budget.budgetId !== budgetId)
+        prevBudgets.filter((budget) => budget.budget_id !== budget_id)
       );
       return;
     } else if (result.status === StatusCodes.UnAuthorized) {
@@ -57,7 +59,7 @@ const ShowAllBudgets = () => {
         {budgets && budgets.length > 0 ? (
           budgets.map((budget) => (
             <div
-              key={String(budget.budgetId)}
+              key={String(budget.budget_id)}
               className="list-group-item list-group-item p-3"
               style={{
                 borderColor: "rgba(255, 182, 193, 0.4)",
@@ -65,14 +67,14 @@ const ShowAllBudgets = () => {
               }}
             >
               <button
-                onClick={() => handleDeleteBudget(budget.budgetId)}
+                onClick={() => handleDeleteBudget(budget.budget_id)}
                 key={crypto.randomUUID()}
                 className="btn btn-outline-danger mb-3 all-budget-choices"
               >
                 Delete
               </button>
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${budget.budgetId}`}
+                to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${budget.budget_id}`}
               >
                 <button
                   key={crypto.randomUUID()}
@@ -82,7 +84,7 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget.budgetId}`}
+                to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget.budget_id}`}
               >
                 <button
                   key={crypto.randomUUID()}
@@ -92,7 +94,7 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budgetId}`}
+                to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budget_id}`}
               >
                 <button
                   key={crypto.randomUUID()}
@@ -102,7 +104,7 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.balance}/${budget.budgetId}`}
+                to={`${Urls.finance.index}/${Urls.finance.balance}/${budget.budget_id}`}
               >
                 <button
                   key={crypto.randomUUID()}
@@ -112,18 +114,18 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <h5>
-              &#128184; Bugdet ID: {budget.budgetId} (Savings: ${budget.savings})<br />
+              &#128184; Bugdet ID: {budget.budget_id} (Savings: ${budget.savings})<br />
               </h5>
               &#128337;{" "}
               <span style={{ color: "greenyellow" }}>
                 Start Date:{" "}
-                {budget.startDate.substring(0, budget.startDate.length - 10)}{" "}
+                {budget.start_date.substring(0, budget.start_date.length - 10)}{" "}
                 <br />
               </span>
               &#128337;{" "}
               <span style={{ color: "hotpink" }}>
                 End Date:{" "}
-                {budget.endDate.substring(0, budget.endDate.length - 10)} <br />
+                {budget.end_date.substring(0, budget.end_date.length - 10)} <br />
               </span>
             </div>
           ))

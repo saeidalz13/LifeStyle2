@@ -2,20 +2,21 @@ import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
 import BACKEND_URL from "../Config";
-import rl from "../svg/RotatingLoad.svg"
+import rl from "../svg/RotatingLoad.svg";
+import StatusCodes from "../StatusCodes";
 
 const Login = () => {
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const [err, setErr] = useState<boolean>(false)
-  const [errMsg, setErrMsg] = useState<string>("")
-  const [success, setSuccess] = useState<boolean>(false)
-  const [successMsg, setSuccessMsg] = useState<string>("")
+  const [err, setErr] = useState<boolean>(false);
+  const [errMsg, setErrMsg] = useState<string>("");
+  const [success, setSuccess] = useState<boolean>(false);
+  const [successMsg, setSuccessMsg] = useState<string>("");
 
   async function handleSubmitLogin(e: FormEvent) {
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
     const loginUser = {
       email: emailRef.current?.value,
       password: passwordRef.current?.value,
@@ -26,27 +27,39 @@ const Login = () => {
         method: "POST",
         body: JSON.stringify(loginUser),
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
       });
+
       const resp = await result.json();
-
-      if (resp.responseType === "error") {
-        setLoading(false)
-        setErr(true)
-        setErrMsg(resp.message)
-        console.log(resp)
+      if (
+        result.status === StatusCodes.InternalServerError ||
+        result.status === StatusCodes.UnAuthorized
+      ) {
+        setLoading(false);
+        setErr(true);
+        setErrMsg(resp.message);
+        console.log(resp);
         setTimeout(() => {
-          setErr(false)
-        }, 5000)
-
+          setErr(false);
+        }, 5000);
+      } else if (result.status === StatusCodes.Ok) {
+        setSuccess(true);
+        setSuccessMsg(resp.message);
+        location.assign(Urls.home);
       } else {
-        setSuccess(true)
-        setSuccessMsg(resp.message)
-        location.assign(Urls.home)
+        setErr(true);
+        setErrMsg("Unexpected Error Happened, Try again later!");
+        setTimeout(() => {
+          setErr(false);
+        }, 5000);
       }
-      
     } catch (error) {
       console.log(error);
+      setErr(true);
+      setErrMsg("Unexpected Error Happened, Try again later!");
+      setTimeout(() => {
+        setErr(false);
+      }, 5000);
     }
   }
 
@@ -99,8 +112,16 @@ const Login = () => {
           </Link>
         </div>
 
-        {err && <div className="alert alert-warning mt-2 text-center mx-5 p-2">{errMsg}</div>}
-        {success && <div className="alert alert-success mt-2 text-center mx-5 p-2">{successMsg}</div>}
+        {err && (
+          <div className="alert alert-warning mt-2 text-center mx-5 p-2">
+            {errMsg}
+          </div>
+        )}
+        {success && (
+          <div className="alert alert-success mt-2 text-center mx-5 p-2">
+            {successMsg}
+          </div>
+        )}
       </div>
     </>
   );

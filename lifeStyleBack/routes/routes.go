@@ -14,12 +14,11 @@ func Setup(app *fiber.App) {
 	app.Get(cn.URLS.SignOut, h.GetSignOut)
 	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, h.GetAllBudgets)
 	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, h.GetBudget)
-	app.Get(cn.URLS.Finance, m.IsLoggedIn, h.GetFinance)
 	app.Get(cn.URLS.AllExpensesBudget, m.IsLoggedIn, h.GetAllExpenses)
 	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, h.GetSingleBalance)
 
 	// Post
-	app.Post(cn.URLS.SignUp, h.PostSignup)
+	app.Post(cn.URLS.SignUp, h.PostSignUp)
 	app.Post(cn.URLS.Login, h.PostLogin)
 	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, h.PostNewBudget)
 	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, h.PostExpenses)

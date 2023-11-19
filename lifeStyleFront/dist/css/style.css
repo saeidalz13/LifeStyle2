@@ -15,7 +15,7 @@ input {
 }
 
 footer {
- margin: 100px auto 20px;
+    margin: 100px auto 20px;
 }
 
 .form-control:focus {

@@ -1,13 +1,21 @@
 import { NavLink } from "react-router-dom";
 import Panels from "./Panels";
 import Urls from "../../Urls";
+import { useRouteLoaderData } from "react-router-dom";
+
 
 const Finance = () => {
+  const isAuth = useRouteLoaderData("navbar") as boolean;
+  if (!isAuth) {
+    location.assign(Urls.login)
+  }
+
   return (
     <div>
       <NavLink to={Urls.home}>
         <button className="btn btn-secondary px-3 py-2">Home</button>
       </NavLink>
+
       <div className="mt-5 mb-2 mx-4 p-4 page-explanations">
         <h4>Welcome to the finance section!</h4>
         <p>

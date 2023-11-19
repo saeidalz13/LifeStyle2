@@ -3,6 +3,7 @@ import Urls from "../Urls";
 import { Link } from "react-router-dom";
 import BACKEND_URL from "../Config";
 import rl from "../svg/RotatingLoad.svg";
+import StatusCodes from "../StatusCodes";
 
 const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -31,12 +32,12 @@ const Signup = () => {
       });
       const resp = await result.json();
 
-      if (result.status === 200) {
+      if (result.status === StatusCodes.Ok) {
         setSuccess(true)
         setLoading(false);
         location.assign(Urls.home);
         return;
-      } else if (result.status === 401) {
+      } else if (result.status === StatusCodes.UnAuthorized) {
         setErr(true);
         setErrMsg(resp.message);
         setLoading(false);

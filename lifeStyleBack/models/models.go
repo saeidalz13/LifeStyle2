@@ -55,8 +55,8 @@ type BudgetResp struct {
 }
 
 type NewBudgetReq struct {
-	StartDate     string `json:"startDate"`
-	EndDate       string `json:"endDate"`
+	StartDate     time.Time `json:"start_date"`
+	EndDate       time.Time `json:"end_date"`
 	Income        string `json:"income"`
 	Savings       string `json:"savings"`
 	Capital       string `json:"capital"`
@@ -191,7 +191,7 @@ var SqlStatements = &SqlStmts{
 
 	//// INSERT
 	InsertBudget:                "INSERT INTO `budgets` (`user_id`, `start_date`, `end_date`, `income`, `savings`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-	InsertSignUp:                "INSERT INTO `users` (`email`, `password`) VALUES (?, ?);",
+	InsertSignUp:                "INSERT INTO users (email, password) VALUES ($1, $2);",
 	InsertCapitalExpenses:       "INSERT INTO `capital_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
 	InsertEatoutExpenses:        "INSERT INTO `eatout_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
 	InsertEntertainmentExpenses: "INSERT INTO `entertainment_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
