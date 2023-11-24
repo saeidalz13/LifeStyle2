@@ -161,15 +161,16 @@ func (q *Queries) SelectSingleBudget(ctx context.Context, arg SelectSingleBudget
 	return i, err
 }
 
-const updateBudget = `-- name: UpdateBudget :exec
+const updateBudget = `-- name: UpdateBudget :one
 UPDATE budgets 
 SET
-  income = COALESCE(income, 0) + COALESCE($1, 0),
-  savings = COALESCE(savings, 0) + COALESCE($2, 0),
-  capital = COALESCE(capital, 0) + COALESCE($3, 0),
-  eatout = COALESCE(eatout, 0) + COALESCE($4, 0),
-  entertainment = COALESCE(entertainment, 0) + COALESCE($5, 0)
+  income = income + $1,
+  savings = savings + $2,
+  capital = capital + $3,
+  eatout = eatout + $4,
+  entertainment = entertainment + $5
 WHERE budget_id = $6 AND user_id = $7
+RETURNING budget_id, user_id, start_date, end_date, income, savings, capital, eatout, entertainment, created_at
 `
 
 type UpdateBudgetParams struct {
@@ -182,8 +183,8 @@ type UpdateBudgetParams struct {
 	UserID        int64  `json:"user_id"`
 }
 
-func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) error {
-	_, err := q.db.ExecContext(ctx, updateBudget,
+func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error) {
+	row := q.db.QueryRowContext(ctx, updateBudget,
 		arg.Income,
 		arg.Savings,
 		arg.Capital,
@@ -192,5 +193,18 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) erro
 		arg.BudgetID,
 		arg.UserID,
 	)
-	return err
+	var i Budget
+	err := row.Scan(
+		&i.BudgetID,
+		&i.UserID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.Income,
+		&i.Savings,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.CreatedAt,
+	)
+	return i, err
 }

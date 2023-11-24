@@ -45,11 +45,11 @@ const ShowAllBudgets = () => {
       );
       return;
     } else if (result.status === StatusCodes.UnAuthorized) {
-      location.href = Urls.login
-      console.log("Unexpected error happened!")
+      location.href = Urls.login;
+      console.log("Unexpected error happened!");
       return;
     } else {
-      location.href = Urls.login
+      location.href = Urls.login;
     }
   }
 
@@ -84,6 +84,16 @@ const ShowAllBudgets = () => {
                 </button>
               </NavLink>
               <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.balance}/${budget.budget_id}`}
+              >
+                <button
+                  key={crypto.randomUUID()}
+                  className="btn btn-outline-secondary mb-3 ms-1 all-budget-choices"
+                >
+                  Balance
+                </button>
+              </NavLink>
+              <NavLink
                 to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget.budget_id}`}
               >
                 <button
@@ -103,18 +113,9 @@ const ShowAllBudgets = () => {
                   Show Expenses
                 </button>
               </NavLink>
-              <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.balance}/${budget.budget_id}`}
-              >
-                <button
-                  key={crypto.randomUUID()}
-                  className="btn btn-outline-secondary mb-3 ms-1 all-budget-choices"
-                >
-                  Balance
-                </button>
-              </NavLink>
               <h5>
-              &#128184; Bugdet ID: {budget.budget_id} (Savings: ${budget.savings})<br />
+                &#128184; Bugdet ID: {budget.budget_id}
+                <br />
               </h5>
               &#128337;{" "}
               <span style={{ color: "greenyellow" }}>
@@ -125,7 +126,8 @@ const ShowAllBudgets = () => {
               &#128337;{" "}
               <span style={{ color: "hotpink" }}>
                 End Date:{" "}
-                {budget.end_date.substring(0, budget.end_date.length - 10)} <br />
+                {budget.end_date.substring(0, budget.end_date.length - 10)}{" "}
+                <br />
               </span>
             </div>
           ))

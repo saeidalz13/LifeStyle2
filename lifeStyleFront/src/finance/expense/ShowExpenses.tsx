@@ -1,6 +1,7 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
+import { Button } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import ExpensesRows from "./ExpensesRows";
@@ -17,30 +18,39 @@ type TAllExpensesArr = {
 };
 
 type TCapitalExpenses = Array<{
-  capitalId: number;
-  bugdetId: number;
-  userId: number;
-  expenses: number;
-  desc: string;
-  createdAt: string;
+  capital_exp_id: number;
+  budget_id: number;
+  user_id: number;
+  expenses: string;
+  description: string;
+  created_at: {
+    Time: string;
+    Valid: boolean;
+  };
 }>;
 
 type TEatoutExpenses = Array<{
-  eatoutId: number;
-  bugdetId: number;
-  userId: number;
-  expenses: number;
-  desc: string;
-  createdAt: string;
+  eatout_exp_id: number;
+  budget_id: number;
+  user_id: number;
+  expenses: string;
+  description: string;
+  created_at: {
+    Time: string;
+    Valid: boolean;
+  };
 }>;
 
 type TEntertainmentExpenses = Array<{
-  entertainmentId: number;
-  bugdetId: number;
-  userId: number;
-  expenses: number;
-  desc: string;
-  createdAt: string;
+  entertainment_exp_id: number;
+  budget_id: number;
+  user_id: number;
+  expenses: string;
+  description: string;
+  created_at: {
+    Time: string;
+    Valid: boolean;
+  };
 }>;
 
 const ShowExpenses = () => {
@@ -54,47 +64,60 @@ const ShowExpenses = () => {
     if (mount.current) {
       mount.current = false;
       const fetchAllExpenses = async () => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showExpenses}/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-          console.log(result.status);
+        if (id) {
+          try {
+            const result = await fetch(
+              `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showExpenses}/${id}`,
+              {
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify({
+                  budget_id: +id,
+                }),
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json;charset=UTF-8",
+                },
+              }
+            );
+            console.log(result.status);
 
-          if (result.status === StatusCodes.Accepted) {
-            const allExpenses = await result.json();
-            setAllExpenses(allExpenses);
-            return;
-          } else if (result.status === StatusCodes.NoContent) {
-            setAllExpenses("nodata");
-            return
-          } else {
+            if (result.status === StatusCodes.Ok) {
+              const allExpenses = await result.json();
+              setAllExpenses(allExpenses);
+              return;
+            } else if (result.status === StatusCodes.NoContent) {
+              setAllExpenses("nodata");
+              return;
+            } else {
+              setAllExpenses(null);
+              const errResp = await result.json();
+              console.log(errResp.message);
+              return;
+            }
+          } catch (error) {
             setAllExpenses(null);
-            const errResp = await result.json();
-            console.log(errResp.message);
-            return
+            console.log(error);
+            return;
           }
-        } catch (error) {
-          setAllExpenses(null);
-          console.log(error);
-          return
         }
+        console.log("No budget ID!");
+        return;
       };
 
       fetchAllExpenses();
     }
   }, [id]);
-  
+
   if (allExpenses === "nodata") {
-    console.log("REACHED")
+    console.log("REACHED");
     return (
       <>
         <div className="text-center mt-4 mb-3">
           <NavLink to={`/finance/show-all-budgets`}>
-            <button className="btn btn-secondary">Back To Budgets</button>
+            <Button variant="outline-secondary" className="all-budget-choices">
+              Back To Budgets
+            </Button>
           </NavLink>
         </div>
         <h1>No Expenses Yet!</h1>
@@ -107,7 +130,9 @@ const ShowExpenses = () => {
       <>
         <div className="text-center mt-4 mb-3">
           <NavLink to={`/finance/show-all-budgets`}>
-            <button className="btn btn-secondary">Back To Budgets</button>
+            <Button variant="outline-secondary" className="all-budget-choices">
+              Back To Budgets
+            </Button>
           </NavLink>
         </div>
         <div className="mt-5" style={{ textAlign: "center" }}>
@@ -121,12 +146,17 @@ const ShowExpenses = () => {
     <>
       <div className="container">
         <div className="row mx-3">
-          <div className="text-center mt-4 mb-3">
+          <div className="text-center mt-3 mb-3">
             <NavLink to={`/finance/show-all-budgets`}>
-              <button className="btn btn-secondary">Back To Budgets</button>
+              <Button
+                variant="outline-secondary"
+                className="all-budget-choices"
+              >
+                Back To Budgets
+              </Button>
             </NavLink>
           </div>
-          <h2 className="mt-4 mb-3 text-center">Budget {id}</h2>
+          <h2 className="mt-2 mb-3 text-center">Budget {id}</h2>
           <select
             name="expenseType"
             id="expenseType"
@@ -138,7 +168,7 @@ const ShowExpenses = () => {
             <option value="eatout">Eatout</option>
             <option value="entertainment">Entertainment</option>
           </select>
-          <table className="table table-hover mt-4 expenses-table">
+          <table className="table table-hover mt-3 expenses-table">
             <thead>
               <tr>
                 <th

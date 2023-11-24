@@ -1,27 +1,32 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, NavLink } from "react-router-dom";
+import { Button, Row, Col, Form } from "react-bootstrap";
 import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 
 interface IBalance {
-  balanceId: number;
-  budgetId: number;
-  userId: number;
-  capital: number;
-  eatout: number;
-  entertainment: number;
-  total: number;
-  createdAt: Date;
+  balance_id: number;
+  budget_id: number;
+  user_id: number;
+  capital: string;
+  eatout: string;
+  entertainment: string;
+  total: {
+    "String": string;
+    "Valid": boolean
+  };
+  created_at: string;
 }
 
 const SubmitExpenses = () => {
   const { id } = useParams();
   const mounted = useRef(true);
-  const [balance, setBalance] = useState<IBalance | null >(null);
+  const [balance, setBalance] = useState<IBalance | null>(null);
 
   const minMoney = "0.01";
+  const step = "0.01";
   const expenseTypeRef = useRef<HTMLSelectElement>(null);
   const expenseAmountRef = useRef<HTMLInputElement>(null);
   const expenseDescRef = useRef<HTMLInputElement>(null);
@@ -44,7 +49,7 @@ const SubmitExpenses = () => {
           }
         );
 
-        if (result.status === StatusCodes.Accepted) {
+        if (result.status === StatusCodes.Ok) {
           const data = await result.json();
           setBalance(data);
         } else if (result.status === StatusCodes.NoContent) {
@@ -60,7 +65,7 @@ const SubmitExpenses = () => {
 
       fetchSingleBalance();
     }
-  });
+  }, [id, balance]);
 
   async function handleSubmitExpense(e: FormEvent) {
     e.preventDefault();
@@ -68,7 +73,8 @@ const SubmitExpenses = () => {
     if (
       expenseTypeRef.current?.value &&
       expenseAmountRef.current?.value &&
-      expenseDescRef.current?.value
+      expenseDescRef.current?.value &&
+      id
     ) {
       try {
         const result = await fetch(
@@ -77,9 +83,10 @@ const SubmitExpenses = () => {
             method: "POST",
             credentials: "include",
             body: JSON.stringify({
-              expenseType: expenseTypeRef.current?.value,
-              expenseDesc: expenseDescRef.current?.value,
-              expenseAmount: expenseAmountRef.current?.value,
+              budget_id: +id,
+              expense_type: expenseTypeRef.current?.value,
+              expense_desc: expenseDescRef.current?.value,
+              expense_amount: expenseAmountRef.current?.value,
             }),
             headers: {
               Accept: "application/json",
@@ -88,10 +95,10 @@ const SubmitExpenses = () => {
           }
         );
 
-        const data = await result.json();
         setLoading(false);
-
+        
         if (result.status === StatusCodes.InternalServerError) {
+          const data = await result.json();
           setPossibleErrs(true);
           setPossibleErrsMsg(data.message);
           setTimeout(() => {
@@ -105,7 +112,9 @@ const SubmitExpenses = () => {
             setPossibleErrs(false);
           }, 5000);
           return;
-        } else if (result.status === StatusCodes.Created) {
+        } else if (result.status === StatusCodes.Ok) {
+          const updatedBalance = await result.json() as IBalance
+          setBalance(updatedBalance)
           setSuccessRes(true);
           setTimeout(() => {
             setSuccessRes(false);
@@ -141,93 +150,94 @@ const SubmitExpenses = () => {
   }
   return (
     <>
-      <div className="container mb-4">
-        <div className="row">
-          <div className="col">
-            <div className="text-center mt-4 mb-3">
-              <NavLink to={`/finance/show-all-budgets`}>
-                <button className="btn btn-secondary">Back To Budgets</button>
-              </NavLink>
-            </div>
-
-            <form id="form-submit-expenses" onSubmit={handleSubmitExpense}>
-              <legend style={{ textAlign: "center", color: "beige" }}>
-                Budget ID: {id}
-              </legend>
-
-              <div className="mt-4 mx-5 text-center">
-                <div
-                  style={{
-                    fontSize: "18px",
-                    color: "hotpink",
-                  }}
-                  className="mb-2 mt-2"
-                >
-                  <label htmlFor="expenseType">Expense Type:</label>
-                </div>
-                <select
-                  className="form-select"
-                  id="expenseType"
-                  ref={expenseTypeRef}
-                >
-                  <option value="capital">Capital &#x1F449; Left: ${balance ? balance.capital: "" }</option>
-                  <option value="eatout">Eat Out &#x1F449; Left: ${balance ? balance.eatout: "" }</option>
-                  <option value="entertainment">Entertainment &#x1F449; Left: ${balance ? balance.entertainment: "" }</option>
-                </select>
-              </div>
-              <div className="mx-5">
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="$ Enter the amount for the chosen expense type"
-                  min={minMoney}
-                  step={0.01}
-                  ref={expenseAmountRef}
-                  required
-                />
-              </div>
-
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Expense Description"
-                ref={expenseDescRef}
-                required
-              />
-
-              <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <button type="submit" className="btn btn-danger submit-btn">
-                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
-                </button>
-              </div>
-              {possibleErrs && (
-                <div
-                  style={{
-                    textAlign: "center",
-                    color: "red",
-                    marginTop: "5px",
-                  }}
-                >
-                  {possibleErrsMsg}
-                </div>
-              )}
-              {successRes ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    color: "greenyellow",
-                    marginTop: "5px",
-                  }}
-                >
-                  Expense Added Successfully!
-                </div>
-              ) : (
-                ""
-              )}
-            </form>
-          </div>
-        </div>
+      <div className="text-center mt-4 mb-3">
+        <NavLink to={`/finance/show-all-budgets`}>
+          <Button variant="outline-secondary" className="all-budget-choices">
+            Back To Budgets
+          </Button>
+        </NavLink>
       </div>
+
+      <Form
+        id="form-submit-expenses"
+        onSubmit={handleSubmitExpense}
+        className="mx-4"
+      >
+        <Row className="align-items-center mx-1">
+          <legend style={{ textAlign: "center", color: "beige" }}>
+            Budget ID: {id}
+          </legend>
+
+          <Col>
+            <Form.Label style={{ color: "Highlight" }}>Expense Type</Form.Label>
+            <Form.Select className="mb-3" id="expenseType" ref={expenseTypeRef}>
+              <option value="capital">
+                Capital &#x1F449; Left: ${balance ? balance.capital : ""}
+              </option>
+              <option value="eatout">
+                Eat Out &#x1F449; Left: ${balance ? balance.eatout : ""}
+              </option>
+              <option value="entertainment">
+                Entertainment &#x1F449; Left: $
+                {balance ? balance.entertainment : ""}
+              </option>
+            </Form.Select>
+            <Form.Label className="mb-0" style={{ color: "Highlight" }}>
+              Expense Amount
+            </Form.Label>
+            <Form.Control
+              type="number"
+              className="mb-3"
+              placeholder="$"
+              min={minMoney}
+              step={step}
+              ref={expenseAmountRef}
+              required
+            />
+
+            <Form.Label className="mb-0" style={{ color: "Highlight" }}>
+              Expense Type
+            </Form.Label>
+            <Form.Control
+              type="text"
+              className="form-control"
+              placeholder="Expense Description"
+              ref={expenseDescRef}
+              required
+            />
+          </Col>
+
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
+            <button type="submit" className="btn btn-danger submit-btn">
+              {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
+            </button>
+          </div>
+          {possibleErrs && (
+            <div
+              style={{
+                textAlign: "center",
+                color: "red",
+                marginTop: "5px",
+              }}
+            >
+              {possibleErrsMsg}
+            </div>
+          )}
+          {successRes ? (
+            <div
+              style={{
+                textAlign: "center",
+                color: "greenyellow",
+                marginTop: "5px",
+              }}
+            >
+              Expense Added Successfully!
+            </div>
+          ) : (
+            ""
+          )}
+        </Row>
+      </Form>
     </>
   );
 };

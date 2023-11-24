@@ -1,5 +1,7 @@
 class Urls {
   home = "/";
+  profile = "/profile"
+  deleteProf = "/delete-profile"
   signup = "/signup";
   login = "/login";
   signout = "/signout";
@@ -15,6 +17,7 @@ class Urls {
     // Budgets
     newBudget: "create-new-budget",
     showBudgets: "show-all-budgets",
+    updateBudget: "update-budget",
     showSingleBudget: "show-all-budgets/:id",
     // Expenses
     submitExpenses: "submit-expenses",

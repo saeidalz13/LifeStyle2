@@ -2,8 +2,9 @@ import { NavLink, Outlet, useLoaderData } from "react-router-dom";
 import Urls from "../Urls";
 import BACKEND_URL from "../Config";
 import StatusCodes from "../StatusCodes";
+import { Navbar, Nav, Container } from "react-bootstrap";
 
-const Navbar = () => {
+const NavbarComp = () => {
   const isAuth = useLoaderData() as boolean;
 
   async function handleSignOut() {
@@ -13,59 +14,37 @@ const Navbar = () => {
     });
 
     if (result.status === StatusCodes.Ok) {
-      location.assign(Urls.home)
-      return
+      location.assign(Urls.home);
+      return;
     }
 
-    console.log("Failed to sign out the user!")
+    console.log("Failed to sign out the user!");
   }
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-body-tertiary">
-        <div className="container-fluid">
-          <a className="navbar-brand" style={{ fontSize: " 30px" }}>
-            LifeStyle
-          </a>
-
-          <ul className="navbar-nav">
-            <li className="nav-item">
-              <NavLink to={Urls.home}>
-                <div className="nav-link">Home</div>
-              </NavLink>
-            </li>
-
-            {/* Render Sign Out if the user is authenticated */}
+      <Navbar expand="lg" className="bg-body-tertiary">
+        <Container fluid>
+          <NavLink to={Urls.home} style={{ textDecoration: "none" }}>
+            <Navbar.Brand>LifeStyle</Navbar.Brand>
+          </NavLink>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse>
             {isAuth ? (
-              <li className="nav-item">
-                <a className="nav-link active" onClick={handleSignOut} href="#">
-                  Sign Out
-                </a>
-              </li>
+              <Nav className="ms-auto">
+                <Nav.Link href={Urls.profile}>Profile</Nav.Link>
+                <Nav.Link onClick={handleSignOut}>Sign Out</Nav.Link>
+              </Nav>
             ) : (
-              <>
-                {/* Render Log In and Sign Up if the user is not authenticated */}
-                <li className="nav-item">
-                  <NavLink to={Urls.login}>
-                    <div className="nav-link">Log In</div>
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink to={Urls.signup}>
-                    <div className="nav-link">Sign Up</div>
-                  </NavLink>
-                </li>
-              </>
+              <Nav className="ms-auto">
+                <Nav.Link href={Urls.login}>Log In</Nav.Link>
+                <Nav.Link href={Urls.signup}>Sign Up</Nav.Link>
+                <Nav.Link href={Urls.about}>About</Nav.Link>
+              </Nav>
             )}
-
-            <li className="nav-item">
-              <NavLink to={Urls.about}>
-                <div className="nav-link">About</div>
-              </NavLink>
-            </li>
-          </ul>
-        </div>
-      </nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
 
       <main>
         <Outlet />
@@ -78,4 +57,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NavbarComp;

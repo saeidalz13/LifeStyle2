@@ -9,15 +9,23 @@ import (
 )
 
 type Querier interface {
+	AddCapitalExpense(ctx context.Context, arg AddCapitalExpenseParams) error
+	AddEatoutExpense(ctx context.Context, arg AddEatoutExpenseParams) error
+	AddEntertainmentExpense(ctx context.Context, arg AddEntertainmentExpenseParams) error
 	CreateBalance(ctx context.Context, arg CreateBalanceParams) (Balance, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
 	DeleteUser(ctx context.Context, email string) error
+	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
+	FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error)
+	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]Budget, error)
+	SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error)
 	SelectSingleBudget(ctx context.Context, arg SelectSingleBudgetParams) (Budget, error)
 	SelectUser(ctx context.Context, email string) (User, error)
-	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) error
+	UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error)
+	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
 }
 
 var _ Querier = (*Queries)(nil)

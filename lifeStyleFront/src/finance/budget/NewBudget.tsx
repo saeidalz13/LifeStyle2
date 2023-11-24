@@ -100,6 +100,12 @@ const NewBudget = () => {
               body: JSON.stringify(dataReq),
             }
           );
+
+          if (response.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login);
+            return;
+          }
+
           const dataRes = await response.json();
           setLoading(false);
 
@@ -135,7 +141,7 @@ const NewBudget = () => {
   return (
     <>
       <div className="container">
-        <div className="row mt-5 mb-2">
+        <div className="row mt-3 mb-2">
           <div className="col">
             <div style={{ padding: "20px" }} id="new-budget-tips">
               <h2>Tips:</h2>

@@ -47,3 +47,69 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 	)
 	return i, err
 }
+
+const selectBalance = `-- name: SelectBalance :one
+SELECT balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at FROM balance
+WHERE user_id = $1 AND budget_id = $2
+`
+
+type SelectBalanceParams struct {
+	UserID   int64 `json:"user_id"`
+	BudgetID int64 `json:"budget_id"`
+}
+
+func (q *Queries) SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error) {
+	row := q.db.QueryRowContext(ctx, selectBalance, arg.UserID, arg.BudgetID)
+	var i Balance
+	err := row.Scan(
+		&i.BalanceID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.Total,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateBalance = `-- name: UpdateBalance :one
+UPDATE balance 
+SET
+    capital = capital + $1,
+    eatout = eatout + $2,
+    entertainment = entertainment + $3
+WHERE user_id = $4 AND budget_id = $5
+RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+`
+
+type UpdateBalanceParams struct {
+	Capital       string `json:"capital"`
+	Eatout        string `json:"eatout"`
+	Entertainment string `json:"entertainment"`
+	UserID        int64  `json:"user_id"`
+	BudgetID      int64  `json:"budget_id"`
+}
+
+func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error) {
+	row := q.db.QueryRowContext(ctx, updateBalance,
+		arg.Capital,
+		arg.Eatout,
+		arg.Entertainment,
+		arg.UserID,
+		arg.BudgetID,
+	)
+	var i Balance
+	err := row.Scan(
+		&i.BalanceID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.Total,
+		&i.CreatedAt,
+	)
+	return i, err
+}

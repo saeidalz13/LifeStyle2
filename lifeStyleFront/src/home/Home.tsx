@@ -10,7 +10,7 @@ const Home = () => {
 
   return (
     <div>
-      <h1>Discipline your life style...</h1>
+      <h1 className="mt-4">Discipline your life style...</h1>
       <div className="mx-4 mb-3 p-3 page-explanations">
         You and I will be a better person if we discipline our habbits. My plan
         is that we can do this more conveniently! <br />

@@ -1,14 +1,11 @@
 import Urls from "../../Urls";
 import { NavLink, Outlet } from "react-router-dom";
+import BackHomeBtn from "../../misc/BackHomeBtn";
 
 const Fitness = () => {
   return (
     <>
-      <div>
-        <NavLink to={Urls.home}>
-          <button className="btn btn-secondary px-3 py-2">Home</button>
-        </NavLink>
-      </div>
+      <BackHomeBtn />
 
       <h1>Choose The Option</h1>
       <div className="container p-2 text-center">

@@ -1,192 +1,415 @@
-import { NavLink, useParams, useRouteLoaderData } from "react-router-dom";
-
+import { NavLink, useParams } from "react-router-dom";
 import { useState, useEffect, useRef, FormEvent } from "react";
+import {
+  ListGroup,
+  Form,
+  Badge,
+  Button,
+  Container,
+  Col,
+  Row,
+} from "react-bootstrap";
 import rl from "../../svg/RotatingLoad.svg";
 import Urls from "../../Urls";
 import BACKEND_URL from "../../Config";
+import StatusCodes from "../../StatusCodes";
 
 interface SingleBudget {
-  budgetId: number;
-  capital: number;
-  eatout: number;
-  endDate: string;
-  entertainment: number;
-  income: number;
-  savings: number;
-  startDate: string;
-  userId: number;
+  budget_id: number;
+  user_id: number;
+  start_date: Date;
+  end_date: Date;
+  capital: string;
+  eatout: string;
+  entertainment: string;
+  income: string;
+  savings: string;
+  created_at: Date;
 }
 
-type Budgets = {
-  budgets: Array<SingleBudget>;
-};
+interface IBalance {
+  balance_id: number;
+  budget_id: number;
+  user_id: number;
+  capital: string;
+  eatout: string;
+  entertainment: string;
+  total: {
+    String: string;
+    Valid: boolean;
+  };
+  created_at: string;
+}
+
+interface UpdatedResp {
+  updated_budget: SingleBudget;
+  updated_balance: IBalance;
+}
 
 const EachBudget = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [possibleErrs, setPossibleErrs] = useState(false);
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
   const [successRes, setSuccessRes] = useState(false);
 
-  const minMoney = "1.00";
-  const budgetTypeRef = useRef<HTMLSelectElement>(null);
-  const budgetAmountRef = useRef<HTMLInputElement>(null);
+  const minMoney = "0.00";
+  const step = "0.01";
+  // const incomeRef = useRef<HTMLInputElement>(null);
+  const savingsRef = useRef<HTMLInputElement>(null);
+  const capitalRef = useRef<HTMLInputElement>(null);
+  const eatoutRef = useRef<HTMLInputElement>(null);
+  const entertainmentRef = useRef<HTMLInputElement>(null);
 
-  const [thisBudget, setThisBudget] = useState<SingleBudget | null>(null);
-  const result = useRouteLoaderData("finance") as Budgets;
-  const budgets = result.budgets;
+  const [budget, setBudget] = useState<SingleBudget | null>(null);
+  const [balance, setBalance] = useState<IBalance | null>(null);
+
   const { id } = useParams();
+  const mounted = useRef(true);
 
   useEffect(() => {
-    // Find the budget that matches the provided ID
-    for (const budget of budgets) {
-      if (budget.budgetId === Number(id)) {
-        setThisBudget(budget);
-        break;
-      }
+    if (mounted.current) {
+      mounted.current = false;
+      const fetchDataBudget = async (): Promise<SingleBudget | null> => {
+        try {
+          const result = await fetch(
+            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
+          if (result.status === StatusCodes.Ok) {
+            return await result.json();
+          } else {
+            console.log("Failed to fetch the budget data");
+            return null;
+          }
+        } catch (error) {
+          console.log(error);
+          return null;
+        }
+      };
+
+      const fetchDataBalance = async (): Promise<IBalance | null> => {
+        try {
+          const result = await fetch(
+            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${id}`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
+          if (result.status === StatusCodes.Ok) {
+            return await result.json();
+          } else {
+            console.log("Failed to fetch the balance data");
+            return null;
+          }
+        } catch (error) {
+          console.log(error);
+          return null;
+        }
+      };
+
+      // Invoke the fetchDataBudget and fetchDataBalance to set the state
+      const updateBudget = async () => {
+        const budgetData = await fetchDataBudget();
+        setBudget(budgetData);
+      };
+      const updateBalance = async () => {
+        const balanceData = await fetchDataBalance();
+        setBalance(balanceData);
+      };
+
+      updateBudget();
+      updateBalance();
     }
-  }, [id, budgets]);
+  }, [id, budget, balance]);
 
   async function handleUpdateBudget(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setPossibleErrsMsg("");
+    setSuccessRes(false);
 
-    if (budgetTypeRef.current?.value && budgetAmountRef.current?.value) {
-      try {
-        const result = await fetch(
-          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${thisBudget?.budgetId}`,
-          {
-            method: "PATCH",
-            credentials: "include",
-            body: JSON.stringify({
-              budgetType: budgetTypeRef.current?.value,
-              budgetAmount: budgetAmountRef.current?.value,
-            }),
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json;charset=UTF-8",
-            },
-          }
-        );
+    if (id) {
+      if (
+        // incomeRef.current &&
+        savingsRef.current &&
+        capitalRef.current &&
+        eatoutRef.current &&
+        entertainmentRef.current &&
+        budget
+      ) {
+        // let incomeData = incomeRef.current.value;
+        let savingsData = savingsRef.current.value;
+        let capitalData = capitalRef.current.value;
+        let eatoutData = eatoutRef.current.value;
+        let entertainmentData = entertainmentRef.current.value;
 
-        const data = await result.json();
-        setLoading(false);
-        if (data.responseType === "error") {
-          setPossibleErrs(true);
-          setPossibleErrsMsg(data.message);
+        // budget source
+        // const updatedIncome = +budget.income + +incomeData;
+
+        // budget sink
+        const updatedSavings = +budget.savings + +savingsData;
+        const updatedCapital = +budget.capital + +capitalData;
+        const updatedEatout = +budget.eatout + +eatoutData;
+        const updatedEntertainment = +budget.entertainment + +entertainmentData;
+        const updatedBudgets =
+          updatedCapital +
+          updatedSavings +
+          updatedEatout +
+          updatedEntertainment;
+
+        // Check if source is more than sink
+        const resultingIncome = +budget.income - updatedBudgets;
+
+        if (resultingIncome < 0) {
+          setLoading(false);
+          setPossibleErrsMsg(
+            `Your proposed updates surpass the income by ${Math.abs(
+              resultingIncome
+            )}!`
+          );
           setTimeout(() => {
-            setPossibleErrs(false);
-          }, 5000);
-          return;
-        } else {
-          setSuccessRes(true);
-          setTimeout(() => {
-            setSuccessRes(false);
+            setPossibleErrsMsg("");
           }, 5000);
           return;
         }
-      } catch (error) {
-        console.error(error);
+
+        // To prevent the error in golang and postgres!
+        let nullVals = 0;
+        // if (!incomeData) {
+        //   nullVals++;
+        //   incomeData = "0";
+        // }
+        if (!savingsData) {
+          nullVals++;
+          savingsData = "0";
+        }
+        if (!capitalData) {
+          nullVals++;
+          capitalData = "0";
+        }
+        if (!eatoutData) {
+          nullVals++;
+          eatoutData = "0";
+        }
+        if (!entertainmentData) {
+          nullVals++;
+          entertainmentData = "0";
+        }
+
+        if (nullVals === 5) {
+          setLoading(false);
+          setPossibleErrsMsg("You need to set value to at least one field");
+          setTimeout(() => {
+            setPossibleErrsMsg("");
+          }, 5000);
+          return;
+        }
+
+        // Sending data
+        try {
+          const result = await fetch(
+            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.updateBudget}/${budget?.budget_id}`,
+            {
+              method: "PATCH",
+              credentials: "include",
+              body: JSON.stringify({
+                income: "0",
+                savings: savingsData,
+                capital: capitalData,
+                eatout: eatoutData,
+                entertainment: entertainmentData,
+                budget_id: +id,
+              }),
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json;charset=UTF-8",
+              },
+            }
+          );
+
+          setLoading(false);
+
+          if (result.status === StatusCodes.Ok) {
+            const data = (await result.json()) as UpdatedResp;
+            setBudget(data.updated_budget);
+            setBalance(data.updated_balance);
+
+            savingsRef.current.value = "";
+            capitalRef.current.value = "";
+            eatoutRef.current.value = "";
+            entertainmentRef.current.value = "";
+            setSuccessRes(true);
+            setTimeout(() => {
+              setSuccessRes(false);
+            }, 5000);
+            return;
+          }
+
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login);
+            return;
+          }
+
+          if (result.status === StatusCodes.InternalServerError) {
+            const res = await result.json();
+            setPossibleErrsMsg(res.message);
+            setTimeout(() => {
+              setPossibleErrsMsg("");
+            }, 5000);
+            return;
+          }
+
+          setPossibleErrsMsg("Unexpected Error! Try Again Later");
+          setTimeout(() => {
+            setPossibleErrsMsg("");
+          }, 5000);
+          return;
+        } catch (error) {
+          console.error(error);
+          setLoading(false);
+          setPossibleErrsMsg("Unexpected Error! Try Again Later");
+          setTimeout(() => {
+            setPossibleErrsMsg("");
+          }, 5000);
+          return;
+        }
+      } else {
         setLoading(false);
-        setPossibleErrs(true);
-        setPossibleErrsMsg("Unexpected Error!");
+        setPossibleErrsMsg(
+          "Please enter a value for at least one of the fields"
+        );
 
         setTimeout(() => {
-          setPossibleErrs(false);
+          setPossibleErrsMsg("");
         }, 5000);
         return;
       }
-    } else {
-      setLoading(false);
-      setPossibleErrs(true);
-      setPossibleErrsMsg("Please enter a value for the amount");
-
-      setTimeout(() => {
-        setPossibleErrs(false);
-      }, 5000);
-      return;
     }
   }
 
   return (
     <>
-      <div className="container mb-4">
-        <div className="row">
-          <div className="col">
-            <div className="text-center mt-4 mb-3">
+      <Container className="mb-4">
+        <Row>
+          <Col>
+            <Container className="text-center mt-4 mb-3">
               <NavLink to={`/finance/show-all-budgets`}>
-                <button className="btn btn-secondary">Back To Budgets</button>
+                <Button
+                  variant="outline-secondary"
+                  className="all-budget-choices"
+                >
+                  Back To Budgets
+                </Button>
               </NavLink>
-            </div>
-            <form id="form-edit-budget" onSubmit={handleUpdateBudget}>
-              <legend style={{ textAlign: "center", color: "beige" }}>
-                Budget ID: {thisBudget ? thisBudget.budgetId : ""}
-              </legend>
-              <ul className="list-group list-group-flush mx-1 mt-5 text-center">
-                <li className="list-group-item">
-                  {" "}
-                  <span style={{ color: "yellow" }}>Savings</span> (Current
-                  Value
-                  <span style={{ color: "yellow" }}>
-                    {" "}
-                    &#x1F449; ${thisBudget ? thisBudget.savings : ""}
-                  </span>
-                  )
-                </li>
-                <li className="list-group-item">
-                  {" "}
-                  <span style={{ color: "hotpink" }}>Capital</span> (Current
-                  Value
-                  <span style={{ color: "hotpink" }}>
-                    {" "}
-                    &#x1F449; ${thisBudget ? thisBudget.capital : ""}
-                  </span>
-                  )
-                </li>
-                <li className="list-group-item">
-                  {" "}
-                  <span style={{ color: "skyblue" }}>Eat Out</span> (Current
-                  Value
-                  <span style={{ color: "skyblue" }}>
-                    {" "}
-                    &#x1F449; ${thisBudget ? thisBudget.eatout : ""}
-                  </span>
-                  )
-                </li>
-                <li className="list-group-item">
-                  {" "}
-                  <span style={{ color: "orange" }}>Entertainment</span>{" "}
-                  (Current Value
-                  <span style={{ color: "orange" }}>
-                    {" "}
-                    &#x1F449; ${thisBudget ? thisBudget.entertainment : ""}
-                  </span>
-                  )
-                </li>
-              </ul>
+            </Container>
+            <Form
+              id="form-edit-budget"
+              className="text-center"
+              onSubmit={handleUpdateBudget}
+            >
+              <Form.Label style={{ fontSize: "22px" }}>
+                Budget ID: {budget ? budget.budget_id : ""}
+              </Form.Label>
+              <br />
+              <Form.Label>
+                Total Balance: ${balance ? balance.total.String : ""}
+              </Form.Label>
 
-              <div className="mt-4 mx-5 text-center">
-                <select className="form-select" ref={budgetTypeRef}>
-                  <option value="savings">Savings</option>
-                  <option value="capital">Capital Budget</option>
-                  <option value="eatout">Eat Out Budget</option>
-                  <option value="entertainment">Entertainment Budget</option>
-                </select>
-              </div>
-              <div className="mx-5">
-                <input
+              <ListGroup className="text-center mx-4">
+                {/* <ListGroup.Item>
+                  Income
+                  <Badge className="ms-2 border border-success" bg="dark">
+                    Budget &#x1F449; ${budget ? budget.income : ""}
+                  </Badge>
+                </ListGroup.Item>
+
+                <Form.Control
+                  className="mb-3"
                   type="number"
-                  className="form-control"
-                  placeholder="$ Enter amount to add to budget type"
                   min={minMoney}
-                  ref={budgetAmountRef}
-                />
-              </div>
-              <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <button type="submit" className="btn btn-success submit-btn">
-                  {loading ? <img src={rl} alt="Rotation" /> : "Update"}
-                </button>
-              </div>
-              {possibleErrs && (
+                  step={step}
+                  ref={incomeRef}
+                  placeholder="$ Enter amount to add to Income"
+                ></Form.Control> */}
+
+                <ListGroup.Item>
+                  Savings
+                  <Badge className="ms-2 border border-warning" bg="dark">
+                    Current &#x1F449; ${budget ? budget.savings : ""}
+                  </Badge>
+                </ListGroup.Item>
+
+                <Form.Control
+                  className="mb-3"
+                  type="number"
+                  min={minMoney}
+                  step={step}
+                  ref={savingsRef}
+                  placeholder="$ Enter amount to add to Savings"
+                ></Form.Control>
+
+                <ListGroup.Item>
+                  Capital
+                  <Badge className="ms-2 border border-info" bg="dark">
+                    Budgeted: ${budget ? budget.capital : ""} &#x26A1; Balance:
+                    ${balance ? balance.capital : ""}
+                  </Badge>
+                </ListGroup.Item>
+
+                <Form.Control
+                  className="mb-3"
+                  type="number"
+                  min={minMoney}
+                  step={step}
+                  ref={capitalRef}
+                  placeholder="$ Enter amount to add to Capital"
+                ></Form.Control>
+
+                <ListGroup.Item>
+                  Eat Out
+                  <Badge className="ms-2 border border-primary" bg="dark">
+                    Budgeted: ${budget ? budget.eatout : ""} &#x26A1; Balance: $
+                    {balance ? balance.eatout : ""}
+                  </Badge>
+                </ListGroup.Item>
+
+                <Form.Control
+                  className="mb-3"
+                  type="number"
+                  min={minMoney}
+                  step={step}
+                  ref={eatoutRef}
+                  placeholder="$ Enter amount to add to Eat Out"
+                ></Form.Control>
+
+                <ListGroup.Item>
+                  Entertainment
+                  <Badge className="ms-2 border border-danger" bg="dark">
+                    Budgeted: ${budget ? budget.entertainment : ""} &#x26A1; Balance: $
+                    {balance ? balance.entertainment : ""}
+                  </Badge>
+                </ListGroup.Item>
+
+                <Form.Control
+                  className="mb-3"
+                  type="number"
+                  min={minMoney}
+                  step={step}
+                  ref={entertainmentRef}
+                  placeholder="$ Enter amount to add to Entertainment"
+                ></Form.Control>
+              </ListGroup>
+
+              <Button type="submit" variant="success" className="px-4 py-2">
+                {loading ? <img src={rl} alt="Rotation" /> : "Update"}
+              </Button>
+
+              {
                 <div
                   style={{
                     textAlign: "center",
@@ -196,7 +419,7 @@ const EachBudget = () => {
                 >
                   {possibleErrsMsg}
                 </div>
-              )}
+              }
               {successRes ? (
                 <div
                   style={{
@@ -210,10 +433,10 @@ const EachBudget = () => {
               ) : (
                 ""
               )}
-            </form>
-          </div>
-        </div>
-      </div>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 };

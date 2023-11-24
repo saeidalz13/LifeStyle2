@@ -9,9 +9,8 @@ const Panels = () => {
 
   return (
     <>
-      <h1>Choose The Option You Want</h1>
-
-      <div className="container text-center mt-4 p-2">
+      <h1 className="mb-3 mt-4">Choose The Option You Want</h1>
+      <div className="container text-center p-2">
         <div className="row">
           <div className="col">
             <NavLink to={`${Urls.finance.index}/${Urls.finance.newBudget}`}>

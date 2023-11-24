@@ -1,8 +1,7 @@
-import { NavLink } from "react-router-dom";
 import Panels from "./Panels";
 import Urls from "../../Urls";
 import { useRouteLoaderData } from "react-router-dom";
-
+import BackHomeBtn from "../../misc/BackHomeBtn";
 
 const Finance = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -12,11 +11,9 @@ const Finance = () => {
 
   return (
     <div>
-      <NavLink to={Urls.home}>
-        <button className="btn btn-secondary px-3 py-2">Home</button>
-      </NavLink>
+      <BackHomeBtn />
 
-      <div className="mt-5 mb-2 mx-4 p-4 page-explanations">
+      <div className="mt-3 mx-4 p-4 text-center page-explanations">
         <h4>Welcome to the finance section!</h4>
         <p>
           In this section, you can define custom budgets and manage your
@@ -39,6 +36,7 @@ const Finance = () => {
         </ol>
       </div>
       <Panels />
+
     </div>
   );
 };

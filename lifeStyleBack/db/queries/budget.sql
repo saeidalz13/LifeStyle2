@@ -38,12 +38,13 @@ OFFSET $3;
 DELETE FROM budgets WHERE budget_id = $1 AND user_id = $2;
 
 
--- name: UpdateBudget :exec
+-- name: UpdateBudget :one
 UPDATE budgets 
 SET
-  income = COALESCE(income, 0) + COALESCE($1, 0),
-  savings = COALESCE(savings, 0) + COALESCE($2, 0),
-  capital = COALESCE(capital, 0) + COALESCE($3, 0),
-  eatout = COALESCE(eatout, 0) + COALESCE($4, 0),
-  entertainment = COALESCE(entertainment, 0) + COALESCE($5, 0)
-WHERE budget_id = $6 AND user_id = $7;
+  income = income + $1,
+  savings = savings + $2,
+  capital = capital + $3,
+  eatout = eatout + $4,
+  entertainment = entertainment + $5
+WHERE budget_id = $6 AND user_id = $7
+RETURNING *;

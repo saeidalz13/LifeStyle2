@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+)
 
 type User struct {
 	Email    string `json:"email"`
@@ -57,22 +61,24 @@ type BudgetResp struct {
 type NewBudgetReq struct {
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
-	Income        string `json:"income"`
-	Savings       string `json:"savings"`
-	Capital       string `json:"capital"`
-	Eatout        string `json:"eatout"`
-	Entertainment string `json:"entertainment"`
+	Income        string    `json:"income"`
+	Savings       string    `json:"savings"`
+	Capital       string    `json:"capital"`
+	Eatout        string    `json:"eatout"`
+	Entertainment string    `json:"entertainment"`
 }
 
 type UpdateBudgetReq struct {
-	BudgetType   string `json:"budgetType"`
-	BudgetAmount string `json:"budgetAmount"`
+	BudgetType   string `json:"budget_type"`
+	BudgetAmount string `json:"budget_amount"`
+	BudgetId     string `json:"budget_id"`
 }
 
 type ExpenseReq struct {
-	ExpenseType   string `json:"expenseType"`
-	ExpenseDesc   string `json:"expenseDesc"`
-	ExpenseAmount string `json:"expenseAmount"`
+	BudgetID      int64 `json:"budget_id"`
+	ExpenseType   string `json:"expense_type"`
+	ExpenseDesc   string `json:"expense_desc"`
+	ExpenseAmount string `json:"expense_amount"`
 }
 
 type NewExpensesReq struct {
@@ -137,9 +143,9 @@ func (c *CapitalExpensesRes) AddCreationDate(rawDate []uint8) error {
 }
 
 type AllExpensesRes struct {
-	CapitalExpenses       []CapitalExpensesRes       `json:"capitalExpenses"`
-	EatoutExpenses        []EatoutExpensesRes        `json:"eatoutExpenses"`
-	EntertainmentExpenses []EntertainmentExpensesRes `json:"entertainmentExpenses"`
+	CapitalExpenses       []db.CapitalExpense      `json:"capitalExpenses"`
+	EatoutExpenses        []db.EatoutExpense        `json:"eatoutExpenses"`
+	EntertainmentExpenses []db.EntertainmentExpense `json:"entertainmentExpenses"`
 }
 
 type BudgetUpdateOptionsType struct {

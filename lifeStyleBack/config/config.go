@@ -14,6 +14,18 @@ var DevStages = &DevStagesStruct{
 	Production:  "prod",
 }
 
+var ExpenseTypes = ExpenseTypesStruct{
+	Capital:       "capital",
+	Eatout:        "eatout",
+	Entertainment: "entertainment",
+}
+
+type ExpenseTypesStruct struct {
+	Capital       string
+	Eatout        string
+	Entertainment string
+}
+
 type DotEnvVars struct {
 	FrontEndUrl string
 	Port        string
@@ -30,6 +42,7 @@ type DevStagesStruct struct {
 
 type ProjUrls struct {
 	Home              string
+	UpdateBudget      string
 	PostNewBudget     string
 	SignUp            string
 	Login             string
@@ -40,6 +53,8 @@ type ProjUrls struct {
 	EachExpense       string
 	AllExpensesBudget string
 	EachBalance       string
+	Profile           string
+	DeleteProfile     string
 }
 
 var URLS = &ProjUrls{
@@ -54,6 +69,9 @@ var URLS = &ProjUrls{
 	EachExpense:       "/finance/submit-expenses/:id",
 	AllExpensesBudget: "/finance/show-expenses/:id",
 	EachBalance:       "/finance/balance/:id",
+	UpdateBudget:      "/finance/update-budget/:id",
+	Profile:           "/profile",
+	DeleteProfile:     "/delete-profile",
 }
 
 func GetEnvVars() (*DotEnvVars, error) {

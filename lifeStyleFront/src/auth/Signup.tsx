@@ -1,6 +1,7 @@
 import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
+import { Form } from "react-bootstrap";
 import BACKEND_URL from "../Config";
 import rl from "../svg/RotatingLoad.svg";
 import StatusCodes from "../StatusCodes";
@@ -10,13 +11,56 @@ const Signup = () => {
   const passwordRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [err, setErr] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
+  const [passMsg, setPassMsg] = useState<string>("");
+
+  function handlePassword(e: React.ChangeEvent<HTMLInputElement>) {
+    const enteredPass = e.target.value;
+    if (enteredPass.length === 0) {
+      setPassMsg("");
+      return;
+    }
+
+    if (enteredPass.length < 8) {
+      setPassMsg("Password must be more than 8 characters");
+      return;
+    } else if (!/(?=.*[A-Z])(?=.*\d)/.test(enteredPass)) {
+      setPassMsg(
+        "Password must contain at least one upper case letter and one number"
+      );
+      return;
+    }
+
+    setPassMsg("");
+    return;
+  }
 
   async function handleSubmitSignup(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
+
+    if (passwordRef.current?.value) {
+      if (passwordRef.current?.value.length < 8) {
+        setLoading(false);
+        setErrMsg("Password must be at least 8 characters");
+        setTimeout(() => {
+          setErrMsg("");
+        }, 5000);
+        return;
+      }
+
+      if (!/(?=.*[A-Z])(?=.*\d)/.test(passwordRef.current?.value)) {
+        setLoading(false);
+        setErrMsg(
+          "Password must contain at least one upper case letter and one number"
+        );
+        setTimeout(() => {
+          setErrMsg("");
+        }, 5000);
+        return;
+      }
+    }
 
     const newUser = {
       email: emailRef.current?.value,
@@ -33,25 +77,23 @@ const Signup = () => {
       const resp = await result.json();
 
       if (result.status === StatusCodes.Ok) {
-        setSuccess(true)
+        setSuccess(true);
         setLoading(false);
         location.assign(Urls.home);
         return;
       } else if (result.status === StatusCodes.UnAuthorized) {
-        setErr(true);
         setErrMsg(resp.message);
         setLoading(false);
         setTimeout(() => {
-          setErr(false);
+          setErrMsg("");
         }, 5000);
       } else return;
     } catch (error) {
-      setErr(true);
       setLoading(false);
       setErrMsg("Something went wrong");
       console.log(error);
       setTimeout(() => {
-        setErr(false);
+        setErrMsg("");
       }, 5000);
       return;
     }
@@ -72,9 +114,9 @@ const Signup = () => {
                 </button>
               </Link>
             </div>
-            <form onSubmit={handleSubmitSignup}>
+            <Form onSubmit={handleSubmitSignup}>
               <legend>Sign Up!</legend>
-              <input
+              <Form.Control
                 className="form-control"
                 type="text"
                 name="email"
@@ -82,20 +124,22 @@ const Signup = () => {
                 placeholder="Email Address"
                 ref={emailRef}
               />
-              <input
+              <Form.Control
                 className="form-control"
                 type="password"
                 name="password"
                 id="password"
                 placeholder="Password"
                 ref={passwordRef}
+                onChange={handlePassword}
               />
+              <Form.Text className="text-danger">{passMsg}</Form.Text>
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
                   {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
-            </form>
+            </Form>
           </div>
         </div>
         <div style={{ marginTop: "10px", textAlign: "center" }}>
@@ -105,10 +149,12 @@ const Signup = () => {
             </button>
           </Link>
         </div>
-        {err && (
+        {errMsg !== "" ? (
           <div className="alert alert-warning mt-2 text-center mx-5 p-2">
             {errMsg}
           </div>
+        ) : (
+          errMsg
         )}
         {success && (
           <div className="alert alert-success mt-2 text-center mx-5 p-2">
