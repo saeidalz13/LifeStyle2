@@ -44,7 +44,6 @@ type CreateBudgetBalanceTx struct {
 	UserID        int64     `json:"user_id"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
-	Income        string    `json:"income"`
 	Savings       string    `json:"savings"`
 	Capital       string    `json:"capital"`
 	Eatout        string    `json:"eatout"`
@@ -65,7 +64,6 @@ func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetBala
 			UserID:        arg.UserID,
 			StartDate:     arg.StartDate,
 			EndDate:       arg.EndDate,
-			Income:        arg.Income,
 			Savings:       arg.Savings,
 			Capital:       arg.Capital,
 			Eatout:        arg.Eatout,
@@ -97,7 +95,6 @@ func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetBala
 }
 
 type UpdateBudgetBalanceTx struct {
-	Income        string `json:"income"`
 	Savings       string `json:"savings"`
 	Capital       string `json:"capital"`
 	Eatout        string `json:"eatout"`
@@ -113,7 +110,6 @@ func (qw *QWithTx) UpdateBudgetBalance(ctx context.Context, arg UpdateBudgetBala
 	err := qw.execTx(ctx, func(q *Queries) error {
 		var err error
 		updatedBudget, err = q.UpdateBudget(ctx, UpdateBudgetParams{
-			Income:        arg.Income,
 			Savings:       arg.Savings,
 			Capital:       arg.Capital,
 			Eatout:        arg.Eatout,

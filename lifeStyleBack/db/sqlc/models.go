@@ -21,16 +21,16 @@ type Balance struct {
 }
 
 type Budget struct {
-	BudgetID      int64        `json:"budget_id"`
-	UserID        int64        `json:"user_id"`
-	StartDate     time.Time    `json:"start_date"`
-	EndDate       time.Time    `json:"end_date"`
-	Income        string       `json:"income"`
-	Savings       string       `json:"savings"`
-	Capital       string       `json:"capital"`
-	Eatout        string       `json:"eatout"`
-	Entertainment string       `json:"entertainment"`
-	CreatedAt     sql.NullTime `json:"created_at"`
+	BudgetID      int64          `json:"budget_id"`
+	UserID        int64          `json:"user_id"`
+	StartDate     time.Time      `json:"start_date"`
+	EndDate       time.Time      `json:"end_date"`
+	Savings       string         `json:"savings"`
+	Capital       string         `json:"capital"`
+	Eatout        string         `json:"eatout"`
+	Entertainment string         `json:"entertainment"`
+	Income        sql.NullString `json:"income"`
+	CreatedAt     sql.NullTime   `json:"created_at"`
 }
 
 type CapitalExpense struct {

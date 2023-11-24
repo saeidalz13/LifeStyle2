@@ -22,7 +22,7 @@ const NewBudget = () => {
 
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
-  const incomeRef = useRef<HTMLInputElement>(null);
+  // const incomeRef = useRef<HTMLInputElement>(null);
   const savingsRef = useRef<HTMLInputElement>(null);
   const capitalRef = useRef<HTMLInputElement>(null);
   const eatoutRef = useRef<HTMLInputElement>(null);
@@ -36,7 +36,7 @@ const NewBudget = () => {
     const allInputs = [
       startDateRef,
       endDateRef,
-      incomeRef,
+      // incomeRef,
       savingsRef,
       capitalRef,
       eatoutRef,
@@ -58,7 +58,7 @@ const NewBudget = () => {
     if (
       startDateRef.current?.value &&
       endDateRef.current?.value &&
-      incomeRef.current?.value &&
+      // incomeRef.current?.value &&
       savingsRef.current?.value &&
       capitalRef.current?.value &&
       eatoutRef.current?.value &&
@@ -67,26 +67,25 @@ const NewBudget = () => {
       const dataReq = {
         start_date: new Date(startDateRef.current?.value),
         end_date: new Date(endDateRef.current?.value),
-        income: incomeRef.current?.value,
+        // income: incomeRef.current?.value,
         savings: savingsRef.current?.value,
         capital: capitalRef.current?.value,
         eatout: eatoutRef.current?.value,
         entertainment: entertainmentRef.current?.value,
       };
-      const sumOfBudgets =
-        +dataReq.capital +
-        +dataReq.eatout +
-        +dataReq.entertainment +
-        +dataReq.savings;
-      if (sumOfBudgets > +dataReq.income) {
-        setLoading(false);
-        setPossibleErrs(true);
-        setPossibleErrsMsg("Your budgeted amount is more than your income!");
-        setTimeout(() => {
-          setPossibleErrs(false);
-        }, 10000);
-        return;
-      } else {
+      // const sumOfBudgets =
+      //   +dataReq.capital +
+      //   +dataReq.eatout +
+      //   +dataReq.entertainment +
+      //   +dataReq.savings;
+      // if (sumOfBudgets > +dataReq.income) {
+      //   setLoading(false);
+      //   setPossibleErrs(true);
+      //   setPossibleErrsMsg("Your budgeted amount is more than your income!");
+      //   setTimeout(() => {
+      //     setPossibleErrs(false);
+      //   }, 10000);
+      //   return;
         try {
           const response = await fetch(
             `${BACKEND_URL}/finance/create-new-budget`,
@@ -133,9 +132,6 @@ const NewBudget = () => {
           return;
         }
       }
-    } else {
-      return;
-    }
   }
 
   return (
@@ -211,7 +207,7 @@ const NewBudget = () => {
                 ref={endDateRef}
               />
 
-              <label htmlFor="income">Income:</label>
+              {/* <label htmlFor="income">Income:</label>
               <input
                 type="number"
                 name="income"
@@ -222,7 +218,7 @@ const NewBudget = () => {
                 min={minMoney}
                 step={step}
                 // onChange={(e) => changeRemaing(e)}
-              />
+              /> */}
 
               <label htmlFor="savings">Savings:</label>
               <input

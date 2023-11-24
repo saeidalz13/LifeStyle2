@@ -15,7 +15,6 @@ INSERT INTO budgets (
     user_id,
     start_date,
     end_date,
-    income,
     savings,
     capital,
     eatout,
@@ -27,16 +26,14 @@ INSERT INTO budgets (
     $4,
     $5,
     $6,
-    $7,
-    $8
-) RETURNING budget_id, user_id, start_date, end_date, income, savings, capital, eatout, entertainment, created_at
+    $7
+) RETURNING budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
 `
 
 type CreateBudgetParams struct {
 	UserID        int64     `json:"user_id"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
-	Income        string    `json:"income"`
 	Savings       string    `json:"savings"`
 	Capital       string    `json:"capital"`
 	Eatout        string    `json:"eatout"`
@@ -48,7 +45,6 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Bud
 		arg.UserID,
 		arg.StartDate,
 		arg.EndDate,
-		arg.Income,
 		arg.Savings,
 		arg.Capital,
 		arg.Eatout,
@@ -60,11 +56,11 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Bud
 		&i.UserID,
 		&i.StartDate,
 		&i.EndDate,
-		&i.Income,
 		&i.Savings,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
+		&i.Income,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -85,7 +81,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) erro
 }
 
 const selectAllBudgets = `-- name: SelectAllBudgets :many
-SELECT budget_id, user_id, start_date, end_date, income, savings, capital, eatout, entertainment, created_at FROM budgets
+SELECT budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
 WHERE user_id = $1
 ORDER by budget_id
 LIMIT $2
@@ -112,11 +108,11 @@ func (q *Queries) SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsPara
 			&i.UserID,
 			&i.StartDate,
 			&i.EndDate,
-			&i.Income,
 			&i.Savings,
 			&i.Capital,
 			&i.Eatout,
 			&i.Entertainment,
+			&i.Income,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -133,7 +129,7 @@ func (q *Queries) SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsPara
 }
 
 const selectSingleBudget = `-- name: SelectSingleBudget :one
-SELECT budget_id, user_id, start_date, end_date, income, savings, capital, eatout, entertainment, created_at FROM budgets
+SELECT budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
 WHERE budget_id = $1 AND user_id = $2
 LIMIT 1
 `
@@ -151,11 +147,11 @@ func (q *Queries) SelectSingleBudget(ctx context.Context, arg SelectSingleBudget
 		&i.UserID,
 		&i.StartDate,
 		&i.EndDate,
-		&i.Income,
 		&i.Savings,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
+		&i.Income,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -164,17 +160,15 @@ func (q *Queries) SelectSingleBudget(ctx context.Context, arg SelectSingleBudget
 const updateBudget = `-- name: UpdateBudget :one
 UPDATE budgets 
 SET
-  income = income + $1,
-  savings = savings + $2,
-  capital = capital + $3,
-  eatout = eatout + $4,
-  entertainment = entertainment + $5
-WHERE budget_id = $6 AND user_id = $7
-RETURNING budget_id, user_id, start_date, end_date, income, savings, capital, eatout, entertainment, created_at
+  savings = savings + $1,
+  capital = capital + $2,
+  eatout = eatout + $3,
+  entertainment = entertainment + $4
+WHERE budget_id = $5 AND user_id = $6
+RETURNING budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
 `
 
 type UpdateBudgetParams struct {
-	Income        string `json:"income"`
 	Savings       string `json:"savings"`
 	Capital       string `json:"capital"`
 	Eatout        string `json:"eatout"`
@@ -185,7 +179,6 @@ type UpdateBudgetParams struct {
 
 func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error) {
 	row := q.db.QueryRowContext(ctx, updateBudget,
-		arg.Income,
 		arg.Savings,
 		arg.Capital,
 		arg.Eatout,
@@ -199,11 +192,11 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Bud
 		&i.UserID,
 		&i.StartDate,
 		&i.EndDate,
-		&i.Income,
 		&i.Savings,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
+		&i.Income,
 		&i.CreatedAt,
 	)
 	return i, err

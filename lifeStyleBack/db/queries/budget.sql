@@ -3,7 +3,6 @@ INSERT INTO budgets (
     user_id,
     start_date,
     end_date,
-    income,
     savings,
     capital,
     eatout,
@@ -15,8 +14,7 @@ INSERT INTO budgets (
     $4,
     $5,
     $6,
-    $7,
-    $8
+    $7
 ) RETURNING *;
 
 
@@ -41,10 +39,9 @@ DELETE FROM budgets WHERE budget_id = $1 AND user_id = $2;
 -- name: UpdateBudget :one
 UPDATE budgets 
 SET
-  income = income + $1,
-  savings = savings + $2,
-  capital = capital + $3,
-  eatout = eatout + $4,
-  entertainment = entertainment + $5
-WHERE budget_id = $6 AND user_id = $7
+  savings = savings + $1,
+  capital = capital + $2,
+  eatout = eatout + $3,
+  entertainment = entertainment + $4
+WHERE budget_id = $5 AND user_id = $6
 RETURNING *;
