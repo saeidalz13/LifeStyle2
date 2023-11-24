@@ -51,7 +51,6 @@ const EachBudget = () => {
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
   const [successRes, setSuccessRes] = useState(false);
 
-  const minMoney = "0.00";
   const step = "0.01";
   // const incomeRef = useRef<HTMLInputElement>(null);
   const savingsRef = useRef<HTMLInputElement>(null);
@@ -347,7 +346,6 @@ const EachBudget = () => {
                 <Form.Control
                   className="mb-3"
                   type="number"
-                  min={minMoney}
                   step={step}
                   ref={savingsRef}
                   placeholder="$ Enter amount to add to Savings"
@@ -364,7 +362,6 @@ const EachBudget = () => {
                 <Form.Control
                   className="mb-3"
                   type="number"
-                  min={minMoney}
                   step={step}
                   ref={capitalRef}
                   placeholder="$ Enter amount to add to Capital"
@@ -381,7 +378,6 @@ const EachBudget = () => {
                 <Form.Control
                   className="mb-3"
                   type="number"
-                  min={minMoney}
                   step={step}
                   ref={eatoutRef}
                   placeholder="$ Enter amount to add to Eat Out"
@@ -398,7 +394,6 @@ const EachBudget = () => {
                 <Form.Control
                   className="mb-3"
                   type="number"
-                  min={minMoney}
                   step={step}
                   ref={entertainmentRef}
                   placeholder="$ Enter amount to add to Entertainment"
