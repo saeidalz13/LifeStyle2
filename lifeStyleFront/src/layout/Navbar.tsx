@@ -34,6 +34,7 @@ const NavbarComp = () => {
               <Nav className="ms-auto">
                 <Nav.Link href={Urls.profile}>Profile</Nav.Link>
                 <Nav.Link onClick={handleSignOut}>Sign Out</Nav.Link>
+                <Nav.Link href={Urls.about}>About</Nav.Link>
               </Nav>
             ) : (
               <Nav className="ms-auto">

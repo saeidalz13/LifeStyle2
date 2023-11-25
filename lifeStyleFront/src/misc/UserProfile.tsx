@@ -82,18 +82,28 @@ const UserProfile = () => {
   return (
     <>
       <BackHomeBtn />
-      <Container className="mt-4 text-center">
+      <Container className="mt-4">
         <Row className="mb-2">
-          <Col>
-            ID: {user ? user.id : ""} <br />
-            Email: {user ? user.email : ""}
-          </Col>
-        </Row>
+          <Col className="border border-dark all-budget-choices text-center p-3 rounded">
+            <div className="h4 text-light">
+             {user ? user.email : ""}
+            </div>
 
-        <Row>
-          <Col>
-            <Button variant="danger" className="px-5 py-2" onClick={handleShow}>
+            <br />
+            <Button
+              variant="danger"
+              className="px-5 py-2 mb-1"
+              onClick={handleShow}
+            >
               Delete Profile
+            </Button>
+            <br />
+            <Button variant="success" className="px-4 py-2 mb-1">
+              Budgets & Balances
+            </Button>
+            <br />
+            <Button variant="info" className="px-5 py-2 mb-1">
+              Fitness Plans
             </Button>
           </Col>
         </Row>

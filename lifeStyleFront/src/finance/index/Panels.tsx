@@ -1,5 +1,6 @@
 import { useRouteLoaderData, NavLink, Outlet } from "react-router-dom";
 import Urls from "../../Urls";
+import { Container, Row, Col, Button } from "react-bootstrap";
 
 const Panels = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -9,25 +10,35 @@ const Panels = () => {
 
   return (
     <>
-      <h1 className="mb-3 mt-4">Choose The Option You Want</h1>
-      <div className="container text-center p-2">
-        <div className="row">
-          <div className="col">
+      {/* <h1 className="mb-3 mt-4">Choose The Option You Want</h1> */}
+      <Container className="text-center p-2 mt-4">
+        <Row>
+          <Col className="mb-2" lg>
             <NavLink to={`${Urls.finance.index}/${Urls.finance.newBudget}`}>
-              <button className="btn btn-warning budget-panels">
-                New Budget
-              </button>
+              <Button
+                variant="primary"
+                className="budget-panels new-budget-btn"
+              >
+                <span className="bg-light text-dark p-2 rounded h4">
+                  New Budget
+                </span>
+              </Button>
             </NavLink>
-          </div>
-          <div className="col">
+          </Col>
+          <Col lg>
             <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
-              <button className="btn btn-warning budget-panels">
-                All Budgets
-              </button>
+              <Button
+                variant="primary"
+                className="budget-panels all-budgets-btn"
+              >
+                <span className="bg-light text-dark p-2 rounded h4">
+                  All Budgets
+                </span>
+              </Button>
             </NavLink>
-          </div>
-        </div>
-      </div>
+          </Col>
+        </Row>
+      </Container>
 
       <Outlet />
     </>

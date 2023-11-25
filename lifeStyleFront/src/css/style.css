@@ -78,6 +78,27 @@ footer {
     color: lightgray;
 }
 
+.new-budget-btn {
+    cursor: "pointer";
+    background-size: cover;
+    background-image: url("../images/NewBudget.jpg");
+    padding-bottom: 100px;
+    padding-top: 100px;
+    border-width: 2px; 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.all-budgets-btn {
+    cursor: "pointer";
+    background-size: cover;
+    background-image: url("../images/AllBudgets.jpg");
+    padding-bottom: 100px;
+    padding-top: 100px;
+    border-width: 2px;
+    backdrop-filter: blur(8px);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 #new-budget-tips {
     background-color: var(--beige-custom);
     border-radius: 20px;

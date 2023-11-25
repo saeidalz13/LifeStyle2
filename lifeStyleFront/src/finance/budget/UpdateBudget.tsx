@@ -311,31 +311,17 @@ const EachBudget = () => {
               className="text-center"
               onSubmit={handleUpdateBudget}
             >
-              <Form.Label style={{ fontSize: "22px" }}>
-                Budget ID: {budget ? budget.budget_id : ""}
-              </Form.Label>
-              <br />
-              <Form.Label>
-                Total Balance: ${balance ? balance.total.String : ""}
-              </Form.Label>
+              <legend className="text-center text-light">
+                Budget ID: {id}
+              </legend>
+              <legend style={{ textAlign: "center", fontSize: "17px" }}>
+                Total Remaining:{" "}
+                <span className="text-success">
+                  ${balance ? balance.total.String : ""} &#128176;
+                </span>
+              </legend>
 
               <ListGroup className="text-center mx-4">
-                {/* <ListGroup.Item>
-                  Income
-                  <Badge className="ms-2 border border-success" bg="dark">
-                    Budget &#x1F449; ${budget ? budget.income : ""}
-                  </Badge>
-                </ListGroup.Item>
-
-                <Form.Control
-                  className="mb-3"
-                  type="number"
-                  min={minMoney}
-                  step={step}
-                  ref={incomeRef}
-                  placeholder="$ Enter amount to add to Income"
-                ></Form.Control> */}
-
                 <ListGroup.Item>
                   Savings
                   <Badge className="ms-2 border border-warning" bg="dark">
@@ -386,8 +372,8 @@ const EachBudget = () => {
                 <ListGroup.Item>
                   Entertainment
                   <Badge className="ms-2 border border-danger" bg="dark">
-                    Budgeted: ${budget ? budget.entertainment : ""} &#x26A1; Balance: $
-                    {balance ? balance.entertainment : ""}
+                    Budgeted: ${budget ? budget.entertainment : ""} &#x26A1;
+                    Balance: ${balance ? balance.entertainment : ""}
                   </Badge>
                 </ListGroup.Item>
 

@@ -7,7 +7,7 @@ import { Container, Row, Col } from "react-bootstrap";
 const Panels = (props: Authorized) => {
   const heightWidthSVGs = "120px";
   return (
-    <Container className="mt-5">
+    <Container className="mt-4">
       <Row className="m-1">
         <Col className="page-explanations-homepanels mb-3" xl>
           <h3 style={{color:"greenyellow"}}>Finance:</h3>

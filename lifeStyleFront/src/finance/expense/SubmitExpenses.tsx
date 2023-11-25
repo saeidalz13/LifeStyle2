@@ -164,8 +164,11 @@ const SubmitExpenses = () => {
         className="mx-4"
       >
         <Row className="align-items-center mx-1">
-          <legend style={{ textAlign: "center", color: "beige" }}>
+          <legend className="text-center text-light">
             Budget ID: {id}
+          </legend>
+          <legend style={{ textAlign: "center", fontSize:"17px" }}>
+            Total Remaining: <span className="text-success">${balance ? balance.total.String: ""} &#128176;</span> 
           </legend>
 
           <Col>
