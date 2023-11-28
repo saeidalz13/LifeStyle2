@@ -1,7 +1,7 @@
 # Overview
 
 Hosted on fly.io: https://lifestylefrontend.fly.dev \
-__NOTE: Due to the different domain name of the front and backend, IOS will not let you to log in unless to deactivate the "Prevent Cross-Site Tracking" in your settings.__ \
+__NOTE: Due to the different domain name of the front and backend, IOS browsers and Safari on Mac OS will not let you to log in unless to deactivate the "Prevent Cross-Site Tracking" in your settings.__ 
 
 A website to keep track of finance and fitness plans 
 * Backend: Golang
