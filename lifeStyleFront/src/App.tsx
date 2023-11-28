@@ -6,7 +6,7 @@ import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
 import SubmitExpenses from "./finance/expense/SubmitExpenses";
 import ShowExpenses from "./finance/expense/ShowExpenses";
-import EachBudget from "./finance/budget/UpdateBudget";
+import UpdateBudget from "./finance/budget/UpdateBudget";
 import BalanceIndex from "./finance/balance/BalanceIndex";
 import {
   createBrowserRouter,
@@ -24,6 +24,7 @@ import Index from "./fitness/newPlan/Index";
 import About from "./misc/About";
 import UserProfile from "./misc/UserProfile";
 import { fetchUserInfo } from "./loaders/fetchUserProfile";
+import EachBudget from "./finance/budget/EachBudget";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,7 +34,11 @@ const router = createBrowserRouter(
 
       <Route element={<NavbarComp />} loader={isAuthenticated} id="navbar">
         <Route path={Urls.home} element={<Home />} />
-        <Route path={Urls.profile} element={<UserProfile />} loader={fetchUserInfo} />
+        <Route
+          path={Urls.profile}
+          element={<UserProfile />}
+          loader={fetchUserInfo}
+        />
 
         {/* Finance */}
         <Route path={Urls.finance.index} element={<Finance />} id="finance">
@@ -43,10 +48,13 @@ const router = createBrowserRouter(
             loader={FetchAllBudgets}
             element={<ShowAllBudgets />}
           />
+          <Route path={Urls.finance.showSingleBudget} element={<EachBudget />}/>
+
+
           <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
           <Route
-            path={Urls.finance.showSingleBudget}
-            element={<EachBudget />}
+            path={Urls.finance.updateSingleBudget}
+            element={<UpdateBudget />}
           />
           <Route
             path={Urls.finance.submitExpensesEach}

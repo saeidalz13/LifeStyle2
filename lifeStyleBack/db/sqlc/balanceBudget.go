@@ -41,6 +41,7 @@ func (qw *QWithTx) execTx(ctx context.Context, fn func(*Queries) error) error {
 }
 
 type CreateBudgetBalanceTx struct {
+	BudgetName    string    `json:"budget_name"`
 	UserID        int64     `json:"user_id"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
@@ -61,6 +62,7 @@ func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetBala
 	err := qw.execTx(ctx, func(q *Queries) error {
 		var err error
 		createBudget.BudgetRes, err = q.CreateBudget(ctx, CreateBudgetParams{
+			BudgetName:    arg.BudgetName,
 			UserID:        arg.UserID,
 			StartDate:     arg.StartDate,
 			EndDate:       arg.EndDate,
@@ -147,7 +149,7 @@ type AddExpenseUpdateBalanceTx struct {
 	UserID      int64  `json:"user_id"`
 	Expenses    string `json:"expenses"`
 	Description string `json:"description"`
-	ExpenseType  string `json:"budget_type"`
+	ExpenseType string `json:"budget_type"`
 }
 
 func (qw *QWithTx) AddExpenseUpdateBalance(ctx context.Context, arg AddExpenseUpdateBalanceTx) (Balance, error) {

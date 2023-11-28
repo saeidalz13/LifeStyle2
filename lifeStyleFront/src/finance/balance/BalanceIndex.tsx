@@ -5,27 +5,14 @@ import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
 import { Button } from "react-bootstrap";
-
-interface IBalance {
-  balance_id: number;
-  budget_id: number;
-  user_id: number;
-  capital: number;
-  eatout: number;
-  entertainment: number;
-  total: {
-    String: number;
-    Valid: boolean;
-  };
-  created_at: { Time: Date; Valid: boolean };
-}
+import { Balance } from "../../assets/Interfaces";
 
 type TNoBalance = "NoBalance";
 
 const BalanceIndex = () => {
   const { id } = useParams();
   const mounted = useRef(true);
-  const [balance, setBalance] = useState<IBalance | null | TNoBalance>(null);
+  const [balance, setBalance] = useState<Balance | null | TNoBalance>(null);
 
   useEffect(() => {
     if (mounted.current) {

@@ -5,25 +5,13 @@ import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
+import { Balance } from "../../assets/Interfaces";
 
-interface IBalance {
-  balance_id: number;
-  budget_id: number;
-  user_id: number;
-  capital: string;
-  eatout: string;
-  entertainment: string;
-  total: {
-    "String": string;
-    "Valid": boolean
-  };
-  created_at: string;
-}
 
 const SubmitExpenses = () => {
   const { id } = useParams();
   const mounted = useRef(true);
-  const [balance, setBalance] = useState<IBalance | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
 
   const minMoney = "0.01";
   const step = "0.01";
@@ -113,12 +101,16 @@ const SubmitExpenses = () => {
           }, 5000);
           return;
         } else if (result.status === StatusCodes.Ok) {
-          const updatedBalance = await result.json() as IBalance
+          const updatedBalance = await result.json() as Balance
           setBalance(updatedBalance)
           setSuccessRes(true);
           setTimeout(() => {
             setSuccessRes(false);
           }, 5000);
+
+          expenseDescRef.current.value = ""
+          expenseAmountRef.current.value = ""
+
           return;
         } else {
           setPossibleErrs(true);
@@ -151,9 +143,9 @@ const SubmitExpenses = () => {
   return (
     <>
       <div className="text-center mt-4 mb-3">
-        <NavLink to={`/finance/show-all-budgets`}>
+        <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}>
           <Button variant="outline-secondary" className="all-budget-choices">
-            Back To Budgets
+            Back To Budget
           </Button>
         </NavLink>
       </div>
@@ -199,12 +191,12 @@ const SubmitExpenses = () => {
             />
 
             <Form.Label className="mb-0" style={{ color: "Highlight" }}>
-              Expense Type
+              Expense Description
             </Form.Label>
             <Form.Control
               type="text"
               className="form-control"
-              placeholder="Expense Description"
+              placeholder="What did you spend the money for?"
               ref={expenseDescRef}
               required
             />

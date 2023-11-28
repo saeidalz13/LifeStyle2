@@ -23,6 +23,7 @@ type Balance struct {
 type Budget struct {
 	BudgetID      int64          `json:"budget_id"`
 	UserID        int64          `json:"user_id"`
+	BudgetName    string         `json:"budget_name"`
 	StartDate     time.Time      `json:"start_date"`
 	EndDate       time.Time      `json:"end_date"`
 	Savings       string         `json:"savings"`

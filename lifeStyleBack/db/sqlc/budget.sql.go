@@ -12,6 +12,7 @@ import (
 
 const createBudget = `-- name: CreateBudget :one
 INSERT INTO budgets (
+    budget_name,
     user_id,
     start_date,
     end_date,
@@ -20,17 +21,19 @@ INSERT INTO budgets (
     eatout,
     entertainment
 )   VALUES (
-    $1, 
-    $2,
+    $1,
+    $2, 
     $3,
     $4,
     $5,
     $6,
-    $7
-) RETURNING budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
+    $7,
+    $8
+) RETURNING budget_id, user_id, budget_name, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
 `
 
 type CreateBudgetParams struct {
+	BudgetName    string    `json:"budget_name"`
 	UserID        int64     `json:"user_id"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
@@ -42,6 +45,7 @@ type CreateBudgetParams struct {
 
 func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error) {
 	row := q.db.QueryRowContext(ctx, createBudget,
+		arg.BudgetName,
 		arg.UserID,
 		arg.StartDate,
 		arg.EndDate,
@@ -54,6 +58,7 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Bud
 	err := row.Scan(
 		&i.BudgetID,
 		&i.UserID,
+		&i.BudgetName,
 		&i.StartDate,
 		&i.EndDate,
 		&i.Savings,
@@ -81,7 +86,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) erro
 }
 
 const selectAllBudgets = `-- name: SelectAllBudgets :many
-SELECT budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
+SELECT budget_id, user_id, budget_name, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
 WHERE user_id = $1
 ORDER by budget_id
 LIMIT $2
@@ -106,6 +111,7 @@ func (q *Queries) SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsPara
 		if err := rows.Scan(
 			&i.BudgetID,
 			&i.UserID,
+			&i.BudgetName,
 			&i.StartDate,
 			&i.EndDate,
 			&i.Savings,
@@ -129,7 +135,7 @@ func (q *Queries) SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsPara
 }
 
 const selectSingleBudget = `-- name: SelectSingleBudget :one
-SELECT budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
+SELECT budget_id, user_id, budget_name, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
 WHERE budget_id = $1 AND user_id = $2
 LIMIT 1
 `
@@ -145,6 +151,7 @@ func (q *Queries) SelectSingleBudget(ctx context.Context, arg SelectSingleBudget
 	err := row.Scan(
 		&i.BudgetID,
 		&i.UserID,
+		&i.BudgetName,
 		&i.StartDate,
 		&i.EndDate,
 		&i.Savings,
@@ -165,7 +172,7 @@ SET
   eatout = eatout + $3,
   entertainment = entertainment + $4
 WHERE budget_id = $5 AND user_id = $6
-RETURNING budget_id, user_id, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
+RETURNING budget_id, user_id, budget_name, start_date, end_date, savings, capital, eatout, entertainment, income, created_at
 `
 
 type UpdateBudgetParams struct {
@@ -190,6 +197,7 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Bud
 	err := row.Scan(
 		&i.BudgetID,
 		&i.UserID,
+		&i.BudgetName,
 		&i.StartDate,
 		&i.EndDate,
 		&i.Savings,

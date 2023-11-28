@@ -1,5 +1,6 @@
 -- name: CreateBudget :one
 INSERT INTO budgets (
+    budget_name,
     user_id,
     start_date,
     end_date,
@@ -8,13 +9,14 @@ INSERT INTO budgets (
     eatout,
     entertainment
 )   VALUES (
-    $1, 
-    $2,
+    $1,
+    $2, 
     $3,
     $4,
     $5,
     $6,
-    $7
+    $7,
+    $8
 ) RETURNING *;
 
 

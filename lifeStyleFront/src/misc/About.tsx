@@ -1,8 +1,9 @@
 import { Container, Row } from "react-bootstrap";
-
+import BackHomeBtn from "./BackHomeBtn";
 const About = () => {
   return (
     <>
+      <BackHomeBtn />
       <Container className="mt-5 text-center">
         <Row>
           <h2>Our purpose:</h2>

@@ -1,51 +1,11 @@
 import React from "react";
-
-type TCapitalExpenses = Array<{
-  capital_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
-
-type TEatoutExpenses = Array<{
-  eatout_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
-
-type TEntertainmentExpenses = Array<{
-  entertainment_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
-
-type Expenses = {
-  capitalExpenses: TCapitalExpenses;
-  eatoutExpenses: TEatoutExpenses;
-  entertainmentExpenses: TEntertainmentExpenses;
-};
+import { Expenses } from "../../assets/Interfaces";
 
 const ExpensesRows: React.FC<{
   expenses: Expenses;
   expenseType: string;
 }> = ({ expenses, expenseType }) => {
+
   const customSpan = 3;
   if (expenseType === "capital") {
     return (

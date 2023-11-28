@@ -12,6 +12,9 @@ type Querier interface {
 	AddCapitalExpense(ctx context.Context, arg AddCapitalExpenseParams) error
 	AddEatoutExpense(ctx context.Context, arg AddEatoutExpenseParams) error
 	AddEntertainmentExpense(ctx context.Context, arg AddEntertainmentExpenseParams) error
+	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
+	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
+	CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error)
 	CreateBalance(ctx context.Context, arg CreateBalanceParams) (Balance, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)

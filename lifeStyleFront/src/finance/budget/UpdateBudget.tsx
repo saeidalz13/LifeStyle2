@@ -13,37 +13,12 @@ import rl from "../../svg/RotatingLoad.svg";
 import Urls from "../../Urls";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
+import { Budget, Balance } from "../../assets/Interfaces";
 
-interface SingleBudget {
-  budget_id: number;
-  user_id: number;
-  start_date: Date;
-  end_date: Date;
-  capital: string;
-  eatout: string;
-  entertainment: string;
-  income: string;
-  savings: string;
-  created_at: Date;
-}
-
-interface IBalance {
-  balance_id: number;
-  budget_id: number;
-  user_id: number;
-  capital: string;
-  eatout: string;
-  entertainment: string;
-  total: {
-    String: string;
-    Valid: boolean;
-  };
-  created_at: string;
-}
 
 interface UpdatedResp {
-  updated_budget: SingleBudget;
-  updated_balance: IBalance;
+  updated_budget: Budget;
+  updated_balance: Balance;
 }
 
 const EachBudget = () => {
@@ -58,8 +33,8 @@ const EachBudget = () => {
   const eatoutRef = useRef<HTMLInputElement>(null);
   const entertainmentRef = useRef<HTMLInputElement>(null);
 
-  const [budget, setBudget] = useState<SingleBudget | null>(null);
-  const [balance, setBalance] = useState<IBalance | null>(null);
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
 
   const { id } = useParams();
   const mounted = useRef(true);
@@ -67,7 +42,7 @@ const EachBudget = () => {
   useEffect(() => {
     if (mounted.current) {
       mounted.current = false;
-      const fetchDataBudget = async (): Promise<SingleBudget | null> => {
+      const fetchDataBudget = async (): Promise<Budget | null> => {
         try {
           const result = await fetch(
             `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
@@ -89,7 +64,7 @@ const EachBudget = () => {
         }
       };
 
-      const fetchDataBalance = async (): Promise<IBalance | null> => {
+      const fetchDataBalance = async (): Promise<Balance | null> => {
         try {
           const result = await fetch(
             `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${id}`,
@@ -297,12 +272,12 @@ const EachBudget = () => {
         <Row>
           <Col>
             <Container className="text-center mt-4 mb-3">
-              <NavLink to={`/finance/show-all-budgets`}>
+              <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}>
                 <Button
                   variant="outline-secondary"
                   className="all-budget-choices"
                 >
-                  Back To Budgets
+                  Back To Budget
                 </Button>
               </NavLink>
             </Container>

@@ -1,7 +1,7 @@
 class Urls {
   home = "/";
-  profile = "/profile"
-  deleteProf = "/delete-profile"
+  profile = "/profile";
+  deleteProf = "/delete-profile";
   signup = "/signup";
   login = "/login";
   signout = "/signout";
@@ -9,21 +9,27 @@ class Urls {
 
   fitness = {
     index: "/fitness",
-    newPlan: "create-new-plan"
+    newPlan: "create-new-plan",
   };
 
   finance = {
     index: "/finance",
     // Budgets
+    // Backend Fetch
+    updateBudget: "update-budget",
+
+    // Frontend
     newBudget: "create-new-budget",
     showBudgets: "show-all-budgets",
-    updateBudget: "update-budget",
     showSingleBudget: "show-all-budgets/:id",
+    updateSingleBudget: "show-all-budgets/update/:id",
+
     // Expenses
     submitExpenses: "submit-expenses",
     showExpenses: "show-expenses",
     showExpensesEach: "show-expenses/:id",
     submitExpensesEach: "submit-expenses/:id",
+
     // Balance
     balance: "balance",
     eachBalance: "balance/:id",

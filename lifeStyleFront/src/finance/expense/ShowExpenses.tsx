@@ -1,73 +1,47 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import { Button } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import ExpensesRows from "./ExpensesRows";
 import rl from "../../svg/RotatingLoad.svg";
-
-type TNoData = "nodata";
-
-type TAllExpensesArr = {
-  allExpenses: {
-    capitalExpenses: TCapitalExpenses;
-    eatoutExpenses: TEatoutExpenses;
-    entertainmentExpenses: TEntertainmentExpenses;
-  };
-};
-
-type TCapitalExpenses = Array<{
-  capital_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
-
-type TEatoutExpenses = Array<{
-  eatout_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
-
-type TEntertainmentExpenses = Array<{
-  entertainment_exp_id: number;
-  budget_id: number;
-  user_id: number;
-  expenses: string;
-  description: string;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}>;
+import { TAllExpensesArr, TNoExpensesData } from "../../assets/Interfaces";
 
 const ShowExpenses = () => {
   const { id } = useParams<{ id: string }>();
   const mount = useRef(true);
   const [allExpenses, setAllExpenses] = useState<
-    TAllExpensesArr | null | TNoData
+    TAllExpensesArr | null | TNoExpensesData
   >(null);
   const [expenseType, setExpenseType] = useState("capital");
+
+  const [totalCapitalRows, setTotalCapitalRows] = useState(0);
+  const [totalEatoutRows, setTotalEatoutRows] = useState(0);
+  const [totalEntertRows, setTotalEntertRows] = useState(0);
+  // const [pageNumsCapital, setPageNumsCapital] = useState(1);
+  // const [pageNumsEatout, setPageNumsEatout] = useState(1);
+  // const [pageNumsEntert, setPageNumsEntert] = useState(1);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
   useEffect(() => {
     if (mount.current) {
-      mount.current = false;
+      // mount.current = false;
       const fetchAllExpenses = async () => {
         if (id) {
           try {
             const result = await fetch(
-              `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showExpenses}/${id}`,
+              `${BACKEND_URL}${Urls.finance.index}/${
+                Urls.finance.showExpenses
+              }/${id}?limit=10&offset=${(currentPage - 1) * 10}`,
               {
                 method: "POST",
                 credentials: "include",
@@ -83,7 +57,21 @@ const ShowExpenses = () => {
             console.log(result.status);
 
             if (result.status === StatusCodes.Ok) {
-              const allExpenses = await result.json();
+              const allExpenses = (await result.json()) as TAllExpensesArr;
+              setTotalCapitalRows(allExpenses.allExpenses.capital_rows_count);
+              setTotalEatoutRows(allExpenses.allExpenses.eatout_rows_count);
+              setTotalEntertRows(
+                allExpenses.allExpenses.entertainment_rows_count
+              );
+              // setPageNumsCapital(
+              //   Math.ceil(allExpenses.allExpenses.capital_rows_count / 10)
+              // );
+              // setPageNumsEatout(
+              //   Math.ceil(allExpenses.allExpenses.eatout_rows_count / 10)
+              // );
+              // setPageNumsEntert(
+              //   Math.ceil(allExpenses.allExpenses.entertainment_rows_count / 10)
+              // );
               setAllExpenses(allExpenses);
               return;
             } else if (result.status === StatusCodes.NoContent) {
@@ -107,16 +95,17 @@ const ShowExpenses = () => {
 
       fetchAllExpenses();
     }
-  }, [id]);
+  }, [id, currentPage]);
 
   if (allExpenses === "nodata") {
-    console.log("REACHED");
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink to={`/finance/show-all-budgets`}>
+          <NavLink
+            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+          >
             <Button variant="outline-secondary" className="all-budget-choices">
-              Back To Budgets
+              Back To Budget
             </Button>
           </NavLink>
         </div>
@@ -129,9 +118,11 @@ const ShowExpenses = () => {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink to={`/finance/show-all-budgets`}>
+          <NavLink
+            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+          >
             <Button variant="outline-secondary" className="all-budget-choices">
-              Back To Budgets
+              Back To Budget
             </Button>
           </NavLink>
         </div>
@@ -147,12 +138,14 @@ const ShowExpenses = () => {
       <div className="container">
         <div className="row mx-3">
           <div className="text-center mt-3 mb-3">
-            <NavLink to={`/finance/show-all-budgets`}>
+            <NavLink
+              to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+            >
               <Button
                 variant="outline-secondary"
                 className="all-budget-choices"
               >
-                Back To Budgets
+                Back To Budget
               </Button>
             </NavLink>
           </div>
@@ -201,6 +194,64 @@ const ShowExpenses = () => {
           </table>
         </div>
       </div>
+
+      <Container>
+        {expenseType === "capital" ? (
+          <div className="text-center">
+            <Button
+            className="me-1"
+            variant="primary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleNextPage}
+              disabled={currentPage * 10 >= totalCapitalRows}
+            >
+              Next
+            </Button>
+          </div>
+        ) : expenseType === "eatout" ? (
+          <div className="text-center">
+            <Button
+            className="me-1"
+            variant="primary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleNextPage}
+              disabled={currentPage * 10 >= totalEatoutRows}
+            >
+              Next
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center">
+            <Button
+            className="me-1"
+              variant="primary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleNextPage}
+              disabled={currentPage * 10 >= totalEntertRows}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </Container>
     </>
   );
 };

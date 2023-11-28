@@ -17,6 +17,18 @@ import (
 /*
 Assets and Auxilary
 */
+func ConvertStringToInt64(strArr []string) ([]int64, error) {
+	var convertedInts []int64
+	for _, str := range strArr {
+		eachInt, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		convertedInts = append(convertedInts, eachInt)
+	}
+	return convertedInts, nil
+}
+
 func ExtractEmailFromClaim(ftx *fiber.Ctx) (string, error) {
 	cookie := ftx.Cookies("paseto")
 	if cookie == "" {

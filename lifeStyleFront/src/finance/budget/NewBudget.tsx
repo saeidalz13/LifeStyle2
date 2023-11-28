@@ -22,7 +22,7 @@ const NewBudget = () => {
 
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
-  // const incomeRef = useRef<HTMLInputElement>(null);
+  const budgetNameRef = useRef<HTMLInputElement>(null);
   const savingsRef = useRef<HTMLInputElement>(null);
   const capitalRef = useRef<HTMLInputElement>(null);
   const eatoutRef = useRef<HTMLInputElement>(null);
@@ -36,7 +36,7 @@ const NewBudget = () => {
     const allInputs = [
       startDateRef,
       endDateRef,
-      // incomeRef,
+      budgetNameRef,
       savingsRef,
       capitalRef,
       eatoutRef,
@@ -58,80 +58,68 @@ const NewBudget = () => {
     if (
       startDateRef.current?.value &&
       endDateRef.current?.value &&
-      // incomeRef.current?.value &&
+      budgetNameRef.current?.value &&
       savingsRef.current?.value &&
       capitalRef.current?.value &&
       eatoutRef.current?.value &&
       entertainmentRef.current?.value
     ) {
       const dataReq = {
-        start_date: new Date(startDateRef.current?.value),
-        end_date: new Date(endDateRef.current?.value),
-        // income: incomeRef.current?.value,
-        savings: savingsRef.current?.value,
-        capital: capitalRef.current?.value,
-        eatout: eatoutRef.current?.value,
-        entertainment: entertainmentRef.current?.value,
+        budget_name: budgetNameRef.current.value,
+        start_date: new Date(startDateRef.current.value),
+        end_date: new Date(endDateRef.current.value),
+        savings: savingsRef.current.value,
+        capital: capitalRef.current.value,
+        eatout: eatoutRef.current.value,
+        entertainment: entertainmentRef.current.value,
       };
-      // const sumOfBudgets =
-      //   +dataReq.capital +
-      //   +dataReq.eatout +
-      //   +dataReq.entertainment +
-      //   +dataReq.savings;
-      // if (sumOfBudgets > +dataReq.income) {
-      //   setLoading(false);
-      //   setPossibleErrs(true);
-      //   setPossibleErrsMsg("Your budgeted amount is more than your income!");
-      //   setTimeout(() => {
-      //     setPossibleErrs(false);
-      //   }, 10000);
-      //   return;
-        try {
-          const response = await fetch(
-            `${BACKEND_URL}/finance/create-new-budget`,
-            {
-              method: "POST",
-              credentials: "include",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json;charset=UTF-8",
-              },
-              body: JSON.stringify(dataReq),
-            }
-          );
 
-          if (response.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return;
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/finance/create-new-budget`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json;charset=UTF-8",
+            },
+            body: JSON.stringify(dataReq),
           }
+        );
 
-          const dataRes = await response.json();
-          setLoading(false);
-
-          if (response.status === StatusCodes.InternalServerError) {
-            setPossibleErrs(true);
-            setPossibleErrsMsg(dataRes.message);
-            setTimeout(() => {
-              setPossibleErrs(false);
-            }, 10000);
-            return;
-          } else if (response.status == StatusCodes.Created) {
-            setServerRes(true);
-            setTimeout(() => {
-              setServerRes(false);
-            }, 5000);
-          } else {
-            setPossibleErrs(true);
-            setPossibleErrsMsg("Unexpected error happened! Try again please");
-            setTimeout(() => {
-              setPossibleErrs(false);
-            }, 10000);
-          }
-        } catch (error) {
-          console.log(error);
+        if (response.status === StatusCodes.UnAuthorized) {
+          location.assign(Urls.login);
           return;
         }
+
+        const dataRes = await response.json();
+        setLoading(false);
+
+        if (response.status === StatusCodes.InternalServerError) {
+          setPossibleErrs(true);
+          setPossibleErrsMsg(dataRes.message);
+          setTimeout(() => {
+            setPossibleErrs(false);
+          }, 10000);
+          return;
+        } else if (response.status == StatusCodes.Created) {
+          setServerRes(true);
+          setTimeout(() => {
+            setServerRes(false);
+          }, 5000);
+        } else {
+          setPossibleErrs(true);
+          setPossibleErrsMsg("Unexpected error happened! Try again please");
+          setTimeout(() => {
+            setPossibleErrs(false);
+          }, 10000);
+        }
+      } catch (error) {
+        console.log(error);
+        return;
       }
+    }
   }
 
   return (
@@ -207,18 +195,15 @@ const NewBudget = () => {
                 ref={endDateRef}
               />
 
-              {/* <label htmlFor="income">Income:</label>
+              <label htmlFor="budget_name">Budget Name:</label>
               <input
-                type="number"
-                name="income"
-                id="income"
+                type="text"
+                name="budget_name"
+                id="budget_name"
                 className="form-control"
-                placeholder="$"
-                ref={incomeRef}
-                min={minMoney}
-                step={step}
-                // onChange={(e) => changeRemaing(e)}
-              /> */}
+                placeholder="Name For Budget (Must Be Unique)"
+                ref={budgetNameRef}
+              />
 
               <label htmlFor="savings">Savings:</label>
               <input
@@ -230,7 +215,6 @@ const NewBudget = () => {
                 ref={savingsRef}
                 min={minSave}
                 step={step}
-                // onChange={(e) => changeRemainSaving(e)}
               />
 
               <label htmlFor="capital">Capital Budget:</label>

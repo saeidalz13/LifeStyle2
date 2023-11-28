@@ -149,70 +149,93 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 	if !ok || budgetID == -1 {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
 	}
+	limit := ftx.Query("limit", "10")
+	offset := ftx.Query("offset", "default_offset_value")
 
-	done := make(chan bool, 3)
-	defer close(done)
-	chCap := make(chan []models.CapitalExpensesRes, 1)
-	defer close(chCap)
-	chEat := make(chan []models.EatoutExpensesRes, 1)
-	defer close(chEat)
-	chEnter := make(chan []models.EntertainmentExpensesRes, 1)
-	defer close(chEnter)
+	convertedInts, err := assets.ConvertStringToInt64([]string{limit, offset})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch data"})
+	}
 
+	// done := make(chan bool, 3)
+	// defer close(done)
+	// chCap := make(chan []models.CapitalExpensesRes, 1)
+	// defer close(chCap)
+	// chEat := make(chan []models.EatoutExpensesRes, 1)
+	// defer close(chEat)
+	// chEnter := make(chan []models.EntertainmentExpensesRes, 1)
+	// defer close(chEnter)
+
+	// Capital Expenses
 	capitalExpenses, err := q.FetchAllCapitalExpenses(ctx, db.FetchAllCapitalExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
+		Limit:    int32(convertedInts[0]),
+		Offset:   int32(convertedInts[1]),
 	})
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
 	}
+	capitalRowsCount, err := q.CountCapitalRows(ctx, db.CountCapitalRowsParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
+	}
 
+	// Eatout Expenses
 	eatoutExpenses, err := q.FetchAllEatoutExpenses(ctx, db.FetchAllEatoutExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
+		Limit:    int32(convertedInts[0]),
+		Offset:   int32(convertedInts[1]),
 	})
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
 	}
-	entertainmentExpenses, err := q.FetchAllEntertainmentExpenses(ctx, db.FetchAllEntertainmentExpensesParams{
+	eatoutRowscount, err := q.CountEatoutRows(ctx, db.CountEatoutRowsParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
 	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
 	}
 
-	log.Printf("%#v", capitalExpenses)
-	log.Printf("%#v", eatoutExpenses)
-	log.Printf("%#v", entertainmentExpenses)
+	// Entertainment Expenses
+	entertainmentExpenses, err := q.FetchAllEntertainmentExpenses(ctx, db.FetchAllEntertainmentExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+		Limit:    int32(convertedInts[0]),
+		Offset:   int32(convertedInts[1]),
+	})
+	if err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
+	}
+	entertRowscount, err := q.CountEntertainmentRows(ctx, db.CountEntertainmentRowsParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
+	}
+
+	// log.Printf("%#v", capitalExpenses)
+	// log.Printf("%#v", eatoutExpenses)
+	// log.Printf("%#v", entertainmentExpenses)
 
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"allExpenses": &models.AllExpensesRes{
-		CapitalExpenses:       capitalExpenses,
-		EatoutExpenses:        eatoutExpenses,
-		EntertainmentExpenses: entertainmentExpenses,
+		CapitalExpenses:        capitalExpenses,
+		EatoutExpenses:         eatoutExpenses,
+		EntertainmentExpenses:  entertainmentExpenses,
+		CapitalRowsCount:       capitalRowsCount,
+		EatoutRowsCount:        eatoutRowscount,
+		EntertainmentRowsCount: entertRowscount,
 	}})
-
-	// // Wait for all the processes to complete
-	// select {
-	// case <-done:
-	// 	capitalExpenses := <-chCap
-	// 	eatoutExpenses := <-chEat
-	// 	entertainmentExpenses := <-chEnter
-
-	// 	if len(capitalExpenses) == 0 && len(eatoutExpenses) == 0 && len(entertainmentExpenses) == 0 {
-	// 		return ftx.SendStatus(fiber.StatusNoContent)
-	// 	}
-
-	// 	return ftx.Status(fiber.StatusAccepted).JSON(map[string]interface{}{"allExpenses": &models.AllExpensesRes{
-	// 		CapitalExpenses:       capitalExpenses,
-	// 		EatoutExpenses:        eatoutExpenses,
-	// 		EntertainmentExpenses: entertainmentExpenses,
-	// 	}})
-
-	// case <-ctx.Done():
-	// 	log.Println("Process cancelled or time out!")
-	// 	return ftx.Status(fiber.StatusNotImplemented).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Process cancelled or time out!"})
-	// }
 }
 
 func GetSingleBalance(ftx *fiber.Ctx) error {
@@ -396,6 +419,9 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 	result, err := op.CreateBudgetBalance(ctx, operationBudget)
 	if err != nil {
 		log.Println(err)
+		if strings.Contains(err.Error(), "unique_combination_constraint") {
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Budget NAME already exists. Choose another one please!"})
+		}
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the budget!"})
 	}
 	log.Printf("Budget Creation Success: %v", result)

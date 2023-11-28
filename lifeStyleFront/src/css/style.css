@@ -99,6 +99,29 @@ footer {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.fitness-main-panels {
+    transition: box-shadow 0.5 ease;
+    font-size: 20px;
+    box-shadow: var(--default-box-shadow);
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.fitness-main-panels:hover {
+    /* background-color: rgb(75, 92, 92); */
+    box-shadow: 1px 1px 10px 1px rgb(85, 0, 86);
+    
+}
+
+.acc-button {
+ border-bottom:1px;
+ border-left: 1px;
+ border-right: 1px;
+ border-top: 1px;
+ border-color: rgba(255, 236, 127, 0.4);
+ box-shadow: 1px 1px 10px 1px rgb(86, 60, 0);
+}
+
 #new-budget-tips {
     background-color: var(--beige-custom);
     border-radius: 20px;
@@ -133,3 +156,15 @@ footer {
 .list-item-total-balance {
     color: orange;
 }
+
+/*   
+.background-container {
+    position: absolute;
+    background-size: cover;
+    background-image: url("../images/FitnessCover.jpg");
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+  } */
+
+

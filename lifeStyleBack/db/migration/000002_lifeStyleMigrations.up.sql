@@ -1,6 +1,7 @@
 CREATE TABLE budgets (
     budget_id BIGSERIAL PRIMARY KEY,
     user_id BIGSERIAL NOT NULL,
+    budget_name VARCHAR(255) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     savings DECIMAL(10,2) NOT NULL,
@@ -11,3 +12,6 @@ CREATE TABLE budgets (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+ALTER TABLE budgets
+ADD CONSTRAINT unique_combination_constraint UNIQUE (user_id, budget_name);

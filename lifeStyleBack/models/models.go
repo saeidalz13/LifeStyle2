@@ -75,7 +75,7 @@ type UpdateBudgetReq struct {
 }
 
 type ExpenseReq struct {
-	BudgetID      int64 `json:"budget_id"`
+	BudgetID      int64  `json:"budget_id"`
 	ExpenseType   string `json:"expense_type"`
 	ExpenseDesc   string `json:"expense_desc"`
 	ExpenseAmount string `json:"expense_amount"`
@@ -143,9 +143,12 @@ func (c *CapitalExpensesRes) AddCreationDate(rawDate []uint8) error {
 }
 
 type AllExpensesRes struct {
-	CapitalExpenses       []db.CapitalExpense      `json:"capitalExpenses"`
-	EatoutExpenses        []db.EatoutExpense        `json:"eatoutExpenses"`
-	EntertainmentExpenses []db.EntertainmentExpense `json:"entertainmentExpenses"`
+	CapitalExpenses        []db.CapitalExpense       `json:"capitalExpenses"`
+	EatoutExpenses         []db.EatoutExpense        `json:"eatoutExpenses"`
+	EntertainmentExpenses  []db.EntertainmentExpense `json:"entertainmentExpenses"`
+	CapitalRowsCount       int64                     `json:"capital_rows_count"`
+	EatoutRowsCount        int64                     `json:"eatout_rows_count"`
+	EntertainmentRowsCount int64                     `json:"entertainment_rows_count"`
 }
 
 type BudgetUpdateOptionsType struct {
