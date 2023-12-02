@@ -15,35 +15,21 @@ type JsonRes struct {
 	Message string `json:"message"`
 }
 
-type SqlStmts struct {
-	InsertSignUp                string
-	InsertBudget                string
-	InsertCapitalExpenses       string
-	InsertEatoutExpenses        string
-	InsertEntertainmentExpenses string
-	InsertNewBalance            string
+type IncomingPlan struct {
+	PlanName string `json:"plan_name"`
+	Days     int32  `json:"days"`
+}
 
-	SelectUser                  string
-	SelectBudgets               string
-	SelectCapitalExpenses       string
-	SelectEatoutExpenses        string
-	SelectEntertainmentExpenses string
-	SelectSingleBudget          string
-	SelectSingleBalance         string
+type IncomingMove struct {
+	Move string `json:"move"`
+	Sets int32  `json:"sets"`
+	Reps int32  `json:"reps"`
+}
 
-	DeleteBudget string
-
-	UpdateBudgetIncome         string
-	UpdateBudgetSavings        string
-	UpdateBudgetCapital        string
-	UpdateBudgetEatout         string
-	UpdateBudgetEntertainment  string
-	UpdateBalanceCapital       string
-	UpdateBalanceEatout        string
-	UpdateBalanceEntertainment string
-	UpdateBalanceCapitalWBudg  string
-	UpdateBalanceEatoutWBudg   string
-	UpdateBalanceEntertWBudg   string
+type IncomingEditPlan struct {
+	PlanID int64          `json:"plan_id"`
+	Day    int32          `json:"day"`
+	Moves  []IncomingMove `json:"all_moves"`
 }
 
 type BudgetResp struct {
@@ -185,45 +171,6 @@ type DbBalance struct {
 	Entertainment float64 `json:"entertainment"`
 	Total         float64 `json:"total"`
 	CreatedAt     []uint8 `json:"createdAt"`
-}
-
-var SqlStatements = &SqlStmts{
-
-	//// SELECT
-	SelectUser:                  "SELECT * FROM users WHERE email = ?;",
-	SelectBudgets:               "SELECT * FROM budgets WHERE user_id = ?;",
-	SelectSingleBudget:          "SELECT * FROM budgets WHERE budget_id = ? AND user_id = ?;",
-	SelectCapitalExpenses:       "SELECT * FROM capital_expenses WHERE budget_id = ? AND user_id = ?;",
-	SelectEatoutExpenses:        "SELECT * FROM eatout_expenses WHERE budget_id = ? AND user_id = ?;",
-	SelectEntertainmentExpenses: "SELECT * FROM entertainment_expenses WHERE budget_id = ? AND user_id = ?;",
-	SelectSingleBalance:         "SELECT * FROM balance WHERE budget_id = ? AND user_id = ?;",
-
-	//// INSERT
-	InsertBudget:                "INSERT INTO `budgets` (`user_id`, `start_date`, `end_date`, `income`, `savings`, `capital`, `eatout`, `entertainment`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-	InsertSignUp:                "INSERT INTO users (email, password) VALUES ($1, $2);",
-	InsertCapitalExpenses:       "INSERT INTO `capital_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
-	InsertEatoutExpenses:        "INSERT INTO `eatout_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
-	InsertEntertainmentExpenses: "INSERT INTO `entertainment_expenses` (`budget_id`, `user_id`, `expenses`, `description`) VALUES (?, ?, ?, ?);",
-	InsertNewBalance:            "INSERT INTO `balance` (`budget_id`, `user_id`, `capital`, `eatout`, `entertainment`, `total`) VALUES (?, ?, ?, ?, ?, ?);",
-
-	//// DELETE
-	DeleteBudget: "DELETE FROM `budgets` WHERE budget_id = ? AND user_id = ?;",
-
-	//// UPDATE
-	// Budget
-	UpdateBudgetIncome:        "UPDATE `budgets` SET income = income + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetSavings:       "UPDATE `budgets` SET savings = savings + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetCapital:       "UPDATE `budgets` SET capital = capital + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetEatout:        "UPDATE `budgets` SET eatout = eatout + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBudgetEntertainment: "UPDATE `budgets` SET entertainment = entertainment + ? WHERE budget_id = ? AND user_id = ?;",
-	// Balance with expense
-	UpdateBalanceCapital:       "UPDATE balance SET capital = capital - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEatout:        "UPDATE balance SET eatout = eatout - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEntertainment: "UPDATE balance SET entertainment = entertainment - ?, total = total - ? WHERE budget_id = ? AND user_id = ?;",
-	// Balance with budget
-	UpdateBalanceCapitalWBudg: "UPDATE balance SET capital = capital + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEatoutWBudg:  "UPDATE balance SET eatout = eatout + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
-	UpdateBalanceEntertWBudg:  "UPDATE balance SET entertainment = entertainment + ?, total = total + ? WHERE budget_id = ? AND user_id = ?;",
 }
 
 var BudgetUpdateOptions = &BudgetUpdateOptionsType{

@@ -43,6 +43,22 @@ type CapitalExpense struct {
 	CreatedAt    sql.NullTime `json:"created_at"`
 }
 
+type DayPlan struct {
+	DayPlanID int64 `json:"day_plan_id"`
+	UserID    int64 `json:"user_id"`
+	PlanID    int64 `json:"plan_id"`
+	Day       int32 `json:"day"`
+}
+
+type DayPlanMove struct {
+	DayPlanMoveID int64 `json:"day_plan_move_id"`
+	UserID        int64 `json:"user_id"`
+	PlanID        int64 `json:"plan_id"`
+	MoveID        int64 `json:"move_id"`
+	Sets          int32 `json:"sets"`
+	Reps          int32 `json:"reps"`
+}
+
 type EatoutExpense struct {
 	EatoutExpID int64        `json:"eatout_exp_id"`
 	BudgetID    int64        `json:"budget_id"`
@@ -59,6 +75,19 @@ type EntertainmentExpense struct {
 	Expenses           string       `json:"expenses"`
 	Description        string       `json:"description"`
 	CreatedAt          sql.NullTime `json:"created_at"`
+}
+
+type Move struct {
+	MoveID   int64  `json:"move_id"`
+	MoveName string `json:"move_name"`
+}
+
+type Plan struct {
+	PlanID    int64        `json:"plan_id"`
+	UserID    int64        `json:"user_id"`
+	PlanName  string       `json:"plan_name"`
+	Days      int32        `json:"days"`
+	CreatedAt sql.NullTime `json:"created_at"`
 }
 
 type User struct {

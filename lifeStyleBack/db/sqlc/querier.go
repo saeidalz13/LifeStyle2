@@ -10,8 +10,11 @@ import (
 
 type Querier interface {
 	AddCapitalExpense(ctx context.Context, arg AddCapitalExpenseParams) error
+	AddDayPlan(ctx context.Context, arg AddDayPlanParams) (DayPlan, error)
+	AddDayPlanMoves(ctx context.Context, arg AddDayPlanMovesParams) error
 	AddEatoutExpense(ctx context.Context, arg AddEatoutExpenseParams) error
 	AddEntertainmentExpense(ctx context.Context, arg AddEntertainmentExpenseParams) error
+	AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error)
 	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
 	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
 	CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error)
@@ -27,6 +30,9 @@ type Querier interface {
 	SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error)
 	SelectSingleBudget(ctx context.Context, arg SelectSingleBudgetParams) (Budget, error)
 	SelectUser(ctx context.Context, email string) (User, error)
+	SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (int64, error)
+	SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (int64, error)
+	SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (int64, error)
 	UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
 }

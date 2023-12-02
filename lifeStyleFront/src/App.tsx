@@ -20,11 +20,12 @@ import Invalid from "./Invalid";
 import { isAuthenticated } from "./loaders/NavbarLoader";
 import { FetchAllBudgets } from "./loaders/ShowBudgetsLoader";
 import ShowAllBudgets from "./finance/budget/ShowAllBudgets";
-import Index from "./fitness/newPlan/Index";
 import About from "./misc/About";
 import UserProfile from "./misc/UserProfile";
 import { fetchUserInfo } from "./loaders/fetchUserProfile";
 import EachBudget from "./finance/budget/EachBudget";
+
+import EditFitPlan from "./fitness/newPlan/EditFitPlan";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -48,8 +49,10 @@ const router = createBrowserRouter(
             loader={FetchAllBudgets}
             element={<ShowAllBudgets />}
           />
-          <Route path={Urls.finance.showSingleBudget} element={<EachBudget />}/>
-
+          <Route
+            path={Urls.finance.showSingleBudget}
+            element={<EachBudget />}
+          />
 
           <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
           <Route
@@ -67,17 +70,13 @@ const router = createBrowserRouter(
         </Route>
 
         {/* Fitness */}
-        <Route path={Urls.fitness.index} element={<Fitness />}>
-          <Route path={Urls.fitness.newPlan} element={<Index />} />
-        </Route>
+        <Route path={Urls.fitness.index} element={<Fitness />}></Route>
+        <Route path={Urls.fitness.editPlan} element={<EditFitPlan />} />
 
+        {/* Misc */}
         <Route path={Urls.about} element={<About />} />
         <Route path={Urls.invalid} element={<Invalid />} />
       </Route>
-
-      {/* 
-        
-    */}
     </Route>
   )
 );

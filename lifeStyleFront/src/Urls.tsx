@@ -9,7 +9,8 @@ class Urls {
 
   fitness = {
     index: "/fitness",
-    newPlan: "create-new-plan",
+    postNewPlan: "/fitness/add-plan",
+    editPlan:"/fitness/edit-plan"
   };
 
   finance = {

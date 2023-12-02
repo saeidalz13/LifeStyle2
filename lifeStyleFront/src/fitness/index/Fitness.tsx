@@ -1,23 +1,41 @@
 // import Urls from "../../Urls";
-import {  Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Collapse, Button } from "react-bootstrap";
+import { useState } from "react";
 // import FitnessCoverJpg from "../../images/FitnessCover.jpg"
+import CreatePlan from "../newPlan/CreatePlan";
 
 const Fitness = () => {
+  const [open, setOpen] = useState(false);
   return (
     <>
       <BackHomeBtn />
-      <Container className="text-center mt-5">
+      <Container className="text-center mt-4">
         <Row>
           <Col lg className="mb-2">
-            <div className=" border border-dark rounded page-explanations-homepanels">Create Plan</div>
+            <Button
+            variant="success"
+              className="border border-dark rounded page-explanations-homepanels px-5"
+              onClick={() => setOpen(!open)}
+            >
+              Create Plan
+            </Button>
           </Col>
-          <Col lg>
-            <div className=" border border-dark rounded page-explanations-homepanels">Show Plans</div>
+          <Col lg className="mb-2">
+            <Button 
+            className=" border border-dark rounded page-explanations-homepanels px-5">
+              Show Plans
+            </Button>
           </Col>
         </Row>
       </Container>
+
+      <Collapse in={open}>
+        <div>
+          <CreatePlan />
+        </div>
+      </Collapse>
       {/* <div className="container mt-2 p-2 text-center">
           <div className="row">
             <div className="col">

@@ -23,6 +23,8 @@ func Setup(app *fiber.App) {
 	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, h.PostNewBudget)
 	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, h.PostExpenses)
 	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, h.GetAllExpenses)
+	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.PostAddPlan)
+	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.PostEditPlan)
 
 	// Delete
 	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, h.DeleteBudget)

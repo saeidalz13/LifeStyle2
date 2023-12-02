@@ -130,7 +130,7 @@ footer {
     box-shadow: var(--default-box-shadow);
 }
 
-#form-new-budget, #form-edit-budget, #form-submit-expenses, .list-group-balance {
+#form-new-budget, #form-edit-budget, #form-submit-expenses, .list-group-balance, .form-fitfin {
     background-color: rgba(29, 0, 23,0.2);
     padding: 20px;
     border-radius: 20px;

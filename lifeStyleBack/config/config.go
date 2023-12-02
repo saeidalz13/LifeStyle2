@@ -55,6 +55,8 @@ type ProjUrls struct {
 	EachBalance       string
 	Profile           string
 	DeleteProfile     string
+	AddPlan           string
+	EditPlan          string
 }
 
 var URLS = &ProjUrls{
@@ -72,6 +74,8 @@ var URLS = &ProjUrls{
 	UpdateBudget:      "/finance/update-budget/:id",
 	Profile:           "/profile",
 	DeleteProfile:     "/delete-profile",
+	AddPlan:           "/fitness/add-plan",
+	EditPlan:          "/fitness/edit-plan",
 }
 
 func GetEnvVars() (*DotEnvVars, error) {

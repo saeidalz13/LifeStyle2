@@ -117,7 +117,7 @@ func GetSignOut(ftx *fiber.Ctx) error {
 		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
 		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
-		SameSite: fiber.CookieSameSiteNoneMode,
+		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return ftx.SendStatus(fiber.StatusOK)
 }
@@ -150,7 +150,7 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
 	}
 	limit := ftx.Query("limit", "10")
-	offset := ftx.Query("offset", "default_offset_value")
+	offset := ftx.Query("offset", "1")
 
 	convertedInts, err := assets.ConvertStringToInt64([]string{limit, offset})
 	if err != nil {
@@ -335,7 +335,7 @@ func PostSignUp(ftx *fiber.Ctx) error {
 		Value:    tokenString,
 		HTTPOnly: true,
 		Expires:  ExpirationTime,
-		SameSite: fiber.CookieSameSiteNoneMode,
+		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
 		Path:     "/",
 	})
@@ -382,7 +382,8 @@ func PostLogin(ftx *fiber.Ctx) error {
 		Value:    tokenString,
 		HTTPOnly: true,
 		Expires:  ExpirationTime,
-		SameSite: fiber.CookieSameSiteNoneMode,
+		// Changed this to Lax
+		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
 		Path:     "/",
 	})
@@ -472,6 +473,92 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(updatedBalance)
 }
 
+func PostAddPlan(ftx *fiber.Ctx) error {
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	q := db.New(database.DB)
+
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	var plan models.IncomingPlan
+	if err := ftx.BodyParser(&plan); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the JSON request"})
+	}
+
+	addedPlan, err := q.AddPlan(ctx, db.AddPlanParams{
+		UserID:   user.ID,
+		PlanName: plan.PlanName,
+		Days:     plan.Days,
+	})
+
+	log.Printf("%#v", addedPlan)
+	if err != nil {
+		log.Println(err)
+		if strings.Contains(err.Error(), "unique_plan_name") {
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "This plan name already exists!"})
+		}
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add new plan"})
+	}
+	return ftx.Status(fiber.StatusOK).JSON(addedPlan)
+}
+
+func PostEditPlan(ftx *fiber.Ctx) error {
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	q := db.New(database.DB)
+
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to validate the user"})
+	}
+
+	var incomingEditPlan models.IncomingEditPlan
+	if err := ftx.BodyParser(&incomingEditPlan); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to parse the requested budget JSON"})
+	}
+
+	var movesToAdd []db.AddDayPlanMovesParams
+	for _, eachMove := range incomingEditPlan.Moves {
+		temp := &db.AddDayPlanMovesParams{
+			UserID: user.ID,
+			PlanID: incomingEditPlan.PlanID,
+			
+		}
+	}
+
+	q2 := db.NewDayPlanMoves(database.DB)
+	q2.CreateDayPlanMoves(ctx, db.DayPlanMovesTx{
+		AddDayPlanTx: db.AddDayPlanParams{
+			UserID: user.ID,
+			PlanID: incomingEditPlan.PlanID,
+			Day:    incomingEditPlan.Day,
+		},
+		AddDayPlanMovesTx: []db.AddDayPlanMovesParams{
+
+		},
+	})
+	return nil
+}
+
 ////////////////////////
 
 /*
@@ -530,7 +617,7 @@ func DeleteUser(ftx *fiber.Ctx) error {
 		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
 		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
-		SameSite: fiber.CookieSameSiteNoneMode,
+		SameSite: fiber.CookieSameSiteLaxMode,
 		Path:     "/",
 	})
 
