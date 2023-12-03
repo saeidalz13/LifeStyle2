@@ -81,20 +81,3 @@ export type TAllExpensesArr = {
 
 export type TNoExpensesData = "nodata";
 
-export interface Plan {
-  plan_id: number;
-  user_id: number;
-  plan_name: string;
-  days: number;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
-}
-
-
-export interface Move {
-  move: string;
-  sets: number;
-  reps: number;
-}

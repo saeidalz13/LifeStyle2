@@ -54,9 +54,8 @@ type DayPlanMove struct {
 	DayPlanMoveID int64 `json:"day_plan_move_id"`
 	UserID        int64 `json:"user_id"`
 	PlanID        int64 `json:"plan_id"`
+	DayPlanID     int64 `json:"day_plan_id"`
 	MoveID        int64 `json:"move_id"`
-	Sets          int32 `json:"sets"`
-	Reps          int32 `json:"reps"`
 }
 
 type EatoutExpense struct {
@@ -78,8 +77,14 @@ type EntertainmentExpense struct {
 }
 
 type Move struct {
-	MoveID   int64  `json:"move_id"`
-	MoveName string `json:"move_name"`
+	MoveID     int64  `json:"move_id"`
+	MoveName   string `json:"move_name"`
+	MoveTypeID int64  `json:"move_type_id"`
+}
+
+type MoveType struct {
+	MoveTypeID int64  `json:"move_type_id"`
+	MoveType   string `json:"move_type"`
 }
 
 type Plan struct {
@@ -88,6 +93,17 @@ type Plan struct {
 	PlanName  string       `json:"plan_name"`
 	Days      int32        `json:"days"`
 	CreatedAt sql.NullTime `json:"created_at"`
+}
+
+type PlanRecord struct {
+	PlanRecordID  int64 `json:"plan_record_id"`
+	UserID        int64 `json:"user_id"`
+	DayPlanID     int64 `json:"day_plan_id"`
+	DayPlanMoveID int64 `json:"day_plan_move_id"`
+	MoveID        int64 `json:"move_id"`
+	Week          int16 `json:"week"`
+	Sets          int16 `json:"sets"`
+	Reps          int16 `json:"reps"`
 }
 
 type User struct {

@@ -94,7 +94,7 @@ const ShowAllBudgets = () => {
                     style={{
                       boxShadow: "1px 1px 10px 1px rgba(0, 86, 86, 0.5)",
                     }}
-                    className="rounded border border-dark mb-2  px-3 py-2 page-explanations-homepanels"
+                    className="rounded border border-dark mb-2 px-3 py-2 page-explanations-homepanels"
                   >
                     <h5 className="mt-2 text-light">
                       &#128176; {budget.budget_name} &#128176;

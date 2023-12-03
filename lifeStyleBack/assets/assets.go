@@ -4,10 +4,13 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
+
+	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 )
 
 /*
@@ -50,8 +53,8 @@ func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time
 	return startDate, endDate, nil
 }
 
-func FetchIntOfParamBudgetId(ftx *fiber.Ctx) (int, error) {
-	idString := ftx.Params("id")
+func FetchIntOfParamId(ftx *fiber.Ctx, param string) (int, error) {
+	idString := ftx.Params(param)
 	budgetId, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println("Conversion error:", err)
@@ -83,4 +86,12 @@ func ConvertStringToFloat(args ...interface{}) ([]float64, error) {
 		}
 	}
 	return results, nil
+}
+
+func ValidateContentType(ftx *fiber.Ctx) error {
+	if contentType := ftx.Get("Content-Type"); !strings.Contains(contentType, "json") {
+		log.Println("Unsupported Content-Type:", contentType)
+		return errors.New(cn.ErrsFitFin.ContentType)
+	}
+	return nil
 }

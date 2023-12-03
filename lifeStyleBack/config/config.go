@@ -55,15 +55,28 @@ type ProjUrls struct {
 	EachBalance       string
 	Profile           string
 	DeleteProfile     string
-	AddPlan           string
-	EditPlan          string
+
+	// Fitness
+	AddPlan         string
+	DeletePlan      string
+	EditPlan        string
+	AllPlans        string
+	AllDayPlans     string
+	AllDayPlanMoves string
 }
 
 var URLS = &ProjUrls{
-	Home:              "/",
-	SignUp:            "/signup",
-	Login:             "/login",
-	SignOut:           "/signout",
+	// Auth and General
+	Home:    "/",
+	SignUp:  "/signup",
+	Login:   "/login",
+	SignOut: "/signout",
+
+	// User
+	Profile:       "/profile",
+	DeleteProfile: "/delete-profile",
+
+	// Finance
 	Finance:           "/finance",
 	ShowBudgets:       "/finance/show-all-budgets",
 	PostNewBudget:     "/finance/create-new-budget",
@@ -72,10 +85,15 @@ var URLS = &ProjUrls{
 	AllExpensesBudget: "/finance/show-expenses/:id",
 	EachBalance:       "/finance/balance/:id",
 	UpdateBudget:      "/finance/update-budget/:id",
-	Profile:           "/profile",
-	DeleteProfile:     "/delete-profile",
-	AddPlan:           "/fitness/add-plan",
-	EditPlan:          "/fitness/edit-plan",
+
+	// Fitness
+	AddPlan: "/fitness/add-plan",
+
+	EditPlan:        "/fitness/edit-plan",
+	DeletePlan:      "/fitness/delete-plan/:id",
+	AllPlans:        "/fitness/all-plans",
+	AllDayPlans:     "/fitness/all-day-plans",
+	AllDayPlanMoves: "/fitness/all-day-plans/:id",
 }
 
 func GetEnvVars() (*DotEnvVars, error) {

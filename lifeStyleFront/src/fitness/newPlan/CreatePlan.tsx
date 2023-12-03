@@ -1,9 +1,9 @@
 import { FormEvent, useState } from "react";
-import { Button, Form, Col, Row, Container } from "react-bootstrap";
+import { Button, Form, Col, Row, Container, Alert } from "react-bootstrap";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
-import { Plan } from "../../assets/Interfaces";
+import { FitnessPlan } from "../../assets/FitnessInterfaces";
 import { useNavigate } from "react-router-dom";
 
 const CreatePlan = () => {
@@ -11,6 +11,7 @@ const CreatePlan = () => {
   const [errText, setErrText] = useState<string>("");
   const [days, setDays] = useState("3");
   const [planName, setPlanName] = useState("");
+  const [alertMsg, setAlertMsg] = useState("");
   const navigate = useNavigate();
 
   const handleValidation = async (e: FormEvent) => {
@@ -30,20 +31,23 @@ const CreatePlan = () => {
       });
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login)
+        location.assign(Urls.login);
         return;
       }
 
       // const data = await result.json();
 
       if (result.status === StatusCodes.Ok) {
-        const data = await result.json() as Plan;
+        const data = (await result.json()) as FitnessPlan;
         setValidationText("Fitness plan added!");
         setTimeout(() => {
           setValidationText("");
         }, 5000);
 
-        navigate(`edit-plan?days=${days}&planID=${data.plan_id}`)
+        setAlertMsg("Plan created, redirecting to edit...");
+        setTimeout(() => {
+          navigate(`edit-plan?days=${days}&planID=${data.plan_id}`);
+        }, 2000);
         return;
       }
 
@@ -108,6 +112,14 @@ const CreatePlan = () => {
           </Row>
         </Form>
       </Container>
+
+      {alertMsg !== "" ? (
+        <Alert key="success" variant="success" className="mt-4 mx-5 text-center">
+          {alertMsg}
+        </Alert>
+      ) : (
+        ""
+      )}
     </>
   );
 };

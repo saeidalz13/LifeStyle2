@@ -14,6 +14,8 @@ type Querier interface {
 	AddDayPlanMoves(ctx context.Context, arg AddDayPlanMovesParams) error
 	AddEatoutExpense(ctx context.Context, arg AddEatoutExpenseParams) error
 	AddEntertainmentExpense(ctx context.Context, arg AddEntertainmentExpenseParams) error
+	AddMoveType(ctx context.Context, moveType string) error
+	AddMoves(ctx context.Context, arg AddMovesParams) error
 	AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error)
 	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
 	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
@@ -22,10 +24,18 @@ type Querier interface {
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
+	DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error)
 	DeleteUser(ctx context.Context, email string) error
 	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
 	FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error)
 	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error)
+	FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitnessDayPlanMovesParams) ([]DayPlanMove, error)
+	FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayPlansParams) ([]DayPlan, error)
+	FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, error)
+	FetchMoveId(ctx context.Context, moveName string) (Move, error)
+	FetchMoveName(ctx context.Context, moveID int64) (string, error)
+	FetchMoveTypeId(ctx context.Context, moveType string) (MoveType, error)
+	JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]Budget, error)
 	SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error)
 	SelectSingleBudget(ctx context.Context, arg SelectSingleBudgetParams) (Budget, error)

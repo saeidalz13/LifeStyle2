@@ -44,33 +44,29 @@ const addDayPlanMoves = `-- name: AddDayPlanMoves :exec
 INSERT INTO day_plan_moves (
     user_id,
     plan_id,
-    move_id,
-    sets,
-    reps
+    day_plan_id,
+    move_id
 )   VALUES (
     $1, 
     $2,
     $3,
-    $4, 
-    $5
+    $4
 )
 `
 
 type AddDayPlanMovesParams struct {
-	UserID int64 `json:"user_id"`
-	PlanID int64 `json:"plan_id"`
-	MoveID int64 `json:"move_id"`
-	Sets   int32 `json:"sets"`
-	Reps   int32 `json:"reps"`
+	UserID    int64 `json:"user_id"`
+	PlanID    int64 `json:"plan_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+	MoveID    int64 `json:"move_id"`
 }
 
 func (q *Queries) AddDayPlanMoves(ctx context.Context, arg AddDayPlanMovesParams) error {
 	_, err := q.db.ExecContext(ctx, addDayPlanMoves,
 		arg.UserID,
 		arg.PlanID,
+		arg.DayPlanID,
 		arg.MoveID,
-		arg.Sets,
-		arg.Reps,
 	)
 	return err
 }
@@ -105,4 +101,186 @@ func (q *Queries) AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error) 
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const deletePlan = `-- name: DeletePlan :one
+DELETE FROM plans
+WHERE user_id = $1 AND plan_id = $2
+RETURNING plan_id, user_id, plan_name, days, created_at
+`
+
+type DeletePlanParams struct {
+	UserID int64 `json:"user_id"`
+	PlanID int64 `json:"plan_id"`
+}
+
+func (q *Queries) DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error) {
+	row := q.db.QueryRowContext(ctx, deletePlan, arg.UserID, arg.PlanID)
+	var i Plan
+	err := row.Scan(
+		&i.PlanID,
+		&i.UserID,
+		&i.PlanName,
+		&i.Days,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const fetchFitnessDayPlanMoves = `-- name: FetchFitnessDayPlanMoves :many
+SELECT day_plan_move_id, user_id, plan_id, day_plan_id, move_id FROM day_plan_moves
+WHERE user_id = $1 AND plan_id = $2
+`
+
+type FetchFitnessDayPlanMovesParams struct {
+	UserID int64 `json:"user_id"`
+	PlanID int64 `json:"plan_id"`
+}
+
+func (q *Queries) FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitnessDayPlanMovesParams) ([]DayPlanMove, error) {
+	rows, err := q.db.QueryContext(ctx, fetchFitnessDayPlanMoves, arg.UserID, arg.PlanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DayPlanMove{}
+	for rows.Next() {
+		var i DayPlanMove
+		if err := rows.Scan(
+			&i.DayPlanMoveID,
+			&i.UserID,
+			&i.PlanID,
+			&i.DayPlanID,
+			&i.MoveID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const fetchFitnessDayPlans = `-- name: FetchFitnessDayPlans :many
+SELECT day_plan_id, user_id, plan_id, day FROM day_plans
+WHERE user_id = $1 AND plan_id = $2
+`
+
+type FetchFitnessDayPlansParams struct {
+	UserID int64 `json:"user_id"`
+	PlanID int64 `json:"plan_id"`
+}
+
+func (q *Queries) FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayPlansParams) ([]DayPlan, error) {
+	rows, err := q.db.QueryContext(ctx, fetchFitnessDayPlans, arg.UserID, arg.PlanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DayPlan{}
+	for rows.Next() {
+		var i DayPlan
+		if err := rows.Scan(
+			&i.DayPlanID,
+			&i.UserID,
+			&i.PlanID,
+			&i.Day,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const fetchFitnessPlans = `-- name: FetchFitnessPlans :many
+SELECT plan_id, user_id, plan_name, days, created_at FROM plans
+WHERE user_id = $1
+`
+
+func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, error) {
+	rows, err := q.db.QueryContext(ctx, fetchFitnessPlans, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Plan{}
+	for rows.Next() {
+		var i Plan
+		if err := rows.Scan(
+			&i.PlanID,
+			&i.UserID,
+			&i.PlanName,
+			&i.Days,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const joinDayPlanAndDayPlanMovesAndMoves = `-- name: JoinDayPlanAndDayPlanMovesAndMoves :many
+SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day, move_name, plans.days
+FROM day_plan_moves
+INNER JOIN plans ON day_plan_moves.user_id = plans.user_id AND day_plan_moves.plan_id = plans.plan_id
+INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id AND day_plan_moves.day_plan_id = day_plans.day_plan_id
+INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
+`
+
+type JoinDayPlanAndDayPlanMovesAndMovesRow struct {
+	UserID    int64  `json:"user_id"`
+	PlanID    int64  `json:"plan_id"`
+	DayPlanID int64  `json:"day_plan_id"`
+	Day       int32  `json:"day"`
+	MoveName  string `json:"move_name"`
+	Days      int32  `json:"days"`
+}
+
+func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error) {
+	rows, err := q.db.QueryContext(ctx, joinDayPlanAndDayPlanMovesAndMoves)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []JoinDayPlanAndDayPlanMovesAndMovesRow{}
+	for rows.Next() {
+		var i JoinDayPlanAndDayPlanMovesAndMovesRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.PlanID,
+			&i.DayPlanID,
+			&i.Day,
+			&i.MoveName,
+			&i.Days,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

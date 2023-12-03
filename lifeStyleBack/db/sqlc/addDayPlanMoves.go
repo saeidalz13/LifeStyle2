@@ -32,7 +32,12 @@ func (qw *QWithTx) CreateDayPlanMoves(ctx context.Context, arg DayPlanMovesTx) (
 
 		for _, eachMove := range arg.AddDayPlanMovesTx {
 			var err error
-			err = q.AddDayPlanMoves(ctx, eachMove)
+			err = q.AddDayPlanMoves(ctx, AddDayPlanMovesParams{
+				UserID:    eachMove.UserID,
+				PlanID:    eachMove.PlanID,
+				DayPlanID: dayPlan.DayPlanID,
+				MoveID:    eachMove.MoveID,
+			})
 			if err != nil {
 				log.Println("Failed to add one of the DayPlanMoves")
 				return err

@@ -22,14 +22,20 @@ type IncomingPlan struct {
 
 type IncomingMove struct {
 	Move string `json:"move"`
-	Sets int32  `json:"sets"`
-	Reps int32  `json:"reps"`
 }
 
 type IncomingEditPlan struct {
 	PlanID int64          `json:"plan_id"`
 	Day    int32          `json:"day"`
 	Moves  []IncomingMove `json:"all_moves"`
+}
+
+type RespMoves struct {
+	DayPlanId int64  `json:"day_plan_id"`
+	MoveName  string `json:"move_name"`
+	Day       int32  `json:"day"`
+	PlanId    int64  `json:"plan_id"`
+	Days      int32  `json:"days"`
 }
 
 type BudgetResp struct {

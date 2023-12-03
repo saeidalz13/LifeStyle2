@@ -26,7 +26,7 @@ const NavbarComp = () => {
       <Navbar expand="lg" className="bg-body-tertiary">
         <Container fluid>
           <NavLink to={Urls.home} style={{ textDecoration: "none" }}>
-            <Navbar.Brand>LifeStyle</Navbar.Brand>
+            <Navbar.Brand>FitFinTracker</Navbar.Brand>
           </NavLink>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse>

@@ -26,6 +26,8 @@ import { fetchUserInfo } from "./loaders/fetchUserProfile";
 import EachBudget from "./finance/budget/EachBudget";
 
 import EditFitPlan from "./fitness/newPlan/EditFitPlan";
+import { fetchFitnessPlans } from "./loaders/FetchFitnessPlans";
+import EachDayPlan from "./fitness/eachPlan/EachDayPlan";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -70,8 +72,9 @@ const router = createBrowserRouter(
         </Route>
 
         {/* Fitness */}
-        <Route path={Urls.fitness.index} element={<Fitness />}></Route>
+        <Route path={Urls.fitness.index} element={<Fitness />} loader={fetchFitnessPlans}></Route>
         <Route path={Urls.fitness.editPlan} element={<EditFitPlan />} />
+        <Route path={Urls.fitness.goDayPlanMove} element={<EachDayPlan />} />
 
         {/* Misc */}
         <Route path={Urls.about} element={<About />} />

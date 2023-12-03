@@ -1,14 +1,17 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+	dbsqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
 var DB *sql.DB
@@ -19,7 +22,7 @@ func ConnectToDb() {
 	db, err := sql.Open("postgres", cn.EnvVars.DbUrl)
 	if err != nil {
 		log.Println(err)
-		log.Fatalln("Failed to connect to MySQL database")
+		log.Fatalln(cn.ErrsFitFin.PostgresConn)
 	}
 	// Check if the connection is valid
 	if err = db.Ping(); err != nil {
@@ -36,7 +39,7 @@ func ConnectToDb() {
 	} else if cn.EnvVars.DevStage == cn.DevStages.Development {
 		migrationDir = "file:db/migration"
 	} else {
-		log.Fatalln("Invalid dev stage")
+		log.Fatalln(cn.ErrsFitFin.DevStage)
 	}
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
@@ -54,4 +57,38 @@ func ConnectToDb() {
 	m.Up()
 	// or m.Step(2) if you want to explicitly set the number of migrations to run
 
+	// Initial necessary tables for Fitness module
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	q := dbsqlc.New(db)
+	for _, moveType := range cn.MOVE_TYPES_SLICE {
+		if err := q.AddMoveType(ctx, moveType); err != nil {
+			log.Panicln("Failed to add move types", err)
+		}
+	}
+
+	allMoves := [][]string{
+		cn.CHEST_MOVES,
+		cn.LEG_MOVES,
+		cn.SHOULDER_MOVES,
+		cn.BACK_MOVES,
+		cn.BICEPS_MOVES,
+		cn.TRICEPS_MOVES,
+	}
+
+	for i, moves := range allMoves {
+		mType, err := q.FetchMoveTypeId(ctx, cn.MOVE_TYPES_SLICE[i])
+		if err != nil {
+			log.Panicln(cn.ErrsFitFin.InvalidMoveType)
+		}
+		for _, move := range moves {
+			if err := q.AddMoves(ctx, dbsqlc.AddMovesParams{
+				MoveName:   move,
+				MoveTypeID: mType.MoveTypeID,
+			}); err != nil {
+				log.Panicln(cn.ErrsFitFin.MoveInsertion)
+			}
+		}
+	}
 }
