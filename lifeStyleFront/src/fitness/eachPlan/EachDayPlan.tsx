@@ -6,9 +6,13 @@ import Urls from "../../Urls";
 import { DayPlanMoves, DayPlanMove } from "../../assets/FitnessInterfaces";
 import StatusCodes from "../../StatusCodes";
 import { Button, ListGroup } from "react-bootstrap";
-// import { Col, Container, Row } from "react-bootstrap";
+import ModalAddPlan from "./ModalAddPlan";
+import sadFace from "../../svg/SadFaceNoBudgets.svg";
 
 const EachDayPlan = () => {
+  const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
+  const [clickedDayPlanId, setClickedDayPlanId] = useState<number>(0);
+  const [modalShow, setModalShow] = useState(false);
   const { id } = useParams();
   const mounted = useRef(true);
   const [moves, setMoves] = useState<DayPlanMoves | null>(null);
@@ -23,7 +27,7 @@ const EachDayPlan = () => {
       const fetchDayPlanMoves = async (): Promise<DayPlanMoves | null> => {
         try {
           const result = await fetch(
-            `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/${id}`,
+            `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plan-moves/${id}`,
             {
               method: "GET",
               credentials: "include",
@@ -52,12 +56,15 @@ const EachDayPlan = () => {
         const movesUpdated = await fetchDayPlanMoves();
         if (movesUpdated) {
           const data: { [day: number]: DayPlanMove[] } = {};
+          const ids: number[] = [];
           movesUpdated.day_plan_moves.forEach((item) => {
             if (!data[item.day]) {
               data[item.day] = [];
+              ids.push(item.day_plan_id);
             }
             data[item.day].push(item);
           });
+          setDayPlanIds(ids);
           setGroupedData(data);
           setMoves(movesUpdated);
         }
@@ -67,78 +74,116 @@ const EachDayPlan = () => {
     }
   }, [id]);
 
+  const handleAddMoveToDayPlan = (day_plan_id: number) => {
+    setModalShow(true);
+    setClickedDayPlanId(day_plan_id);
+    console.log(day_plan_id);
+  };
+
   if (!moves) {
     return (
       <>
         <BackFitnessBtn />
-        <div>No Moves!</div>
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+        </div>
+        <h1>No Moves Yet!</h1>
+        <div className="text-center">
+          <img src={sadFace} />
+        </div>
       </>
     );
   }
 
-  if (moves.day_plan_moves.length === 0) {
+  if (moves !== null && moves.day_plan_moves.length === 0) {
     return (
       <>
         <BackFitnessBtn />
-        <div>No Moves!</div>
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+        </div>
+        <h1>No Moves Yet!</h1>
+        <div className="text-center">
+          <img src={sadFace} />
+        </div>
       </>
     );
   }
 
   if (!groupedData) {
+    console.log("HERE GroupedData:", groupedData);
     return (
       <>
         <BackFitnessBtn />
-        <div>No Moves!</div>
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+        </div>
+        <h1>No Moves Yet!</h1>
+        <div className="text-center">
+          <img src={sadFace} />
+        </div>
       </>
     );
   }
 
-  return (
-    <>
-      <BackFitnessBtn />
+  if (moves !== null && moves.day_plan_moves.length !== 0) {
+    return (
+      <>
+        <BackFitnessBtn />
 
-      <div className="text-center mt-3">
-        <NavLink
-          to={`${Urls.fitness.editPlan}?days=${moves.day_plan_moves[0].days}&planID=${moves.day_plan_moves[0].plan_id}`}
-        >
-          <Button className="primary">Add Day Plan</Button>
-        </NavLink>
-      </div>
-      <div>
-        {Object.keys(groupedData).map((day) => (
-          <div key={day} className="text-center form-fitfin mt-4 mx-5">
-            <h2 className="text-primary">Day {day}</h2>
-            {groupedData[parseInt(day)].map((item, index) => (
-              <ListGroup key={crypto.randomUUID()} as="ul">
-                <ListGroup.Item action key={index} style={{ fontSize: "18px" }}>
-                  {item.move_name}
-                </ListGroup.Item>
-              </ListGroup>
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+        </div>
+
+        <div>
+          {groupedData &&
+            Object.keys(groupedData).map((day, idx) => (
+              <div key={day} className="text-center form-fitfin mt-4 mx-3">
+                <h2 className="text-primary">Day {day}</h2>
+                {groupedData[parseInt(day)].map((item, index) => (
+                  <ListGroup key={crypto.randomUUID()} as="ul">
+                    <ListGroup.Item
+                      action
+                      key={index}
+                      style={{ fontSize: "18px" }}
+                    >
+                      {item.move_name}
+                    </ListGroup.Item>
+                  </ListGroup>
+                ))}
+                <div key={crypto.randomUUID()} className="mt-3">
+                  <Button className="me-1" variant="outline-success">
+                    Start Workout
+                  </Button>
+                  <Button
+                    onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
+                    className="me-1"
+                    variant="outline-warning"
+                  >
+                    Add Moves
+                  </Button>
+                </div>
+              </div>
             ))}
-            <div key={crypto.randomUUID()} className="mt-3">
-              <Button className="me-1" variant="outline-success">
-                Start Workout
-              </Button>
-              <Button className="me-1" variant="outline-warning">
-                Add Moves
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* <Container className="mt-4">
-        <Row>
-          {moves.day_plan_moves.map((move) => (
-            <Col key={crypto.randomUUID()}>
-              <div >{move.move_name}</div>
-              <div >{move.day}</div>
-            </Col>
-          ))}
-        </Row>
-      </Container> */}
-    </>
-  );
+        </div>
+
+        <ModalAddPlan
+          show={modalShow}
+          onHide={() => setModalShow(false)}
+          dayPlanId={clickedDayPlanId}
+          planId={moves.day_plan_moves[0].plan_id}
+        />
+      </>
+    );
+  }
 };
 
 export default EachDayPlan;

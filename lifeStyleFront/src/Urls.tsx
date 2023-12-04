@@ -10,11 +10,14 @@ class Urls {
   fitness = {
     index: "/fitness",
     postNewPlan: "/fitness/add-plan",
-    editPlan: "/fitness/edit-plan",
+    editPlan: "/fitness/edit-plan/:id",
+    editPlanNoID: "/fitness/edit-plan",
     deletePlan: "/fitness/delete-plan",
     getAllPlans: "/fitness/all-plans",
     getAllDayPlans: "/fitness/all-day-plans",
     goDayPlanMove: "/fitness/all-day-plans/:id",
+    addDayPlanMoves: "/fitness/all-day-plans/add-moves",
+    fetchSinglePlan: "/fitness/plan",
   };
 
   finance = {

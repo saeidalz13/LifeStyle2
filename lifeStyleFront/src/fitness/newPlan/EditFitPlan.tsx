@@ -10,8 +10,8 @@ import {
   Badge,
   Spinner,
 } from "react-bootstrap";
-import cp from "./ConstantsPlan";
-import { NavLink, useSearchParams } from "react-router-dom";
+import cp from "../ConstantsPlan";
+import { NavLink, useParams } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
@@ -19,33 +19,26 @@ import {
   Move,
   FitnessDayPlans,
   FitnessDayPlan,
+  FitnessPlan,
 } from "../../assets/FitnessInterfaces";
 import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import BackFitnessBtn from "../../misc/BackFitnessBtn";
 
 const EditFitPlan = () => {
+  // const mounted = useRef(true);
+  const { id } = useParams();
   const [possibleErrs, setPossibleErrs] = useState("");
   const [success, setSuccess] = useState("");
-
+  const [daysQry, setDaysQry] = useState<number | null>(null);
+  const [daysOfPlan, setDaysOfPlan] = useState<number[]>([]);
   const MOVESARRAY = cp.MOVESARRAY;
-
-  const [searchParams] = useSearchParams();
-  const daysQry = searchParams.get("days");
-  const planId = searchParams.get("planID");
-
-  const daysOfPlan: Array<number> = [];
-  if (daysQry) {
-    for (let i = 1; i <= +daysQry; i++) {
-      daysOfPlan.push(i);
-    }
-  }
 
   const [dayPlans, setDayPlans] = useState<FitnessDayPlan[]>([]);
   const [percentageDayPlans, setPercentageDayPlans] = useState(0);
   const [daysCreatedStr, setDaysCreatedStr] = useState(
     "No day plan has been created"
   );
-  const [day, setDay] = useState(daysOfPlan[0]);
+  const [day, setDay] = useState(1);
   const [moves, setMoves] = useState<Array<Move>>([]);
   const [move, setMove] = useState<string>(MOVESARRAY[0]);
 
@@ -54,8 +47,9 @@ const EditFitPlan = () => {
   useEffect(() => {
     const fetchDayPlans = async (): Promise<FitnessDayPlans | null> => {
       try {
+        // console.log("REACHED", id)
         const result = await fetch(
-          `${BACKEND_URL}${Urls.fitness.getAllDayPlans}?planID=${planId}`,
+          `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plans/${id}`,
           {
             method: "GET",
             credentials: "include",
@@ -101,10 +95,49 @@ const EditFitPlan = () => {
     };
 
     updateDayPlans();
-  }, [daysQry, planId]);
+  }, [id]);
 
   // Update the progress bar and label
   useEffect(() => {
+    const fetchSinglePlanFunc = async () => {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.fetchSinglePlan}/${id}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (result.status === StatusCodes.Ok) {
+        return (await result.json()) as FitnessPlan;
+      } else if (result.status === StatusCodes.NoContent) {
+        return null;
+      } else if (result.status === StatusCodes.InternalServerError) {
+        console.log("Failed to fetch the data!");
+        return null;
+      } else {
+        console.log("Unexpected error happened!");
+        return null;
+      }
+    };
+
+    const fetchDays = async () => {
+      const plan = await fetchSinglePlanFunc();
+      if (plan) {
+        setDaysQry(plan.days);
+        const daysOfPlanArr: Array<number> = [];
+        if (daysQry) {
+          for (let i = 1; i <= +daysQry; i++) {
+            daysOfPlanArr.push(i);
+          }
+          setDaysOfPlan(daysOfPlanArr);
+        }
+      }
+      return;
+    };
+
+    fetchDays();
+
     if (dayPlans && daysQry) {
       setPercentageDayPlans((dayPlans.length / +daysQry) * 100);
       const daysArray = dayPlans.map((obj) => obj.day);
@@ -120,7 +153,7 @@ const EditFitPlan = () => {
       dayStr = dayStr.slice(0, dayStr.length - 2);
       setDaysCreatedStr(dayStr);
     }
-  }, [dayPlans, daysQry]);
+  }, [daysQry, id, dayPlans]);
 
   // Add move function
   function handleAddMove(e: FormEvent) {
@@ -147,15 +180,14 @@ const EditFitPlan = () => {
     setMoves((prevMoves) => prevMoves.filter((_, i) => i !== index));
   };
 
+  // Submit the day plan
   const handleSubmitDayPlan = async (e: FormEvent) => {
     e.preventDefault();
     setSuccess("");
     setPossibleErrs("");
-
-    if (!planId) {
+    if (!id) {
       return;
     }
-
     if (moves.length === 0) {
       setPossibleErrs(`Please add moves for day ${day} before submission`);
       setTimeout(() => {
@@ -165,19 +197,22 @@ const EditFitPlan = () => {
     }
 
     try {
-      const result = await fetch(`${BACKEND_URL}${Urls.fitness.editPlan}`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-        body: JSON.stringify({
-          plan_id: +planId,
-          day: +day,
-          all_moves: moves,
-        }),
-      });
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.editPlanNoID}/${id}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json;charset=UTF-8",
+          },
+          body: JSON.stringify({
+            plan_id: +id,
+            day: +day,
+            all_moves: moves,
+          }),
+        }
+      );
 
       if (result.status === StatusCodes.BadRequest) {
         const data = (await result.json()) as ApiRes;
@@ -185,12 +220,16 @@ const EditFitPlan = () => {
         setTimeout(() => {
           setPossibleErrs("");
         }, 3000);
+        return;
       }
 
       if (result.status === StatusCodes.Ok) {
         const dayPlan = (await result.json()) as FitnessDayPlan;
         setMoves([]);
         setSuccess(`Plan was added for day ${day}`);
+        setTimeout(() => {
+          setSuccess("");
+        }, 5000);
         setDayPlans((prevVal) => {
           const newDayPlans = [...prevVal, dayPlan];
 
@@ -205,13 +244,20 @@ const EditFitPlan = () => {
 
           return uniqueDayPlans;
         });
-        setTimeout(() => {
-          setSuccess("");
-        }, 3000);
         return;
       }
+
+      setPossibleErrs("Something went wrong!");
+      setTimeout(() => {
+        setPossibleErrs("");
+      }, 3000);
+      return;
     } catch (error) {
       console.log(error);
+      setPossibleErrs("Something went wrong!");
+      setTimeout(() => {
+        setPossibleErrs("");
+      }, 3000);
       return;
     }
   };
@@ -266,32 +312,32 @@ const EditFitPlan = () => {
           </Row>
         </Form>
 
-        <div className="text-center text-primary mt-5 mb-2">
-          <Badge
-            style={{
-              fontSize: "16px",
-            }}
-            className="me-1 px-3 border border-primary text-primary"
-            bg="dark"
-          >
-            Created So Far: {daysCreatedStr}
-          </Badge>
-        </div>
         <div>
           {percentageDayPlans >= 100 ? (
             <div
               className="text-center mt-3"
-              style={{ color: "yellowgreen", fontSize: "20px" }}
+              style={{ color: "yellowgreen", fontSize: "27px" }}
             >
-              All Set!
+              You're All Set!
             </div>
           ) : (
-            <ProgressBar
-              now={percentageDayPlans}
-              variant="success"
-              animated
-              className="mt-3"
-            />
+            <div className="text-center text-primary mt-5 mb-2">
+              <Badge
+                style={{
+                  fontSize: "16px",
+                }}
+                className="me-1 px-3 border border-primary text-primary"
+                bg="dark"
+              >
+                Created So Far: {daysCreatedStr}
+              </Badge>
+              <ProgressBar
+                now={percentageDayPlans}
+                variant="success"
+                animated
+                className="mt-3"
+              />
+            </div>
           )}
         </div>
 
@@ -342,7 +388,7 @@ const EditFitPlan = () => {
       </Container>
       <div className="text-center mt-2">
         {percentageDayPlans >= 100 ? (
-          <NavLink to={`${Urls.fitness.getAllDayPlans}/${planId}`}>
+          <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
             <Button
               variant="outline-light"
               className="px-5 border border-danger"
@@ -360,13 +406,21 @@ const EditFitPlan = () => {
             </Button>
           </NavLink>
         ) : (
-          <Button
-            variant="outline-success"
-            className="px-4 all-budget-choices"
-            onClick={handleSubmitDayPlan}
-          >
-            Submit Day {day} Moves
-          </Button>
+          <>
+            <Button
+              variant="outline-success"
+              className="px-4 all-budget-choices"
+              onClick={handleSubmitDayPlan}
+            >
+              Submit Day {day} Moves
+            </Button>
+            <br />
+            <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
+              <Button className="mt-2 py-1" variant="outline-secondary">
+                Plan Details So Far
+              </Button>
+            </NavLink>
+          </>
         )}
       </div>
       <div className="text-danger text-center mt-2">{possibleErrs}</div>

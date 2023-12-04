@@ -30,6 +30,11 @@ type IncomingEditPlan struct {
 	Moves  []IncomingMove `json:"all_moves"`
 }
 
+type IncomingAddDayPlanMoves struct {
+	DayPlanId int64    `json:"day_plan_id"`
+	MoveNames []string `json:"move_names"`
+}
+
 type RespMoves struct {
 	DayPlanId int64  `json:"day_plan_id"`
 	MoveName  string `json:"move_name"`

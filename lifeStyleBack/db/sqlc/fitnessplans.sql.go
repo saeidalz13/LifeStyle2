@@ -238,6 +238,29 @@ func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, 
 	return items, nil
 }
 
+const fetchSingleFitnessPlan = `-- name: FetchSingleFitnessPlan :one
+SELECT plan_id, user_id, plan_name, days, created_at FROM plans
+WHERE user_id = $1 AND plan_id = $2
+`
+
+type FetchSingleFitnessPlanParams struct {
+	UserID int64 `json:"user_id"`
+	PlanID int64 `json:"plan_id"`
+}
+
+func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error) {
+	row := q.db.QueryRowContext(ctx, fetchSingleFitnessPlan, arg.UserID, arg.PlanID)
+	var i Plan
+	err := row.Scan(
+		&i.PlanID,
+		&i.UserID,
+		&i.PlanName,
+		&i.Days,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const joinDayPlanAndDayPlanMovesAndMoves = `-- name: JoinDayPlanAndDayPlanMovesAndMoves :many
 SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day, move_name, plans.days
 FROM day_plan_moves

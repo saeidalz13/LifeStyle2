@@ -46,8 +46,8 @@ const CreatePlan = () => {
 
         setAlertMsg("Plan created, redirecting to edit...");
         setTimeout(() => {
-          navigate(`edit-plan?days=${days}&planID=${data.plan_id}`);
-        }, 2000);
+          navigate(`edit-plan/${data.plan_id}`);
+        }, 1000);
         return;
       }
 
@@ -114,7 +114,11 @@ const CreatePlan = () => {
       </Container>
 
       {alertMsg !== "" ? (
-        <Alert key="success" variant="success" className="mt-4 mx-5 text-center">
+        <Alert
+          key="success"
+          variant="success"
+          className="mt-4 mx-5 text-center"
+        >
           {alertMsg}
         </Alert>
       ) : (

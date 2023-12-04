@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"context"
 	"errors"
 	"log"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
 /*
@@ -55,6 +57,7 @@ func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time
 
 func FetchIntOfParamId(ftx *fiber.Ctx, param string) (int, error) {
 	idString := ftx.Params(param)
+	idString = strings.Split(idString, "%")[0]
 	budgetId, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println("Conversion error:", err)
@@ -94,4 +97,19 @@ func ValidateContentType(ftx *fiber.Ctx) error {
 		return errors.New(cn.ErrsFitFin.ContentType)
 	}
 	return nil
+}
+
+func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q *db.Queries) (int64, error) {
+	if err := ValidateContentType(ftx); err != nil {
+		return -1, err
+	}
+	userEmail, err := ExtractEmailFromClaim(ftx)
+	if err != nil {
+		return -1, err
+	}
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		return -1, err
+	}
+	return user.ID, nil
 }

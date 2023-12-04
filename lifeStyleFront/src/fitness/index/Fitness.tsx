@@ -139,13 +139,13 @@ const Fitness = () => {
                         <ListGroup.Item>
                           <Button
                             className="me-1"
-                            variant="danger"
+                            variant="outline-danger"
                             onClick={() => handleDeletePlan(plan.plan_id, plan.plan_name)}
                           >
                             Delete
                           </Button>
                           <Button 
-                          variant="success"
+                          variant="outline-success"
                           onClick={() => handleDetailsPlan(plan.plan_id)}
                           >Details</Button>
                         </ListGroup.Item>

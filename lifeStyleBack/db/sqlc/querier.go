@@ -35,6 +35,7 @@ type Querier interface {
 	FetchMoveId(ctx context.Context, moveName string) (Move, error)
 	FetchMoveName(ctx context.Context, moveID int64) (string, error)
 	FetchMoveTypeId(ctx context.Context, moveType string) (MoveType, error)
+	FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error)
 	JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]Budget, error)
 	SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error)

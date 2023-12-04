@@ -14,6 +14,11 @@ RETURNING *;
 SELECT * FROM plans
 WHERE user_id = $1;
 
+-- name: FetchSingleFitnessPlan :one
+SELECT * FROM plans
+WHERE user_id = $1 AND plan_id = $2; 
+
+
 -- name: DeletePlan :one
 DELETE FROM plans
 WHERE user_id = $1 AND plan_id = $2
@@ -35,7 +40,6 @@ RETURNING *;
 -- name: FetchFitnessDayPlans :many
 SELECT * FROM day_plans
 WHERE user_id = $1 AND plan_id = $2;
-
 
 
 -- name: AddDayPlanMoves :exec

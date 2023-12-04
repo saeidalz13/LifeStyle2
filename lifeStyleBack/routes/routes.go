@@ -16,6 +16,7 @@ func Setup(app *fiber.App) {
 	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, h.GetAllBudgets)
 	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, h.GetSingleBalance)
 	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, h.GetSingleBudget)
+	app.Get(cn.URLS.FetchSinglePlan, m.IsLoggedIn, h.GetSinglePlan)
 	app.Get(cn.URLS.AllPlans, m.IsLoggedIn, h.GetAllFitnessPlans)
 	app.Get(cn.URLS.AllDayPlans, m.IsLoggedIn, h.GetAllFitnessDayPlans)
 	app.Get(cn.URLS.AllDayPlanMoves, m.IsLoggedIn, h.GetAllFitnessDayPlanMoves)
@@ -28,6 +29,7 @@ func Setup(app *fiber.App) {
 	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, h.GetAllExpenses)
 	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.PostAddPlan)
 	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.PostEditPlan)
+	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, h.PostAddDayPlanMoves)
 
 	// Delete
 	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, h.DeleteBudget)

@@ -80,6 +80,7 @@ type ErrsFitFinStrct struct {
 	ParseJSON         string
 	ExtractUrlParam   string
 	ContentType       string
+	ExtractMoveId     string
 }
 
 var ErrsFitFin = &ErrsFitFinStrct{
@@ -92,4 +93,13 @@ var ErrsFitFin = &ErrsFitFinStrct{
 	ParseJSON:         "Failed to unmarshal the JSON data from request",
 	ExtractUrlParam:   "Failed to id from URL param",
 	ContentType:       "Invalid Content-Type; MUST be application/json",
+	ExtractMoveId:     "Failed to get move_id from database based on move_name",
+}
+
+type UniqueConstraintsStruct struct {
+	DayPlanMove string
+}
+
+var UniqueConstraints = &UniqueConstraintsStruct{
+	DayPlanMove: "unique_day_plan_move",
 }
