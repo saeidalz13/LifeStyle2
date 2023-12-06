@@ -34,8 +34,8 @@ const EachDayPlan = () => {
       }
     | "waiting"
   >("waiting");
-    
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const handleShowDeleteModal = () => setShowDeleteModal(true);
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
@@ -50,7 +50,7 @@ const EachDayPlan = () => {
       );
 
       if (result.status === StatusCodes.Ok) {
-        location.assign(Urls.fitness.index)
+        location.assign(Urls.fitness.index);
         return;
       }
 
@@ -135,9 +135,38 @@ const EachDayPlan = () => {
   if (moves === "waiting") {
     return (
       <>
+        <BackFitnessBtn />
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
+          </Button>
+        </div>
         <div className="mt-5" style={{ textAlign: "center" }}>
           <img src={rl} height="150px" width="150px" alt="Rotation" />
         </div>
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -150,11 +179,35 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
+          </Button>
         </div>
         <h1>Something Went Wrong!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
+
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -167,14 +220,35 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
-          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
-            Delete
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
           </Button>
         </div>
         <h1>No Day Plans!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
+
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -187,14 +261,34 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
-          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
-            Delete
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
           </Button>
         </div>
         <h1>No Day Plans!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -207,14 +301,34 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
-          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
-            Delete
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
           </Button>
         </div>
         <h1>No Day Plans!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -224,7 +338,6 @@ const EachDayPlan = () => {
     moves.day_plan_moves.length !== 0 &&
     groupedData !== "waiting"
   ) {
-    
     return (
       <>
         <BackFitnessBtn />
@@ -233,8 +346,12 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
-          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
-            Delete
+          <Button
+            variant="warning"
+            className="ms-2 px-4"
+            onClick={handleShowDeleteModal}
+          >
+            Delete Plan
           </Button>
         </div>
 
@@ -306,11 +423,7 @@ const EachDayPlan = () => {
           planId={moves.day_plan_moves[0].plan_id}
         />
 
-        <Modal
-          show={show}
-          fullscreen={true}
-          onHide={() => setShow(false)}
-        >
+        <Modal show={show} fullscreen={true} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
             <Modal.Title className="text-primary">Tutorial!</Modal.Title>
           </Modal.Header>
@@ -332,23 +445,22 @@ const EachDayPlan = () => {
           </Modal.Footer>
         </Modal>
 
-
         <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
-        <Modal.Header closeButton>
-          <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="text-light">
-          Are you sure you want to delete this plan?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="success" onClick={handleCloseDeleteModal}>
-            No!
-          </Button>
-          <Button variant="outline-danger" onClick={handleDeletePlan}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteModal}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }

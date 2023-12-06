@@ -329,9 +329,6 @@ const StartWorkout = () => {
         className="text-center mt-4 mx-4 p-3 page-explanations"
         style={{ backgroundColor: "#212226" }}
       >
-        <div className="text-center mt-2 mb-3">
-          <h3 className="text-warning">History Of Workout</h3>
-        </div>
         {planRecords === "waiting" ? (
           <div className="mt-5" style={{ textAlign: "center" }}>
             <img src={rl} height="50px" width="50px" alt="Rotation" />
@@ -342,6 +339,9 @@ const StartWorkout = () => {
           </div>
         ) : (
           <Row>
+            <div className="text-center mt-2 mb-3">
+              <h3 className="text-warning">History Of Workout</h3>
+            </div>
             {Object.values(groupedPlanRecords).map(
               (planRecordsArray: PlanRecord[], index: number) => (
                 <Accordion key={index}>
