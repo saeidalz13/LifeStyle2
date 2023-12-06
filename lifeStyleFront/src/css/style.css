@@ -157,6 +157,11 @@ footer {
     color: orange;
 }
 
+
+.centered-cell {
+    vertical-align: middle;
+    text-align: center;
+  }
 /*   
 .background-container {
     position: absolute;

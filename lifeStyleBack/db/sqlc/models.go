@@ -101,9 +101,10 @@ type PlanRecord struct {
 	DayPlanID     int64 `json:"day_plan_id"`
 	DayPlanMoveID int64 `json:"day_plan_move_id"`
 	MoveID        int64 `json:"move_id"`
-	Week          int16 `json:"week"`
-	Sets          int16 `json:"sets"`
-	Reps          int16 `json:"reps"`
+	Week          int32 `json:"week"`
+	SetRecord     int32 `json:"set_record"`
+	Reps          int32 `json:"reps"`
+	Weight        int32 `json:"weight"`
 }
 
 type User struct {

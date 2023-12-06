@@ -1,5 +1,4 @@
-// import Urls from "../../Urls";
-import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
 import {
   Container,
@@ -8,26 +7,31 @@ import {
   Collapse,
   Button,
   ListGroup,
-  Alert,
+  Accordion,
 } from "react-bootstrap";
 import { useState } from "react";
 import CreatePlan from "../newPlan/CreatePlan";
 import { FitnessPlans } from "../../assets/FitnessInterfaces";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import React from "react";
-import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import StatusCodes from "../../StatusCodes";
 
 const Fitness = () => {
   const navigate = useNavigate();
   const plansPerPage = 3;
-  const plansLoader = useLoaderData() as null | FitnessPlans;
+  const plans = useLoaderData() as null | FitnessPlans;
 
-  const [alertMsg, setAlertMsg] = useState("");
-  const [plans, setPlans] = useState<null | FitnessPlans>(plansLoader);
   const [open, setOpen] = useState(false);
   const [openPlans, setOpenPlans] = useState(false);
+
+  const accBodyStyle = {
+    color: "rgba(189, 255, 254, 0.75)",
+    backgroundColor: "rgba(30, 30, 30, 0.7)",
+  };
+
+  const accHeaderStyle = {
+    fontSize: "19px",
+  };
 
   const handleClickCreate = () => {
     setOpen(!open);
@@ -39,50 +43,50 @@ const Fitness = () => {
     setOpen(false);
   };
 
-  const handleDeletePlan = async (plan_id: number, plan_name: string) => {
-    try {
-      const result = await fetch(
-        `${BACKEND_URL}${Urls.fitness.deletePlan}/${plan_id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (result.status === StatusCodes.Ok) {
-        setPlans((prevPlans) => ({
-          plans: prevPlans
-            ? prevPlans.plans.filter((plan) => plan.plan_id !== plan_id)
-            : [],
-        }));
-
-        setAlertMsg(`Plan ${plan_name} was deleted!`);
-        setTimeout(() => {
-          setAlertMsg("")
-        }, 5000)
-        console.log(await result.json());
-        return;
-      }
-
-      if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
-        return;
-      }
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  };
-
-
   const handleDetailsPlan = (plan_id: number) => {
-    navigate(`${Urls.fitness.getAllDayPlans}/${plan_id}`)
+    navigate(`${Urls.fitness.getAllDayPlans}/${plan_id}`);
     return;
-  }
+  };
 
   return (
     <>
       <BackHomeBtn />
+
+      <div className="mt-3 mx-4 p-4 page-explanations">
+        <h3 className="mb-3 text-center text-primary">
+          Welcome to the fitness section!
+        </h3>
+        <p className="text-center">
+          In this section, you can define custom fitness plans and manage your
+          fitness. Here's the steps how to start your finance management
+          journey:
+        </p>
+
+        <Accordion className="mx-2 mb-2">
+          <Accordion.Item eventKey="0" className="acc-button">
+            <Accordion.Header>
+              {" "}
+              <span style={accHeaderStyle}>Create New Plan</span>
+            </Accordion.Header>
+            <Accordion.Body style={accBodyStyle}>
+              Create a fitness plan to record your weekly progress at the gym.
+              Click on "Create Plan", then select a name and days of the week
+              you wanna hit the gym!
+            </Accordion.Body>
+          </Accordion.Item>
+          <Accordion.Item eventKey="1" className="acc-button">
+            <Accordion.Header>
+              {" "}
+              <span style={accHeaderStyle}>Navigate Through Plans</span>{" "}
+            </Accordion.Header>
+            <Accordion.Body style={accBodyStyle}>
+              If you have already created a plan/plans, you can click on
+              "Show Plans" to see the details and the possible actions. You can
+              delete and view the details of your plan!
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
+      </div>
       <Container className="text-center mt-4">
         <Row>
           <Col md className="mb-2">
@@ -105,13 +109,6 @@ const Fitness = () => {
         </Row>
       </Container>
 
-      {alertMsg === "" ? (
-        ""
-      ) : (
-        <Alert className="mx-5 text-center" variant="warning">
-          {alertMsg}
-        </Alert>
-      )}
       <Collapse in={open}>
         <div>
           <CreatePlan />
@@ -138,16 +135,12 @@ const Fitness = () => {
                         </ListGroup.Item>
                         <ListGroup.Item>
                           <Button
-                            className="me-1"
-                            variant="outline-danger"
-                            onClick={() => handleDeletePlan(plan.plan_id, plan.plan_name)}
+                            variant="outline-success"
+                            className="px-5"
+                            onClick={() => handleDetailsPlan(plan.plan_id)}
                           >
-                            Delete
+                            Details
                           </Button>
-                          <Button 
-                          variant="outline-success"
-                          onClick={() => handleDetailsPlan(plan.plan_id)}
-                          >Details</Button>
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -169,8 +162,7 @@ const Fitness = () => {
           </Row>
         </Container>
       </Collapse>
-
-      <Outlet />
+      
     </>
   );
 };

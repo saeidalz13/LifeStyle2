@@ -103,6 +103,53 @@ func (q *Queries) AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error) 
 	return i, err
 }
 
+const addPlanRecord = `-- name: AddPlanRecord :exec
+INSERT INTO plan_records (
+    user_id,
+    day_plan_id,
+    day_plan_move_id,
+    move_id,
+    week,
+    set_record,
+    reps,
+    weight
+)   VALUES (
+    $1, 
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
+)
+`
+
+type AddPlanRecordParams struct {
+	UserID        int64 `json:"user_id"`
+	DayPlanID     int64 `json:"day_plan_id"`
+	DayPlanMoveID int64 `json:"day_plan_move_id"`
+	MoveID        int64 `json:"move_id"`
+	Week          int32 `json:"week"`
+	SetRecord     int32 `json:"set_record"`
+	Reps          int32 `json:"reps"`
+	Weight        int32 `json:"weight"`
+}
+
+func (q *Queries) AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) error {
+	_, err := q.db.ExecContext(ctx, addPlanRecord,
+		arg.UserID,
+		arg.DayPlanID,
+		arg.DayPlanMoveID,
+		arg.MoveID,
+		arg.Week,
+		arg.SetRecord,
+		arg.Reps,
+		arg.Weight,
+	)
+	return err
+}
+
 const deletePlan = `-- name: DeletePlan :one
 DELETE FROM plans
 WHERE user_id = $1 AND plan_id = $2
@@ -129,16 +176,16 @@ func (q *Queries) DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, e
 
 const fetchFitnessDayPlanMoves = `-- name: FetchFitnessDayPlanMoves :many
 SELECT day_plan_move_id, user_id, plan_id, day_plan_id, move_id FROM day_plan_moves
-WHERE user_id = $1 AND plan_id = $2
+WHERE user_id = $1 AND day_plan_id = $2
 `
 
 type FetchFitnessDayPlanMovesParams struct {
-	UserID int64 `json:"user_id"`
-	PlanID int64 `json:"plan_id"`
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
 }
 
 func (q *Queries) FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitnessDayPlanMovesParams) ([]DayPlanMove, error) {
-	rows, err := q.db.QueryContext(ctx, fetchFitnessDayPlanMoves, arg.UserID, arg.PlanID)
+	rows, err := q.db.QueryContext(ctx, fetchFitnessDayPlanMoves, arg.UserID, arg.DayPlanID)
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +271,78 @@ func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, 
 			&i.PlanName,
 			&i.Days,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const fetchPlanRecords = `-- name: FetchPlanRecords :many
+SELECT 
+    plan_records.plan_record_id,
+    plan_records.user_id,
+    plan_records.day_plan_id,
+    plan_records.day_plan_move_id,
+    plan_records.move_id,
+    plan_records.week,
+    plan_records.set_record,
+    plan_records.reps,
+    plan_records.weight,
+    moves.move_name,
+    moves.move_type_id
+FROM plan_records
+JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1 AND day_plan_id = $2
+`
+
+type FetchPlanRecordsParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+type FetchPlanRecordsRow struct {
+	PlanRecordID  int64  `json:"plan_record_id"`
+	UserID        int64  `json:"user_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	MoveID        int64  `json:"move_id"`
+	Week          int32  `json:"week"`
+	SetRecord     int32  `json:"set_record"`
+	Reps          int32  `json:"reps"`
+	Weight        int32  `json:"weight"`
+	MoveName      string `json:"move_name"`
+	MoveTypeID    int64  `json:"move_type_id"`
+}
+
+func (q *Queries) FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsParams) ([]FetchPlanRecordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, fetchPlanRecords, arg.UserID, arg.DayPlanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FetchPlanRecordsRow{}
+	for rows.Next() {
+		var i FetchPlanRecordsRow
+		if err := rows.Scan(
+			&i.PlanRecordID,
+			&i.UserID,
+			&i.DayPlanID,
+			&i.DayPlanMoveID,
+			&i.MoveID,
+			&i.Week,
+			&i.SetRecord,
+			&i.Reps,
+			&i.Weight,
+			&i.MoveName,
+			&i.MoveTypeID,
 		); err != nil {
 			return nil, err
 		}

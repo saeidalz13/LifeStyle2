@@ -5,26 +5,70 @@ import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { DayPlanMoves, DayPlanMove } from "../../assets/FitnessInterfaces";
 import StatusCodes from "../../StatusCodes";
-import { Button, ListGroup } from "react-bootstrap";
+import { Badge, Button, ListGroup, Modal } from "react-bootstrap";
 import ModalAddPlan from "./ModalAddPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
+import cp from "../ConstantsPlan";
+import rl from "../../svg/RotatingLoad.svg";
 
 const EachDayPlan = () => {
+  const [show, setShow] = useState(false);
+  const [youTubeSrc, setYouTubeSrc] = useState("");
+
+  function handleShow(_link: string) {
+    setYouTubeSrc(_link);
+    setShow(true);
+  }
+
   const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
   const [clickedDayPlanId, setClickedDayPlanId] = useState<number>(0);
   const [modalShow, setModalShow] = useState(false);
   const { id } = useParams();
   const mounted = useRef(true);
-  const [moves, setMoves] = useState<DayPlanMoves | null>(null);
-  const [groupedData, setGroupedData] = useState<{
-    [day: number]: DayPlanMove[];
-  } | null>(null);
+  const [moves, setMoves] = useState<
+    DayPlanMoves | "waiting" | "error" | "nodata"
+  >("waiting");
+  const [groupedData, setGroupedData] = useState<
+    | {
+        [day: number]: DayPlanMove[];
+      }
+    | "waiting"
+  >("waiting");
+    
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const handleShowDeleteModal = () => setShowDeleteModal(true);
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+  const handleDeletePlan = async () => {
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.deletePlan}/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (result.status === StatusCodes.Ok) {
+        location.assign(Urls.fitness.index)
+        return;
+      }
+
+      if (result.status === StatusCodes.UnAuthorized) {
+        location.assign(Urls.login);
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
 
   useEffect(() => {
     if (mounted.current) {
       mounted.current = false;
 
-      const fetchDayPlanMoves = async (): Promise<DayPlanMoves | null> => {
+      const fetchDayPlanMoves = async (): Promise<DayPlanMoves | "error"> => {
         try {
           const result = await fetch(
             `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plan-moves/${id}`,
@@ -36,7 +80,7 @@ const EachDayPlan = () => {
 
           if (result.status === StatusCodes.UnAuthorized) {
             location.assign(Urls.login);
-            return null;
+            return "error";
           }
 
           if (result.status === StatusCodes.Ok) {
@@ -44,17 +88,21 @@ const EachDayPlan = () => {
             return data;
           }
 
-          setMoves(null);
-          return null;
+          return "error";
         } catch (error) {
           console.log(error);
-          return null;
+          return "error";
         }
       };
 
       const updateMoves = async () => {
         const movesUpdated = await fetchDayPlanMoves();
-        if (movesUpdated) {
+        if (movesUpdated !== "error") {
+          if (movesUpdated.day_plan_moves === null) {
+            setMoves("nodata");
+            return;
+          }
+
           const data: { [day: number]: DayPlanMove[] } = {};
           const ids: number[] = [];
           movesUpdated.day_plan_moves.forEach((item) => {
@@ -64,10 +112,14 @@ const EachDayPlan = () => {
             }
             data[item.day].push(item);
           });
+
           setDayPlanIds(ids);
           setGroupedData(data);
           setMoves(movesUpdated);
+          return;
         }
+
+        setMoves("error");
       };
 
       updateMoves();
@@ -80,7 +132,17 @@ const EachDayPlan = () => {
     console.log(day_plan_id);
   };
 
-  if (!moves) {
+  if (moves === "waiting") {
+    return (
+      <>
+        <div className="mt-5" style={{ textAlign: "center" }}>
+          <img src={rl} height="150px" width="150px" alt="Rotation" />
+        </div>
+      </>
+    );
+  }
+
+  if (moves === "error") {
     return (
       <>
         <BackFitnessBtn />
@@ -89,7 +151,7 @@ const EachDayPlan = () => {
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
         </div>
-        <h1>No Moves Yet!</h1>
+        <h1>Something Went Wrong!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
@@ -97,7 +159,7 @@ const EachDayPlan = () => {
     );
   }
 
-  if (moves !== null && moves.day_plan_moves.length === 0) {
+  if (moves === "nodata") {
     return (
       <>
         <BackFitnessBtn />
@@ -105,8 +167,11 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
+          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
+            Delete
+          </Button>
         </div>
-        <h1>No Moves Yet!</h1>
+        <h1>No Day Plans!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
@@ -114,8 +179,7 @@ const EachDayPlan = () => {
     );
   }
 
-  if (!groupedData) {
-    console.log("HERE GroupedData:", groupedData);
+  if (moves.day_plan_moves.length === 0) {
     return (
       <>
         <BackFitnessBtn />
@@ -123,8 +187,11 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
+          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
+            Delete
+          </Button>
         </div>
-        <h1>No Moves Yet!</h1>
+        <h1>No Day Plans!</h1>
         <div className="text-center">
           <img src={sadFace} />
         </div>
@@ -132,7 +199,32 @@ const EachDayPlan = () => {
     );
   }
 
-  if (moves !== null && moves.day_plan_moves.length !== 0) {
+  if (!groupedData && groupedData !== "waiting") {
+    return (
+      <>
+        <BackFitnessBtn />
+        <div className="text-center mt-3">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+            <Button className="primary">Add Day Plan</Button>
+          </NavLink>
+          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
+            Delete
+          </Button>
+        </div>
+        <h1>No Day Plans!</h1>
+        <div className="text-center">
+          <img src={sadFace} />
+        </div>
+      </>
+    );
+  }
+
+  if (
+    moves !== null &&
+    moves.day_plan_moves.length !== 0 &&
+    groupedData !== "waiting"
+  ) {
+    
     return (
       <>
         <BackFitnessBtn />
@@ -141,8 +233,19 @@ const EachDayPlan = () => {
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
+          <Button variant="warning" className="ms-2 px-4" onClick={handleShowDeleteModal}>
+            Delete
+          </Button>
         </div>
 
+        <div className="page-explanations-homepanels mx-5 my-4">
+          <h2 className="text-center">Day Plans</h2>
+          <p className="text-center">
+            You can see the list of the day plans you created so far. <br />{" "}
+            Click on each one to see a YouTube video of how the move is done
+            properly
+          </p>
+        </div>
         <div>
           {groupedData &&
             Object.keys(groupedData).map((day, idx) => (
@@ -150,19 +253,40 @@ const EachDayPlan = () => {
                 <h2 className="text-primary">Day {day}</h2>
                 {groupedData[parseInt(day)].map((item, index) => (
                   <ListGroup key={crypto.randomUUID()} as="ul">
-                    <ListGroup.Item
-                      action
-                      key={index}
-                      style={{ fontSize: "18px" }}
-                    >
-                      {item.move_name}
-                    </ListGroup.Item>
+                    {cp.YOUTUBE_LINKS_MOVES[item.move_name] ? (
+                      <ListGroup.Item
+                        action
+                        key={index}
+                        style={{ fontSize: "18px" }}
+                        onClick={() =>
+                          handleShow(cp.YOUTUBE_LINKS_MOVES[item.move_name])
+                        }
+                      >
+                        {item.move_name}{" "}
+                        <Badge className="ms-2 my-0 mx-0">&#127916;</Badge>
+                      </ListGroup.Item>
+                    ) : (
+                      // Handle the case when item.move_name is not found in YOUTUBE_LINKS_MOVES
+                      <ListGroup.Item
+                        action
+                        key={index}
+                        style={{ fontSize: "18px" }}
+                      >
+                        {item.move_name}
+                      </ListGroup.Item>
+                    )}
                   </ListGroup>
                 ))}
                 <div key={crypto.randomUUID()} className="mt-3">
-                  <Button className="me-1" variant="outline-success">
-                    Start Workout
-                  </Button>
+                  <NavLink
+                    to={`${Urls.fitness.startWorkout}/${
+                      groupedData[parseInt(day)][0].day_plan_id
+                    }`}
+                  >
+                    <Button className="me-1" variant="outline-success">
+                      Start Workout
+                    </Button>
+                  </NavLink>
                   <Button
                     onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
                     className="me-1"
@@ -181,6 +305,50 @@ const EachDayPlan = () => {
           dayPlanId={clickedDayPlanId}
           planId={moves.day_plan_moves[0].plan_id}
         />
+
+        <Modal
+          show={show}
+          fullscreen={true}
+          onHide={() => setShow(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="text-primary">Tutorial!</Modal.Title>
+          </Modal.Header>
+          <iframe
+            width="100%"
+            height="100%"
+            src={youTubeSrc}
+            allowFullScreen
+          ></iframe>
+
+          <Modal.Footer>
+            <Button
+              variant="primary"
+              className="px-5 "
+              onClick={() => setShow(false)}
+            >
+              Close Window
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-light">
+          Are you sure you want to delete this plan?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={handleCloseDeleteModal}>
+            No!
+          </Button>
+          <Button variant="outline-danger" onClick={handleDeletePlan}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
       </>
     );
   }

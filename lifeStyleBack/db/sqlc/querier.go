@@ -17,6 +17,7 @@ type Querier interface {
 	AddMoveType(ctx context.Context, moveType string) error
 	AddMoves(ctx context.Context, arg AddMovesParams) error
 	AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error)
+	AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) error
 	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
 	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
 	CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error)
@@ -35,6 +36,7 @@ type Querier interface {
 	FetchMoveId(ctx context.Context, moveName string) (Move, error)
 	FetchMoveName(ctx context.Context, moveID int64) (string, error)
 	FetchMoveTypeId(ctx context.Context, moveType string) (MoveType, error)
+	FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsParams) ([]FetchPlanRecordsRow, error)
 	FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error)
 	JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]Budget, error)

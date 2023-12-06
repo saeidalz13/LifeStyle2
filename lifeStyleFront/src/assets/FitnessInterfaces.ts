@@ -35,3 +35,41 @@ export interface DayPlanMove {
 export interface DayPlanMoves {
   day_plan_moves: DayPlanMove[];
 }
+
+export interface DayPlanMoveStartWorkout {
+  day_plan_move_id: number;
+  user_id: number;
+  plan_id: number;
+  day_plan_id: number;
+  move_name: string;
+  move_id: number;
+}
+
+export interface DayPlanMovesStartWorkout {
+  moves: DayPlanMoveStartWorkout[];
+}
+
+export interface ReqAddPlanRecord {
+  day_plan_move_id: number;
+  move_name: string;
+  week: number;
+  set_record: number[];
+  reps: number[];
+  weight: number[];
+}
+
+export interface PlanRecord {
+  plan_record_id: number;
+  user_id: number;
+  day_plan_id: number;
+  day_plan_move_id: number;
+  move_id: number;
+  week: number;
+  set_record: number;
+  reps: number;
+  weight: number;
+  move_name: string
+  move_type_id: number
+}
+
+export interface PlanRecords {plan_records: PlanRecord[]}

@@ -25,5 +25,5 @@ var ResTypes = &ResTypesStruct{
 	Err:     "error",
 }
 
-var Duration = time.Hour * 2
+var Duration = time.Hour * 24
 var ExpirationTime = time.Now().Add(Duration)

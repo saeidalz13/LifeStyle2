@@ -18,6 +18,11 @@ class Urls {
     goDayPlanMove: "/fitness/all-day-plans/:id",
     addDayPlanMoves: "/fitness/all-day-plans/add-moves",
     fetchSinglePlan: "/fitness/plan",
+    addPlanRecord: "/fitness/add-plan-record",
+    getPlanRecords: "/fitness/plan-records",
+
+    startWorkoutApp: "/fitness/start-workout/:id",
+    startWorkout:"/fitness/start-workout"
   };
 
   finance = {

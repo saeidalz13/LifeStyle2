@@ -35,6 +35,24 @@ type IncomingAddDayPlanMoves struct {
 	MoveNames []string `json:"move_names"`
 }
 
+type IncomingAddPlanRecord struct {
+	DayPlanMoveID int64   `json:"day_plan_move_id"`
+	MoveName      string  `json:"move_name"`
+	Week          int32   `json:"week"`
+	SetRecord     []int32 `json:"set_record"`
+	Reps          []int32 `json:"reps"`
+	Weight        []int32 `json:"weight"`
+}
+
+type RespStartWorkoutDayPlanMoves struct {
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	UserID        int64  `json:"user_id"`
+	PlanID        int64  `json:"plan_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	MoveName      string `json:"move_name"`
+	MoveId        int64  `json:"move_id"`
+}
+
 type RespMoves struct {
 	DayPlanId int64  `json:"day_plan_id"`
 	MoveName  string `json:"move_name"`

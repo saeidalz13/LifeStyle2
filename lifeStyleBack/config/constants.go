@@ -2,11 +2,11 @@ package config
 
 var CHEST_MOVES = []string{
 	"Bench Press BB",
-	"Upper Press BB",
+	"Incline Press BB",
 	"Bench Press DB",
 	"Machine Press",
-	"Upper Press DB",
-	"Upper Machine Press",
+	"Incline Press DB",
+	"Incline Machine Press",
 }
 
 var LEG_MOVES = []string{
@@ -30,21 +30,21 @@ var BACK_MOVES = []string{
 	"Pull Ups",
 	"Chin Ups",
 	"Lat Pulldown",
-	"Seated Inclined DB",
+	"Inclined DB Row",
 	"Row Cable Seated",
 	"Row Cable Single",
 }
 
 var BICEPS_MOVES = []string{
 	"Biceps Curl DB",
-	"Biceps Curl Inclined DB",
+	"Biceps Seated Incline DB",
 	"Biceps Curl BB",
 	"Biceps Hammer Curl",
 }
 
 var TRICEPS_MOVES = []string{
 	"Triceps Extenstion DB",
-	"Triceps Pulldown Cable",
+	"Triceps Pushdown Cable",
 }
 
 type MoveTypes struct {
@@ -81,6 +81,7 @@ type ErrsFitFinStrct struct {
 	ExtractUrlParam   string
 	ContentType       string
 	ExtractMoveId     string
+	ExtractMoveName   string
 }
 
 var ErrsFitFin = &ErrsFitFinStrct{
@@ -94,6 +95,7 @@ var ErrsFitFin = &ErrsFitFinStrct{
 	ExtractUrlParam:   "Failed to id from URL param",
 	ContentType:       "Invalid Content-Type; MUST be application/json",
 	ExtractMoveId:     "Failed to get move_id from database based on move_name",
+	ExtractMoveName:   "Failed to get move_name from database based on move_id",
 }
 
 type UniqueConstraintsStruct struct {

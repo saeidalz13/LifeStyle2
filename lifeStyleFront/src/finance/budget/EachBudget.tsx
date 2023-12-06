@@ -127,10 +127,8 @@ const EachBudget = () => {
         </NavLink>
       </div>
 
+      {budget ? <h1 className="mt-3 mb-1">{budget.budget_name}</h1> : ""}
       <Container className="mt-3">
-        {/* {budget ? (
-        )} */}
-
         <Row className="text-center">
           <Col className="d-flex justify-content-center m-2">
             <Card

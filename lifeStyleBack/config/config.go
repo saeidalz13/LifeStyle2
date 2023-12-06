@@ -57,14 +57,17 @@ type ProjUrls struct {
 	DeleteProfile     string
 
 	// Fitness
-	FetchSinglePlan string
-	AddPlan         string
-	DeletePlan      string
-	EditPlan        string
-	AllPlans        string
-	AllDayPlans     string
-	AllDayPlanMoves string
-	AddDayPlanMoves string
+	FetchSinglePlan          string
+	FetchDayPlanMovesWorkout string
+	FetchPlanRecords         string
+	AddPlan                  string
+	DeletePlan               string
+	EditPlan                 string
+	AllPlans                 string
+	AllDayPlans              string
+	AllDayPlanMoves          string
+	AddDayPlanMoves          string
+	AddPlanRecord            string
 }
 
 var URLS = &ProjUrls{
@@ -89,14 +92,17 @@ var URLS = &ProjUrls{
 	UpdateBudget:      "/finance/update-budget/:id",
 
 	// Fitness
-	FetchSinglePlan: "/fitness/plan/:id",
-	AddPlan:         "/fitness/add-plan",
-	EditPlan:        "/fitness/edit-plan/:id",
-	DeletePlan:      "/fitness/delete-plan/:id",
-	AllPlans:        "/fitness/all-plans",
-	AllDayPlans:     "/fitness/all-day-plans/day-plans/:id",
-	AllDayPlanMoves: "/fitness/all-day-plans/day-plan-moves/:id",
-	AddDayPlanMoves: "/fitness/all-day-plans/add-moves/:id",
+	FetchSinglePlan:          "/fitness/plan/:id",
+	FetchDayPlanMovesWorkout: "/fitness/start-workout/:id",
+	FetchPlanRecords:         "/fitness/plan-records/:id",
+	AddPlan:                  "/fitness/add-plan",
+	EditPlan:                 "/fitness/edit-plan/:id",
+	DeletePlan:               "/fitness/delete-plan/:id",
+	AllPlans:                 "/fitness/all-plans",
+	AllDayPlans:              "/fitness/all-day-plans/day-plans/:id",
+	AllDayPlanMoves:          "/fitness/all-day-plans/day-plan-moves/:id",
+	AddDayPlanMoves:          "/fitness/all-day-plans/add-moves/:id",
+	AddPlanRecord:            "/fitness/add-plan-record/:id",
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
