@@ -1,6 +1,6 @@
 # Overview
 
-Accessible through https://fitfintracker.ca \
+Accessible through https://fitfintracker.ca
 
 A website to keep track of finance and fitness plans 
 * Backend: Golang
