@@ -36,10 +36,13 @@ INSERT INTO day_plans (
 )
 RETURNING *;
 
-
 -- name: FetchFitnessDayPlans :many
 SELECT * FROM day_plans
 WHERE user_id = $1 AND plan_id = $2;
+
+-- name: DeleteFitnessDayPlan :exec
+DELETE FROM day_plans
+WHERE user_id = $1 AND day_plan_id = $2;
 
 
 -- name: AddDayPlanMoves :exec

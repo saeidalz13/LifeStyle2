@@ -10,7 +10,7 @@ import {
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import Urls from "../../Urls";
 import { useState } from "react";
-import { Budgets } from "../../assets/Interfaces";
+import { Budgets } from "../../assets/FinanceInterfaces";
 // import BACKEND_URL from "../../Config";
 // import StatusCodes from "../../StatusCodes";
 

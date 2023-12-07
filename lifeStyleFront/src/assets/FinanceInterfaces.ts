@@ -81,15 +81,4 @@ export type TAllExpensesArr = {
 
 export type TNoExpensesData = "nodata";
 
-type OnHideCallback = () => void;
-export interface ModalAddPlanProps {
-  show: boolean;
-  onHide: OnHideCallback;
-  dayPlanId: number;
-  planId: number;
-}
 
-export interface AddMovesToDayPlanProps {
-  dayPlanId: number;
-  planId: number;
-}

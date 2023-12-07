@@ -25,6 +25,7 @@ type Querier interface {
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
+	DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDayPlanParams) error
 	DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error)
 	DeleteUser(ctx context.Context, email string) error
 	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)

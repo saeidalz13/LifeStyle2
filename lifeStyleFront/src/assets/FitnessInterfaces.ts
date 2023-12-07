@@ -73,3 +73,17 @@ export interface PlanRecord {
 }
 
 export interface PlanRecords {plan_records: PlanRecord[]}
+
+
+type OnHideCallback = () => void;
+export interface ModalAddPlanProps {
+  show: boolean;
+  onHide: OnHideCallback;
+  dayPlanId: number;
+  planId: number;
+}
+
+export interface AddMovesToDayPlanProps {
+  dayPlanId: number;
+  planId: number;
+}

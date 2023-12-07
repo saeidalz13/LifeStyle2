@@ -510,7 +510,7 @@ func GetPlanRecords(ftx *fiber.Ctx) error {
 	}
 
 	planRecords, err := q.FetchPlanRecords(ctx, db.FetchPlanRecordsParams{
-		UserID: user.ID,
+		UserID:    user.ID,
 		DayPlanID: int64(dayPlanId),
 	})
 	if err != nil {
@@ -1053,4 +1053,39 @@ func PatchBudget(ftx *fiber.Ctx) error {
 		"updated_budget":  updatedBudget,
 		"updated_balance": updatedBalance,
 	})
+}
+
+func DeleteDayPlan(ftx *fiber.Ctx) error {
+	// Authenticate User
+	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Extract user ID
+	q := db.New(database.DB)
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	// Extracting Day Plan ID
+	dayPlanId, err := assets.FetchIntOfParamId(ftx, "id")
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the day plan ID"})
+	}
+
+	if err = q.DeleteFitnessDayPlan(ctx, db.DeleteFitnessDayPlanParams{
+		UserID:    user.ID,
+		DayPlanID: int64(dayPlanId),
+	}); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete the day plan ID"})
+	}
+
+	return ftx.SendStatus(fiber.StatusOK)
 }

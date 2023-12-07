@@ -13,8 +13,7 @@ import rl from "../../svg/RotatingLoad.svg";
 import Urls from "../../Urls";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
-import { Budget, Balance } from "../../assets/Interfaces";
-
+import { Budget, Balance } from "../../assets/FinanceInterfaces";
 
 interface UpdatedResp {
   updated_budget: Budget;
@@ -272,7 +271,9 @@ const EachBudget = () => {
         <Row>
           <Col>
             <Container className="text-center mt-4 mb-3">
-              <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}>
+              <NavLink
+                to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+              >
                 <Button
                   variant="outline-secondary"
                   className="all-budget-choices"

@@ -6,7 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import ExpensesRows from "./ExpensesRows";
 import rl from "../../svg/RotatingLoad.svg";
-import { TAllExpensesArr, TNoExpensesData } from "../../assets/Interfaces";
+import {
+  TAllExpensesArr,
+  TNoExpensesData,
+} from "../../assets/FinanceInterfaces";
 
 const ShowExpenses = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +25,7 @@ const ShowExpenses = () => {
   // const [pageNumsCapital, setPageNumsCapital] = useState(1);
   // const [pageNumsEatout, setPageNumsEatout] = useState(1);
   // const [pageNumsEntert, setPageNumsEntert] = useState(1);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -199,8 +202,8 @@ const ShowExpenses = () => {
         {expenseType === "capital" ? (
           <div className="text-center">
             <Button
-            className="me-1"
-            variant="primary"
+              className="me-1"
+              variant="primary"
               onClick={handlePrevPage}
               disabled={currentPage === 1}
             >
@@ -217,8 +220,8 @@ const ShowExpenses = () => {
         ) : expenseType === "eatout" ? (
           <div className="text-center">
             <Button
-            className="me-1"
-            variant="primary"
+              className="me-1"
+              variant="primary"
               onClick={handlePrevPage}
               disabled={currentPage === 1}
             >
@@ -235,7 +238,7 @@ const ShowExpenses = () => {
         ) : (
           <div className="text-center">
             <Button
-            className="me-1"
+              className="me-1"
               variant="primary"
               onClick={handlePrevPage}
               disabled={currentPage === 1}

@@ -5,7 +5,7 @@ import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
 import { Button } from "react-bootstrap";
-import { Balance } from "../../assets/Interfaces";
+import { Balance } from "../../assets/FinanceInterfaces";
 
 type TNoBalance = "NoBalance";
 
@@ -81,11 +81,11 @@ const BalanceIndex = () => {
   return (
     <>
       <div className="text-center mt-3 mb-3">
-          <NavLink to={`/finance/show-all-budgets`}>
-            <Button variant="outline-secondary" className="all-budget-choices">
-              Back To Budgets
-            </Button>
-          </NavLink>
+        <NavLink to={`/finance/show-all-budgets`}>
+          <Button variant="outline-secondary" className="all-budget-choices">
+            Back To Budgets
+          </Button>
+        </NavLink>
       </div>
 
       <div className="mx-4 mb-5">

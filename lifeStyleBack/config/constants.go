@@ -47,6 +47,12 @@ var TRICEPS_MOVES = []string{
 	"Triceps Pushdown Cable",
 }
 
+var ABS_MOVE = []string{
+	"Hanging Leg Raise",
+	"Russian Twist",
+	"Reverse Crunch",
+}
+
 type MoveTypes struct {
 	Chest    string
 	Leg      string
@@ -54,6 +60,7 @@ type MoveTypes struct {
 	Back     string
 	Biceps   string
 	Triceps  string
+	Abs      string
 }
 
 var MOVE_TYPES = &MoveTypes{
@@ -63,11 +70,13 @@ var MOVE_TYPES = &MoveTypes{
 	Back:     "back",
 	Biceps:   "biceps",
 	Triceps:  "triceps",
+	Abs:      "abs",
 }
 
 var MOVE_TYPES_SLICE = []string{
 	MOVE_TYPES.Chest, MOVE_TYPES.Leg, MOVE_TYPES.Shoulder,
 	MOVE_TYPES.Back, MOVE_TYPES.Biceps, MOVE_TYPES.Triceps,
+	MOVE_TYPES.Abs,
 }
 
 type ErrsFitFinStrct struct {

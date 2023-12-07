@@ -1,5 +1,5 @@
 import { Button, Col, Container, Form, ListGroup, Row } from "react-bootstrap";
-import { AddMovesToDayPlanProps } from "../../assets/Interfaces";
+import { AddMovesToDayPlanProps } from "../../assets/FitnessInterfaces";
 import cp from "../ConstantsPlan";
 import { FormEvent, useState } from "react";
 import StatusCodes from "../../StatusCodes";

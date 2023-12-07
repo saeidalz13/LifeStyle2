@@ -54,13 +54,14 @@ func ConnectToDb() {
 		log.Fatalln(err)
 	}
 
-	m.Up()
 	// or m.Step(2) if you want to explicitly set the number of migrations to run
+	m.Up()
 
 	// Initial necessary tables for Fitness module
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Add move types
 	q := dbsqlc.New(db)
 	for _, moveType := range cn.MOVE_TYPES_SLICE {
 		if err := q.AddMoveType(ctx, moveType); err != nil {
@@ -68,6 +69,8 @@ func ConnectToDb() {
 		}
 	}
 
+	// all the available moves
+	// MUST be in the same order as the move types
 	allMoves := [][]string{
 		cn.CHEST_MOVES,
 		cn.LEG_MOVES,
@@ -75,6 +78,7 @@ func ConnectToDb() {
 		cn.BACK_MOVES,
 		cn.BICEPS_MOVES,
 		cn.TRICEPS_MOVES,
+		cn.ABS_MOVE,
 	}
 
 	for i, moves := range allMoves {

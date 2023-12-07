@@ -1,5 +1,5 @@
 import { Modal, Button } from "react-bootstrap";
-import { ModalAddPlanProps } from "../../assets/Interfaces";
+import { ModalAddPlanProps } from "../../assets/FitnessInterfaces";
 import AddMovesToDayPlan from "./AddMovesToDayPlan";
 
 const ModalAddPlan = (props: ModalAddPlanProps) => {

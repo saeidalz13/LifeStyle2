@@ -13,7 +13,7 @@ import {
   Modal,
   Table,
 } from "react-bootstrap";
-import { Budget, Balance } from "../../assets/Interfaces";
+import { Budget, Balance } from "../../assets/FinanceInterfaces";
 
 const EachBudget = () => {
   const mounted = useRef(true);

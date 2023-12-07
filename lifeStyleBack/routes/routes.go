@@ -38,6 +38,7 @@ func Setup(app *fiber.App) {
 	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, h.DeleteBudget)
 	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, h.DeleteUser)
 	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.DeletePlan)
+	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.DeleteDayPlan)
 
 	// Patch
 	app.Patch(cn.URLS.UpdateBudget, m.IsLoggedIn, h.PatchBudget)

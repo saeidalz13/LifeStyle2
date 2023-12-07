@@ -42,6 +42,8 @@ const BICEPS_MOVES = [
 
 const TRICEPS_MOVES = ["Triceps Extenstion DB", "Triceps Pushdown Cable"];
 
+const ABS_MOVES = ["Hanging Leg Raise", "Russian Twist", "Reverse Crunch"];
+
 let MOVESARRAY = [
   ...CHEST_MOVES,
   ...LEG_MOVES,
@@ -49,6 +51,7 @@ let MOVESARRAY = [
   ...BACK_MOVES,
   ...BICEPS_MOVES,
   ...TRICEPS_MOVES,
+  ...ABS_MOVES,
 ];
 
 MOVESARRAY = MOVESARRAY.sort();
@@ -117,10 +120,19 @@ const YOUTUBE_LINKS_MOVES: { [key: string]: string } = {
   "Biceps Hammer Curl":
     "https://www.youtube.com/embed/zC3nLlEvin4?si=0NRlfCY9iqM5z_Dq",
 
+  // Triceps
   "Triceps Extenstion DB":
     "https://www.youtube.com/embed/VQofhP53Lco?si=t0LyarKXaWM5U4-k",
   "Triceps Pushdown Cable":
     "https://www.youtube.com/embed/2-LAMcpzODU?si=d2_JGL559fXqjw2H",
+
+  // ABS
+  "Hanging Leg Raise":
+    "https://www.youtube.com/embed/Nw0LOKe3_l8?si=KQq2AKXvNsJOk1qd",
+  "Russian Twist":
+    "https://www.youtube.com/embed/wkD8rjkodUI?si=RDp3Zpy7XXI1wfj8",
+  "Reverse Crunch":
+    "https://www.youtube.com/embed/7rRWy7-Gokg?si=IlAiJKlO9ZqZ7CUT",
 };
 
 const WEEKS = [];

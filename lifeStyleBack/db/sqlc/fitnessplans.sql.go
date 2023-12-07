@@ -150,6 +150,21 @@ func (q *Queries) AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) er
 	return err
 }
 
+const deleteFitnessDayPlan = `-- name: DeleteFitnessDayPlan :exec
+DELETE FROM day_plans
+WHERE user_id = $1 AND day_plan_id = $2
+`
+
+type DeleteFitnessDayPlanParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+func (q *Queries) DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDayPlanParams) error {
+	_, err := q.db.ExecContext(ctx, deleteFitnessDayPlan, arg.UserID, arg.DayPlanID)
+	return err
+}
+
 const deletePlan = `-- name: DeletePlan :one
 DELETE FROM plans
 WHERE user_id = $1 AND plan_id = $2

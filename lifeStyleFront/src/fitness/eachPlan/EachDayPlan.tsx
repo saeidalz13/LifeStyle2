@@ -35,9 +35,50 @@ const EachDayPlan = () => {
     | "waiting"
   >("waiting");
 
+  const [selectedDeleteDayPlan, setSelectedDeleteDayPlan] = useState<number>(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteDayPlan, setShowDeleteDayPlan] = useState(false);
+
   const handleShowDeleteModal = () => setShowDeleteModal(true);
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
+  const handleCloseDeleteDayPlan = () => setShowDeleteDayPlan(false);
+
+  const clickDeleteDayPlan = (dayPlanId: number) => {
+    setSelectedDeleteDayPlan(dayPlanId);
+    setShowDeleteDayPlan(true);
+  };
+
+  const handleDeleteDayPlan = async () => {
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.deletePlanDay}/${selectedDeleteDayPlan}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (result.status === StatusCodes.UnAuthorized) {
+        location.assign(Urls.login);
+        return;
+      }
+
+      if (result.status === StatusCodes.InternalServerError) {
+        console.log("Not deleted!");
+        return;
+      }
+
+      if (result.status === StatusCodes.Ok) {
+        location.reload();
+        return;
+      }
+
+      return;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
 
   const handleDeletePlan = async () => {
     try {
@@ -341,7 +382,6 @@ const EachDayPlan = () => {
     return (
       <>
         <BackFitnessBtn />
-
         <div className="text-center mt-3">
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
             <Button className="primary">Add Day Plan</Button>
@@ -406,10 +446,21 @@ const EachDayPlan = () => {
                   </NavLink>
                   <Button
                     onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
-                    className="me-1"
                     variant="outline-warning"
                   >
                     Add Moves
+                  </Button>
+                  <br />
+                  <Button
+                    variant="outline-danger"
+                    className="mt-1"
+                    onClick={() =>
+                      clickDeleteDayPlan(
+                        groupedData[parseInt(day)][0].day_plan_id
+                      )
+                    }
+                  >
+                    Delete Day Plan
                   </Button>
                 </div>
               </div>
@@ -457,6 +508,23 @@ const EachDayPlan = () => {
               No!
             </Button>
             <Button variant="outline-danger" onClick={handleDeletePlan}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={showDeleteDayPlan} onHide={handleCloseDeleteDayPlan}>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Delete Day Plan!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-light">
+            Are you sure you want to delete this day plan?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseDeleteDayPlan}>
+              No!
+            </Button>
+            <Button variant="outline-danger" onClick={handleDeleteDayPlan}>
               Delete
             </Button>
           </Modal.Footer>

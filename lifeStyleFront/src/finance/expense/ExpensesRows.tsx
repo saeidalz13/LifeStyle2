@@ -1,11 +1,10 @@
 import React from "react";
-import { Expenses } from "../../assets/Interfaces";
+import { Expenses } from "../../assets/FinanceInterfaces";
 
 const ExpensesRows: React.FC<{
   expenses: Expenses;
   expenseType: string;
 }> = ({ expenses, expenseType }) => {
-
   const customSpan = 3;
   if (expenseType === "capital") {
     return (
