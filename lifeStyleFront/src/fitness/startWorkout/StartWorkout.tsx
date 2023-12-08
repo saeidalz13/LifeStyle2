@@ -392,24 +392,11 @@ const StartWorkout = () => {
         </Button>
       </div>
 
-      <Container className="text-center mt-5">
+      <Container className="text-center mt-4">
         <Row>
           <Col>
             <Form className="mx-4 form-fitfin">
-              <Row className="mb-2">
-                <Col>
-                  <Button
-                    className="px-5"
-                    variant="outline-primary"
-                    onClick={() => handleAddSet()}
-                  >
-                    Add Set
-                  </Button>
-                  <div className="mt-1 text-danger">{addSetErrs}</div>
-                </Col>
-              </Row>
-
-              <Row className="mb-3">
+              <Row className="mb-3 mt-2">
                 <Col>
                   <Form.Group className="text-center mx-5">
                     <Form.Select
@@ -460,6 +447,19 @@ const StartWorkout = () => {
                       onChange={(e) => setWeightsForm(+e.target.value)}
                     ></Form.Control>
                   </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mt-2">
+                <Col>
+                  <Button
+                    className="px-5"
+                    variant="outline-primary"
+                    onClick={() => handleAddSet()}
+                  >
+                    Add Set
+                  </Button>
+                  <div className="mt-1 text-danger">{addSetErrs}</div>
                 </Col>
               </Row>
             </Form>

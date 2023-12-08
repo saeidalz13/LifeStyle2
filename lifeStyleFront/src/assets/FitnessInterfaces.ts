@@ -26,6 +26,7 @@ export interface Move {
 
 export interface DayPlanMove {
   day_plan_id: number;
+  day_plan_move_id: number;
   move_name: string;
   day: number;
   plan_id: number;
@@ -68,12 +69,13 @@ export interface PlanRecord {
   set_record: number;
   reps: number;
   weight: number;
-  move_name: string
-  move_type_id: number
+  move_name: string;
+  move_type_id: number;
 }
 
-export interface PlanRecords {plan_records: PlanRecord[]}
-
+export interface PlanRecords {
+  plan_records: PlanRecord[];
+}
 
 type OnHideCallback = () => void;
 export interface ModalAddPlanProps {

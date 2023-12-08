@@ -54,11 +54,12 @@ type RespStartWorkoutDayPlanMoves struct {
 }
 
 type RespMoves struct {
-	DayPlanId int64  `json:"day_plan_id"`
-	MoveName  string `json:"move_name"`
-	Day       int32  `json:"day"`
-	PlanId    int64  `json:"plan_id"`
-	Days      int32  `json:"days"`
+	DayPlanId     int64  `json:"day_plan_id"`
+	DayPlanMoveId int64  `json:"day_plan_move_id"`
+	MoveName      string `json:"move_name"`
+	Day           int32  `json:"day"`
+	PlanId        int64  `json:"plan_id"`
+	Days          int32  `json:"days"`
 }
 
 type BudgetResp struct {

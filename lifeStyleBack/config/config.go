@@ -63,6 +63,7 @@ type ProjUrls struct {
 	AddPlan                  string
 	DeletePlan               string
 	DeleteDayPlan            string
+	DeleteDayPlanMove        string
 	EditPlan                 string
 	AllPlans                 string
 	AllDayPlans              string
@@ -100,6 +101,7 @@ var URLS = &ProjUrls{
 	EditPlan:                 "/fitness/edit-plan/:id",
 	DeletePlan:               "/fitness/delete-plan/:id",
 	DeleteDayPlan:            "/fitness/delete-day-plan/:id",
+	DeleteDayPlanMove:        "/fitness/delete-day-plan-move/:id",
 	AllPlans:                 "/fitness/all-plans",
 	AllDayPlans:              "/fitness/all-day-plans/day-plans/:id",
 	AllDayPlanMoves:          "/fitness/all-day-plans/day-plan-moves/:id",

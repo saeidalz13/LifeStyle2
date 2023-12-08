@@ -324,7 +324,7 @@ const EditFitPlan = () => {
             <div className="text-center text-primary mt-5 mb-2">
               <Badge
                 style={{
-                  fontSize: "16px",
+                  fontSize: "14px",
                 }}
                 className="me-1 px-3 border border-primary text-primary"
                 bg="dark"

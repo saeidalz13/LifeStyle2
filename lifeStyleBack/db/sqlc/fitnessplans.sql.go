@@ -165,6 +165,30 @@ func (q *Queries) DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDay
 	return err
 }
 
+const deleteFitnessDayPlanMove = `-- name: DeleteFitnessDayPlanMove :one
+DELETE FROM day_plan_moves
+WHERE user_id = $1 AND day_plan_move_id = $2
+RETURNING day_plan_move_id, user_id, plan_id, day_plan_id, move_id
+`
+
+type DeleteFitnessDayPlanMoveParams struct {
+	UserID        int64 `json:"user_id"`
+	DayPlanMoveID int64 `json:"day_plan_move_id"`
+}
+
+func (q *Queries) DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnessDayPlanMoveParams) (DayPlanMove, error) {
+	row := q.db.QueryRowContext(ctx, deleteFitnessDayPlanMove, arg.UserID, arg.DayPlanMoveID)
+	var i DayPlanMove
+	err := row.Scan(
+		&i.DayPlanMoveID,
+		&i.UserID,
+		&i.PlanID,
+		&i.DayPlanID,
+		&i.MoveID,
+	)
+	return i, err
+}
+
 const deletePlan = `-- name: DeletePlan :one
 DELETE FROM plans
 WHERE user_id = $1 AND plan_id = $2
@@ -396,7 +420,7 @@ func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFit
 }
 
 const joinDayPlanAndDayPlanMovesAndMoves = `-- name: JoinDayPlanAndDayPlanMovesAndMoves :many
-SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day, move_name, plans.days
+SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day_plan_moves.day_plan_move_id, day, move_name, plans.days
 FROM day_plan_moves
 INNER JOIN plans ON day_plan_moves.user_id = plans.user_id AND day_plan_moves.plan_id = plans.plan_id
 INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id AND day_plan_moves.day_plan_id = day_plans.day_plan_id
@@ -404,12 +428,13 @@ INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
 `
 
 type JoinDayPlanAndDayPlanMovesAndMovesRow struct {
-	UserID    int64  `json:"user_id"`
-	PlanID    int64  `json:"plan_id"`
-	DayPlanID int64  `json:"day_plan_id"`
-	Day       int32  `json:"day"`
-	MoveName  string `json:"move_name"`
-	Days      int32  `json:"days"`
+	UserID        int64  `json:"user_id"`
+	PlanID        int64  `json:"plan_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	Day           int32  `json:"day"`
+	MoveName      string `json:"move_name"`
+	Days          int32  `json:"days"`
 }
 
 func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error) {
@@ -425,6 +450,7 @@ func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]Joi
 			&i.UserID,
 			&i.PlanID,
 			&i.DayPlanID,
+			&i.DayPlanMoveID,
 			&i.Day,
 			&i.MoveName,
 			&i.Days,

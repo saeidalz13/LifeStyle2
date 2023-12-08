@@ -64,12 +64,17 @@ WHERE user_id = $1 AND day_plan_id = $2;
 
 
 -- name: JoinDayPlanAndDayPlanMovesAndMoves :many
-SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day, move_name, plans.days
+SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day_plan_moves.day_plan_move_id, day, move_name, plans.days
 FROM day_plan_moves
 INNER JOIN plans ON day_plan_moves.user_id = plans.user_id AND day_plan_moves.plan_id = plans.plan_id
 INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id AND day_plan_moves.day_plan_id = day_plans.day_plan_id
 INNER JOIN moves ON day_plan_moves.move_id = moves.move_id;
 
+
+-- name: DeleteFitnessDayPlanMove :one
+DELETE FROM day_plan_moves
+WHERE user_id = $1 AND day_plan_move_id = $2
+RETURNING *;
 
 -- name: AddPlanRecord :exec
 INSERT INTO plan_records (

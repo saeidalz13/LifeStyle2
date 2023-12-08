@@ -10,17 +10,13 @@ import ModalAddPlan from "./ModalAddPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import cp from "../ConstantsPlan";
 import rl from "../../svg/RotatingLoad.svg";
+import { ApiRes } from "../../assets/GeneralInterfaces";
 
 const EachDayPlan = () => {
   const [show, setShow] = useState(false);
   const [youTubeSrc, setYouTubeSrc] = useState("");
-
-  function handleShow(_link: string) {
-    setYouTubeSrc(_link);
-    setShow(true);
-  }
-
   const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
+  const [clickedDayPlanMoveId, setClickedDayPlanMoveId] = useState<number>(0);
   const [clickedDayPlanId, setClickedDayPlanId] = useState<number>(0);
   const [modalShow, setModalShow] = useState(false);
   const { id } = useParams();
@@ -46,6 +42,48 @@ const EachDayPlan = () => {
   const clickDeleteDayPlan = (dayPlanId: number) => {
     setSelectedDeleteDayPlan(dayPlanId);
     setShowDeleteDayPlan(true);
+  };
+
+  const handleMoveClicked = (dayPlanMoveId: number, _link: string) => {
+    setClickedDayPlanMoveId(dayPlanMoveId);
+    console.log(dayPlanMoveId);
+    setYouTubeSrc(_link);
+    setShow(true);
+  };
+
+  const handleDeleteDayPlanMove = async () => {
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.deleteDayPlanMove}/${clickedDayPlanMoveId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (result.status === StatusCodes.UnAuthorized) {
+        location.assign(Urls.login);
+        return;
+      }
+
+      // setShow(false);
+      if (result.status === StatusCodes.InternalServerError) {
+        const data = (await result.json()) as ApiRes;
+        console.log(data.message);
+        return;
+      }
+
+      if (result.status === StatusCodes.Ok) {
+        location.reload();
+        return;
+      }
+
+      console.log("Unexpected status code and error!");
+      return;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
   };
 
   const handleDeleteDayPlan = async () => {
@@ -416,7 +454,10 @@ const EachDayPlan = () => {
                         key={index}
                         style={{ fontSize: "18px" }}
                         onClick={() =>
-                          handleShow(cp.YOUTUBE_LINKS_MOVES[item.move_name])
+                          handleMoveClicked(
+                            item.day_plan_move_id,
+                            cp.YOUTUBE_LINKS_MOVES[item.move_name]
+                          )
                         }
                       >
                         {item.move_name}{" "}
@@ -488,10 +529,17 @@ const EachDayPlan = () => {
           <Modal.Footer>
             <Button
               variant="primary"
-              className="px-5 "
+              className="px-3"
               onClick={() => setShow(false)}
             >
               Close Window
+            </Button>
+            <Button
+              variant="danger"
+              className="px-3"
+              onClick={handleDeleteDayPlanMove}
+            >
+              Delete Move From Plan
             </Button>
           </Modal.Footer>
         </Modal>

@@ -14,6 +14,7 @@ class Urls {
     editPlanNoID: "/fitness/edit-plan",
     deletePlan: "/fitness/delete-plan",
     deletePlanDay: "/fitness/delete-day-plan",
+    deleteDayPlanMove: "/fitness/delete-day-plan-move",
     getAllPlans: "/fitness/all-plans",
     getAllDayPlans: "/fitness/all-day-plans",
     goDayPlanMove: "/fitness/all-day-plans/:id",

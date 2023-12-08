@@ -119,7 +119,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
         {moveNames.length === 0 ? (
           <div
             className="text-primary text-center"
-            style={{ fontSize: "19px" }}
+            style={{ fontSize: "18px" }}
           >
             Click On "Add Move" To Create Submit List
           </div>
