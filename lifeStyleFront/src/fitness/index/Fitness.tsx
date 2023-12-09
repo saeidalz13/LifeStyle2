@@ -94,6 +94,7 @@ const Fitness = () => {
               variant="success"
               className="border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickCreate}
+              style={{fontSize:"22px"}}
             >
               Create Plan
             </Button>
@@ -102,6 +103,7 @@ const Fitness = () => {
             <Button
               className=" border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickShowPlans}
+              style={{fontSize:"22px"}}
             >
               Show Plans
             </Button>

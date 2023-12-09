@@ -23,7 +23,15 @@ const NavbarComp = () => {
 
   return (
     <>
-      <Navbar expand="lg" className="bg-body-tertiary">
+      <Navbar
+        expand="lg"
+        data-bs-theme="dark"
+        sticky="top"
+        style={{
+          backgroundColor: "rgba(1, 21, 28, 0.95)",
+          boxShadow: "1px 1px 3px 1px rgb(100, 86, 86)",
+        }}
+      >
         <Container fluid>
           <NavLink to={Urls.home} style={{ textDecoration: "none" }}>
             <Navbar.Brand>FitFinTracker</Navbar.Brand>
@@ -32,15 +40,17 @@ const NavbarComp = () => {
           <Navbar.Collapse>
             {isAuth ? (
               <Nav className="ms-auto">
-                <Nav.Link href={Urls.profile}>Profile</Nav.Link>
-                <Nav.Link onClick={handleSignOut}>Sign Out</Nav.Link>
-                <Nav.Link href={Urls.about}>About</Nav.Link>
+                <Nav.Link className="text-primary" href={Urls.profile}>Profile</Nav.Link>
+                <Nav.Link className="text-success" href={Urls.finance.index}>Finance</Nav.Link>
+                <Nav.Link className="text-info" href={Urls.fitness.index}>Fitness</Nav.Link>
+                <Nav.Link className="text-warning" href={Urls.about}>About</Nav.Link>
+                <Nav.Link className="text-danger" onClick={handleSignOut}>Sign Out</Nav.Link>
               </Nav>
             ) : (
               <Nav className="ms-auto">
-                <Nav.Link href={Urls.login}>Log In</Nav.Link>
-                <Nav.Link href={Urls.signup}>Sign Up</Nav.Link>
-                <Nav.Link href={Urls.about}>About</Nav.Link>
+                <Nav.Link className="text-success" href={Urls.login}>Log In</Nav.Link>
+                <Nav.Link className="text-info" href={Urls.signup}>Sign Up</Nav.Link>
+                <Nav.Link className="text-primary" href={Urls.about}>About</Nav.Link>
               </Nav>
             )}
           </Navbar.Collapse>

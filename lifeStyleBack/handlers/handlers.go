@@ -531,17 +531,19 @@ func PostSignUp(ftx *fiber.Ctx) error {
 	var newUser db.CreateUserParams
 
 	if err := assets.ValidateContentType(ftx); err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
 	if err := ftx.BodyParser(&newUser); err != nil {
-		log.Println("Failed to parse the request body")
+		log.Println("Failed to parse the request body", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	// Hashing the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 14)
 	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Internal Server Error"})
 	}
 	newUser.Password = string(hashedPassword)
@@ -554,6 +556,10 @@ func PostSignUp(ftx *fiber.Ctx) error {
 
 	createdUser, err := q.CreateUser(ctx, newUser)
 	if err != nil {
+		if strings.Contains(err.Error(), "users_email_key") {
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "User with this email already exists!"})
+		}
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Internal Server Error"})
 	}
 	log.Printf("%#v", createdUser)
@@ -579,11 +585,13 @@ func PostSignUp(ftx *fiber.Ctx) error {
 func PostLogin(ftx *fiber.Ctx) error {
 	var userLogin db.CreateUserParams
 	if err := assets.ValidateContentType(ftx); err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
 	if err := ftx.BodyParser(&userLogin); err != nil {
 		log.Println("Failed to parse the request body")
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 

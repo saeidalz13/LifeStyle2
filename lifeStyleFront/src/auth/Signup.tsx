@@ -9,6 +9,7 @@ import StatusCodes from "../StatusCodes";
 const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const passwordConfRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [errMsg, setErrMsg] = useState<string>("");
@@ -62,6 +63,15 @@ const Signup = () => {
       }
     }
 
+    if (passwordRef.current?.value !== passwordConfRef.current?.value) {
+      setLoading(false);
+      setErrMsg("Password confirmation does not match the initial password");
+      setTimeout(() => {
+        setErrMsg("");
+      }, 5000);
+      return;
+    }
+
     const newUser = {
       email: emailRef.current?.value,
       password: passwordRef.current?.value,
@@ -74,20 +84,35 @@ const Signup = () => {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+      setLoading(false);
       const resp = await result.json();
 
       if (result.status === StatusCodes.Ok) {
         setSuccess(true);
-        setLoading(false);
         location.assign(Urls.home);
         return;
-      } else if (result.status === StatusCodes.UnAuthorized) {
+      }
+
+      if (result.status === StatusCodes.UnAuthorized) {
         setErrMsg(resp.message);
-        setLoading(false);
         setTimeout(() => {
           setErrMsg("");
         }, 5000);
-      } else return;
+        return;
+      }
+
+      if (result.status === StatusCodes.InternalServerError) {
+        setErrMsg(resp.message);
+        setTimeout(() => {
+          setErrMsg("");
+        }, 5000);
+        return;
+      }
+
+      setTimeout(() => {
+        setErrMsg("Something went wrong! Try again later");
+      }, 5000);
+      return;
     } catch (error) {
       setLoading(false);
       setErrMsg("Something went wrong");
@@ -133,6 +158,14 @@ const Signup = () => {
                 ref={passwordRef}
                 onChange={handlePassword}
               />
+              <Form.Control
+                className="form-control"
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Password Confirmation"
+                ref={passwordConfRef}
+              />
               <Form.Text className="text-danger">{passMsg}</Form.Text>
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
@@ -150,14 +183,14 @@ const Signup = () => {
           </Link>
         </div>
         {errMsg !== "" ? (
-          <div className="alert alert-warning mt-2 text-center mx-5 p-2">
+          <div style={{fontSize:"18px"}}  className="alert alert-warning mt-2 text-center mx-5 p-2">
             {errMsg}
           </div>
         ) : (
           errMsg
         )}
         {success && (
-          <div className="alert alert-success mt-2 text-center mx-5 p-2">
+          <div style={{fontSize:"18px"}} className="alert alert-success mt-2 text-center mx-5 p-2">
             Signed in successfully! Redirecting to home page...
           </div>
         )}

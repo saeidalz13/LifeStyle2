@@ -4,7 +4,8 @@ import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
-import { useRouteLoaderData } from "react-router-dom";
+import { useRouteLoaderData, NavLink } from "react-router-dom";
+import { Badge, Button } from "react-bootstrap";
 
 const NewBudget = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -129,6 +130,34 @@ const NewBudget = () => {
           <div className="col">
             <div style={{ padding: "20px" }} id="new-budget-tips">
               <h2>Tips:</h2>
+              <p>The category of the budgets are:</p>
+              <Badge bg="dark" className="border border-primary me-2 py-2">
+                Capital
+              </Badge>
+              This includes all the necessary expenses during the budgeting
+              period including but not limited to{" "}
+              <u>rent, bills and transportation.</u>
+              <hr />
+
+              <Badge bg="dark" className="border border-warning me-2 py-2">
+                Eat Out
+              </Badge>
+              Includes all the money you want to spend on food outside
+              <hr />
+
+              <Badge bg="dark" className="border border-info me-2 py-2">
+                Entertainment
+              </Badge>
+              All the money you want to spend for fun. Could be going for a
+              movie, escape rooms or whatever that you do for fun!
+              <hr />
+
+              <Badge bg="dark" className="border border-success me-2 py-2">
+                Savings
+              </Badge>
+              The money you want to save for the budgeting period
+              <hr />
+
               <p>
                 Here are some useful links to help you budget you finances more
                 effecively!
@@ -211,7 +240,7 @@ const NewBudget = () => {
                 name="savings"
                 id="savings"
                 className="form-control"
-                placeholder="$"
+                placeholder="$ Amount you wish to save"
                 ref={savingsRef}
                 min={minSave}
                 step={step}
@@ -283,6 +312,13 @@ const NewBudget = () => {
               )}
             </form>
           </div>
+          <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
+            <div className="text-center mt-2">
+              <Button className=" px-5" variant="outline-primary">
+                Show All Budgets
+              </Button>
+            </div>
+          </NavLink>
         </div>
       </div>
     </>
