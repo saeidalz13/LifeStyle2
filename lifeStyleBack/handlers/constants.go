@@ -43,12 +43,14 @@ var Duration = time.Hour * 24
 var ExpirationTime = time.Now().Add(Duration)
 
 var GoogleOAuthConfig = &oauth2.Config{
-	RedirectURL:  "https://backend.fitfintracker.ca/google-callback",
+	RedirectURL:  cn.EnvVars.GRedirUrl,
 	ClientID:     cn.EnvVars.GClientId,
 	ClientSecret: cn.EnvVars.GClientSec,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 	Endpoint:     google.Endpoint,
 }
+
+const AccessUserUrl = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 var GoogleState string
 

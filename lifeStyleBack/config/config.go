@@ -35,6 +35,7 @@ type DotEnvVars struct {
 	DevStage    string
 	GClientId   string
 	GClientSec  string
+	GRedirUrl   string
 }
 
 type DevStagesStruct struct {
@@ -133,6 +134,7 @@ func GetEnvVars() (*DotEnvVars, error) {
 		DevStage:    os.Getenv("DEV_STAGE"),
 		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
 		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
+		GRedirUrl:   os.Getenv("GOOGLE_REDIRECT_URL"),
 	}, nil
 }
 

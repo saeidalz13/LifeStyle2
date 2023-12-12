@@ -35,8 +35,14 @@ const StartWorkout = () => {
   const { id } = useParams();
 
   const [possibleErrs, setPossibleErrs] = useState("");
+  const [updatePossibleErrs, setUpdatePossibleErrs] = useState("");
+
   const [possibleSuccess, setPossibleSuccess] = useState("");
+  const [updatePossibleSuccess, setUpdatePossibleSuccess] = useState("");
+
   const [addSetErrs, setAddSetErrs] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
 
   const [repsForm, setRepsForm] = useState<number>(0);
   const [weightsForm, setWeightsForm] = useState<number>(0);
@@ -57,6 +63,7 @@ const StartWorkout = () => {
     setAddSetErrs("");
     setPossibleSuccess("");
     setPossibleErrs("");
+    setLoading(false);
 
     if (repsForm !== 0 && weightsForm !== 0) {
       setAddedReps((prevReps) => [...prevReps, +repsForm]);
@@ -72,6 +79,7 @@ const StartWorkout = () => {
   };
 
   const handleDeleteSet = (idx: number) => {
+    setLoading(false);
     setAddSetErrs("");
     setPossibleSuccess("");
     setPossibleErrs("");
@@ -88,6 +96,7 @@ const StartWorkout = () => {
     setAddSetErrs("");
     setPossibleSuccess("");
     setPossibleErrs("");
+    setLoading(false);
 
     if (addedReps.length === 0) {
       setPossibleErrs("Please add at least one set!");
@@ -114,6 +123,7 @@ const StartWorkout = () => {
         day_plan_move_id: +dayPlanMoves.moves[0].day_plan_move_id,
       };
 
+      setLoading(true);
       try {
         const result = await fetch(
           `${BACKEND_URL}${Urls.fitness.addPlanRecord}/${id}`,
@@ -128,6 +138,7 @@ const StartWorkout = () => {
           }
         );
 
+        setLoading(false);
         if (result.status === StatusCodes.UnAuthorized) {
           location.assign(Urls.login);
           return;
@@ -172,6 +183,54 @@ const StartWorkout = () => {
 
     console.log("No connection with backend!");
     return;
+  };
+
+  const handleUpdateHistory = async () => {
+    setLoadingUpdate(true);
+    setUpdatePossibleErrs("");
+
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.getPlanRecords}/${id}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      setLoadingUpdate(false);
+      if (result.status === StatusCodes.UnAuthorized) {
+        location.assign(Urls.login);
+        return;
+      }
+
+      if (result.status === StatusCodes.InternalServerError) {
+        setUpdatePossibleErrs("Internal server error! Try again later");
+        setTimeout(() => {
+          setUpdatePossibleErrs("");
+        }, 5000);
+        return;
+      }
+
+      if (result.status === StatusCodes.Ok) {
+        const data = (await result.json()) as PlanRecords;
+        setPlanRecords(data);
+        setUpdatePossibleSuccess("History Updated!");
+        setTimeout(() => {
+          setUpdatePossibleSuccess("");
+        }, 5000);
+        return;
+      }
+
+      setUpdatePossibleErrs("Something went wrong! Try again later");
+      setTimeout(() => {
+        setUpdatePossibleErrs("");
+      }, 5000);
+      return;
+    } catch (error) {
+      console.log(error);
+      return "error";
+    }
   };
 
   useEffect(() => {
@@ -261,7 +320,7 @@ const StartWorkout = () => {
       invokeFunc();
       invokePlanRecords();
     }
-  }, [id]);
+  }, [id, planRecords]);
 
   if (dayPlanMoves === "waiting") {
     return (
@@ -386,10 +445,14 @@ const StartWorkout = () => {
         <Button
           variant="outline-warning"
           className=" mt-2"
-          onClick={() => location.reload()}
+          onClick={handleUpdateHistory}
         >
-          Update
+          {loadingUpdate ? <img src={rl} alt="Rotation" /> : "Update"}
         </Button>
+        <div className="mt-1 text-danger">{updatePossibleErrs}</div>
+        <div className="mt-1" style={SUCCESS_STYLE}>
+          {updatePossibleSuccess}
+        </div>
       </div>
 
       <Container className="text-center mt-4">
@@ -542,7 +605,7 @@ const StartWorkout = () => {
               className="px-5 py-2 all-budget-choices"
               onClick={handleSubmitRecord}
             >
-              Submit
+              {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
             </Button>
             <div className="mt-1 text-danger">{possibleErrs}</div>
             <div className="mt-1" style={SUCCESS_STYLE}>
