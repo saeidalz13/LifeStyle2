@@ -52,28 +52,45 @@ const router = createBrowserRouter(
             loader={FetchAllBudgets}
             element={<ShowAllBudgets />}
           />
-          <Route
-            path={Urls.finance.showSingleBudget}
-            element={<EachBudget />}
-          />
 
           <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} />
-          <Route
+          {/* <Route
             path={Urls.finance.updateSingleBudget}
             element={<UpdateBudget />}
-          />
-          <Route
+          /> */}
+          {/* <Route
             path={Urls.finance.submitExpensesEach}
             element={<SubmitExpenses />}
-          />
-          <Route
+          /> */}
+          {/* <Route
             path={Urls.finance.showExpensesEach}
             element={<ShowExpenses />}
-          />
+          /> */}
         </Route>
+        <Route
+          path={Urls.finance.newShowSingleBudget}
+          element={<EachBudget />}
+        />
+        <Route
+          path={Urls.finance.newUpdateSingleBudget}
+          element={<UpdateBudget />}
+        />
+        <Route
+          path={Urls.finance.newSubmitExpensesEach}
+          element={<SubmitExpenses />}
+        />
+
+        <Route
+          path={Urls.finance.newShowExpensesEach}
+          element={<ShowExpenses />}
+        />
 
         {/* Fitness */}
-        <Route path={Urls.fitness.index} element={<Fitness />} loader={fetchFitnessPlans}></Route>
+        <Route
+          path={Urls.fitness.index}
+          element={<Fitness />}
+          loader={fetchFitnessPlans}
+        ></Route>
         <Route path={Urls.fitness.editPlan} element={<EditFitPlan />} />
         <Route path={Urls.fitness.goDayPlanMove} element={<EachDayPlan />} />
         <Route path={Urls.fitness.startWorkoutApp} element={<StartWorkout />} />

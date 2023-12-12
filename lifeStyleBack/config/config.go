@@ -33,6 +33,8 @@ type DotEnvVars struct {
 	DbConn      string
 	DbUrl       string
 	DevStage    string
+	GClientId   string
+	GClientSec  string
 }
 
 type DevStagesStruct struct {
@@ -41,12 +43,17 @@ type DevStagesStruct struct {
 }
 
 type ProjUrls struct {
-	Home              string
-	UpdateBudget      string
-	PostNewBudget     string
-	SignUp            string
-	Login             string
-	SignOut           string
+	Home          string
+	UpdateBudget  string
+	PostNewBudget string
+
+	//Auth
+	SignUp        string
+	Login         string
+	SignOut       string
+	OAuthSignIn   string
+	OAuthCallback string
+
 	Finance           string
 	ShowBudgets       string
 	EachBudget        string
@@ -74,10 +81,12 @@ type ProjUrls struct {
 
 var URLS = &ProjUrls{
 	// Auth and General
-	Home:    "/",
-	SignUp:  "/signup",
-	Login:   "/login",
-	SignOut: "/signout",
+	Home:          "/",
+	SignUp:        "/signup",
+	Login:         "/login",
+	SignOut:       "/signout",
+	OAuthSignIn:   "/google-sign-in",
+	OAuthCallback: "/google-callback",
 
 	// User
 	Profile:       "/profile",
@@ -122,6 +131,8 @@ func GetEnvVars() (*DotEnvVars, error) {
 		DbConn:      os.Getenv("DB_CONNECTION"),
 		DbUrl:       os.Getenv("DATABASE_URL"),
 		DevStage:    os.Getenv("DEV_STAGE"),
+		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
+		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
 	}, nil
 }
 

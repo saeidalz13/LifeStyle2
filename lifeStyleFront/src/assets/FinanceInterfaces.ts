@@ -67,6 +67,7 @@ export type TEntertainmentExpenses = Array<{
 }>;
 
 export type Expenses = {
+  budget_name: string;
   capitalExpenses: TCapitalExpenses;
   eatoutExpenses: TEatoutExpenses;
   entertainmentExpenses: TEntertainmentExpenses;
@@ -80,5 +81,3 @@ export type TAllExpensesArr = {
 };
 
 export type TNoExpensesData = "nodata";
-
-

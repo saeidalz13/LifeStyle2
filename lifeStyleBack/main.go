@@ -26,7 +26,7 @@ func main() {
 	}))
 
 	routes.Setup(app)
-	
+
 	log.Printf("Listening to port %v...", cn.EnvVars.Port)
 	app.Listen(cn.EnvVars.Port)
 }

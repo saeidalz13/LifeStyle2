@@ -15,8 +15,8 @@ const ShowExpenses = () => {
   const { id } = useParams<{ id: string }>();
   const mount = useRef(true);
   const [allExpenses, setAllExpenses] = useState<
-    TAllExpensesArr | null | TNoExpensesData
-  >(null);
+    TAllExpensesArr | null | TNoExpensesData | "waiting"
+  >("waiting");
   const [expenseType, setExpenseType] = useState("capital");
 
   const [totalCapitalRows, setTotalCapitalRows] = useState(0);
@@ -37,8 +37,10 @@ const ShowExpenses = () => {
 
   useEffect(() => {
     if (mount.current) {
-      // mount.current = false;
-      const fetchAllExpenses = async () => {
+      mount.current = false;
+      const fetchAllExpenses = async (): Promise<
+        "nodata" | TAllExpensesArr | null
+      > => {
         if (id) {
           try {
             const result = await fetch(
@@ -57,48 +59,68 @@ const ShowExpenses = () => {
                 },
               }
             );
-            console.log(result.status);
 
             if (result.status === StatusCodes.Ok) {
-              const allExpenses = (await result.json()) as TAllExpensesArr;
-              setTotalCapitalRows(allExpenses.allExpenses.capital_rows_count);
-              setTotalEatoutRows(allExpenses.allExpenses.eatout_rows_count);
-              setTotalEntertRows(
-                allExpenses.allExpenses.entertainment_rows_count
-              );
-              // setPageNumsCapital(
-              //   Math.ceil(allExpenses.allExpenses.capital_rows_count / 10)
-              // );
-              // setPageNumsEatout(
-              //   Math.ceil(allExpenses.allExpenses.eatout_rows_count / 10)
-              // );
-              // setPageNumsEntert(
-              //   Math.ceil(allExpenses.allExpenses.entertainment_rows_count / 10)
-              // );
-              setAllExpenses(allExpenses);
-              return;
+              return (await result.json()) as TAllExpensesArr;
             } else if (result.status === StatusCodes.NoContent) {
-              setAllExpenses("nodata");
-              return;
+              return "nodata";
             } else {
-              setAllExpenses(null);
               const errResp = await result.json();
               console.log(errResp.message);
-              return;
+              return null;
             }
           } catch (error) {
-            setAllExpenses(null);
             console.log(error);
-            return;
+            return null;
           }
         }
         console.log("No budget ID!");
+        return null;
+      };
+
+      const invokeFetch = async () => {
+        const data = await fetchAllExpenses();
+        if (data === null) {
+          setAllExpenses(null);
+          return;
+        }
+
+        if (data === "nodata") {
+          setAllExpenses("nodata");
+          return;
+        }
+
+        setTotalCapitalRows(data.allExpenses.capital_rows_count);
+        setTotalEatoutRows(data.allExpenses.eatout_rows_count);
+        setTotalEntertRows(data.allExpenses.entertainment_rows_count);
+        setAllExpenses(data);
         return;
       };
 
-      fetchAllExpenses();
+      invokeFetch();
     }
-  }, [id, currentPage]);
+  }, [id, currentPage, allExpenses]);
+
+  if (allExpenses === "waiting") {
+    return (
+      <>
+        <div className="text-center mt-4 mb-3">
+          <NavLink
+            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+          >
+            <Button variant="outline-secondary" className="all-budget-choices">
+              Back To Budget
+            </Button>
+          </NavLink>
+        </div>
+        <div className="mt-5" style={{ textAlign: "center" }}>
+          <Button variant="light" className="p-4" disabled>
+            <img src={rl} height="150px" width="150px" alt="Rotation" />
+          </Button>
+        </div>
+      </>
+    );
+  }
 
   if (allExpenses === "nodata") {
     return (
@@ -117,7 +139,7 @@ const ShowExpenses = () => {
     );
   }
 
-  if (!allExpenses) {
+  if (allExpenses === null) {
     return (
       <>
         <div className="text-center mt-4 mb-3">
@@ -129,9 +151,9 @@ const ShowExpenses = () => {
             </Button>
           </NavLink>
         </div>
-        <div className="mt-5" style={{ textAlign: "center" }}>
-          <img src={rl} height="150px" width="150px" alt="Rotation" />
-        </div>
+        <h1 className="mt-5" style={{ textAlign: "center" }}>
+          Server error! Try again later
+        </h1>
       </>
     );
   }
@@ -152,7 +174,7 @@ const ShowExpenses = () => {
               </Button>
             </NavLink>
           </div>
-          <h2 className="mt-2 mb-3 text-center">Budget {id}</h2>
+          <h2 className="mt-2 mb-3 text-center">{allExpenses.allExpenses.budget_name}</h2>
           <select
             name="expenseType"
             id="expenseType"

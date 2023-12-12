@@ -9,12 +9,20 @@ import {
 } from "react-bootstrap";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import Urls from "../../Urls";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Budgets } from "../../assets/FinanceInterfaces";
 // import BACKEND_URL from "../../Config";
 // import StatusCodes from "../../StatusCodes";
 
 const ShowAllBudgets = () => {
+  useEffect(() => {
+    const targetElement = document.getElementById('show-all-bugdets-section');
+
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+  
   const result = useLoaderData() as Budgets;
   // const [budgets, setBudgets] = useState(result.budgets);
   const budgets = result.budgets;
@@ -74,7 +82,7 @@ const ShowAllBudgets = () => {
 
   if (budgets.length === 0) {
     return (
-      <div>
+      <div id="show-all-bugdets-section">
         <h1 style={{ color: "rgba(255,204,204, 0.8)" }}>No Budgets To Show!</h1>{" "}
         <div className="text-center">
           <img src={sadFace} />
@@ -84,7 +92,7 @@ const ShowAllBudgets = () => {
   }
 
   return (
-    <>
+    <div id="show-all-bugdets-section">
       <Container className="mt-3 text-center mb-2">
         <Row>
           {budgets && budgets.length > 0
@@ -120,12 +128,6 @@ const ShowAllBudgets = () => {
                         )}{" "}
                       </span>
                     </ListGroup.Item>
-
-                    {/* <ListGroup.Item>
-                      <span style={{ color: "goldenrod" }}>
-                        &#128181; Savings: ${budget.savings}
-                      </span>
-                    </ListGroup.Item> */}
                     <div className="mt-2 mb-1">
                       <NavLink
                         to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${budget.budget_id}`}
@@ -295,7 +297,7 @@ const ShowAllBudgets = () => {
           </Col>
         </Row>
       </Container> */}
-    </>
+    </div>
   );
 };
 

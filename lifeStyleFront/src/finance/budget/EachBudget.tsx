@@ -1,4 +1,4 @@
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, Outlet } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
@@ -305,6 +305,8 @@ const EachBudget = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Outlet />
     </>
   );
 };

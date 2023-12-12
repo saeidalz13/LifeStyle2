@@ -288,7 +288,7 @@ const EachBudget = () => {
               onSubmit={handleUpdateBudget}
             >
               <legend className="text-center text-light">
-                Budget ID: {id}
+              {budget?.budget_name}
               </legend>
               <legend style={{ textAlign: "center", fontSize: "17px" }}>
                 Total Remaining:{" "}

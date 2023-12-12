@@ -298,12 +298,12 @@ const EditFitPlan = () => {
             </Col>
           </Row>
 
-          <Row className="text-center mt-3">
+          <Row className="text-center mt-2">
             <Col>
               <Button
                 type="submit"
                 variant="outline-warning"
-                className="px-5 all-budget-choices"
+                className="px-4 all-budget-choices"
               >
                 Add Move
               </Button>
@@ -311,6 +311,44 @@ const EditFitPlan = () => {
             <Form.Text className="text-danger">{addMoveErrs}</Form.Text>
           </Row>
         </Form>
+
+        <div className="text-center mt-2">
+        {percentageDayPlans >= 100 ? (
+          <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
+            <Button
+              variant="outline-light"
+              className="px-5 border border-danger"
+            >
+              Go To Plan Details
+              <Spinner
+                as="span"
+                animation="grow"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+                variant="danger"
+                className="ms-1"
+              />
+            </Button>
+          </NavLink>
+        ) : (
+          <>
+            <Button
+              variant="outline-success"
+              className="px-4 all-budget-choices"
+              onClick={handleSubmitDayPlan}
+            >
+              Submit Day {day} Moves
+            </Button>
+            <br />
+            <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
+              <Button className="mt-2 py-1" variant="outline-secondary">
+                Plan Details So Far
+              </Button>
+            </NavLink>
+          </>
+        )}
+      </div>
 
         <div>
           {percentageDayPlans >= 100 ? (
@@ -321,7 +359,7 @@ const EditFitPlan = () => {
               You're All Set!
             </div>
           ) : (
-            <div className="text-center text-primary mt-5 mb-2">
+            <div className="text-center text-primary mt-4 mb-2">
               <Badge
                 style={{
                   fontSize: "14px",
@@ -341,7 +379,7 @@ const EditFitPlan = () => {
           )}
         </div>
 
-        <Row className="mt-4">
+        <Row className="mt-3">
           <Col lg={12}>
             {moves.length > 0 ? (
               <Table striped bordered hover variant="dark">
@@ -386,43 +424,9 @@ const EditFitPlan = () => {
           </Col>
         </Row>
       </Container>
-      <div className="text-center mt-2">
-        {percentageDayPlans >= 100 ? (
-          <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
-            <Button
-              variant="outline-light"
-              className="px-5 border border-danger"
-            >
-              Go To Plan Details
-              <Spinner
-                as="span"
-                animation="grow"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-                variant="danger"
-                className="ms-1"
-              />
-            </Button>
-          </NavLink>
-        ) : (
-          <>
-            <Button
-              variant="outline-success"
-              className="px-4 all-budget-choices"
-              onClick={handleSubmitDayPlan}
-            >
-              Submit Day {day} Moves
-            </Button>
-            <br />
-            <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
-              <Button className="mt-2 py-1" variant="outline-secondary">
-                Plan Details So Far
-              </Button>
-            </NavLink>
-          </>
-        )}
-      </div>
+
+
+
       <div className="text-danger text-center mt-2">{possibleErrs}</div>
       <div className="mt-2 text-center" style={SUCCESS_STYLE}>
         {success}

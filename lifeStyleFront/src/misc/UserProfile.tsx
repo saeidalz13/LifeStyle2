@@ -59,7 +59,7 @@ const UserProfile = () => {
         setMsg("Profile deleted! Redirecting to home...");
         setTimeout(() => {
           location.assign(Urls.home);
-        }, 2000);
+        }, 500);
         return;
       }
 

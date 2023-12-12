@@ -6,6 +6,7 @@ class Urls {
   login = "/login";
   signout = "/signout";
   about = "/about";
+  googleSignIn = "/google-sign-in"
 
   fitness = {
     index: "/fitness",
@@ -38,13 +39,18 @@ class Urls {
     showBudgets: "show-all-budgets",
     showSingleBudget: "show-all-budgets/:id",
     updateSingleBudget: "show-all-budgets/update/:id",
+    
+    newShowSingleBudget:"/finance/show-all-budgets/:id",
+    newUpdateSingleBudget: "/finance/show-all-budgets/update/:id",
 
     // Expenses
     submitExpenses: "submit-expenses",
     showExpenses: "show-expenses",
-    showExpensesEach: "show-expenses/:id",
-    submitExpensesEach: "submit-expenses/:id",
+    // showExpensesEach: "show-expenses/:id",
+    // submitExpensesEach: "submit-expenses/:id",
 
+    newSubmitExpensesEach: "/finance/submit-expenses/:id",
+    newShowExpensesEach: "/finance/show-expenses/:id",
     // Balance
     balance: "balance",
     eachBalance: "balance/:id",

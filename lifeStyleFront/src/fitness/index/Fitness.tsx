@@ -34,11 +34,31 @@ const Fitness = () => {
   };
 
   const handleClickCreate = () => {
+    if (!open) {
+      setTimeout(() => {
+        const targetElement = document.getElementById(
+          "create-fitnessplan-container"
+        );
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 110);
+    }
     setOpen(!open);
     setOpenPlans(false);
   };
 
   const handleClickShowPlans = () => {
+    if (!openPlans) {
+      setTimeout(() => {
+        const targetElement = document.getElementById(
+          "show-fitnessplan-container"
+        );
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 120);
+    }
     setOpenPlans(!openPlans);
     setOpen(false);
   };
@@ -80,9 +100,9 @@ const Fitness = () => {
               <span style={accHeaderStyle}>Navigate Through Plans</span>{" "}
             </Accordion.Header>
             <Accordion.Body style={accBodyStyle}>
-              If you have already created a plan/plans, you can click on
-              "Show Plans" to see the details and the possible actions. You can
-              delete and view the details of your plan!
+              If you have already created a plan/plans, you can click on "Show
+              Plans" to see the details and the possible actions. You can delete
+              and view the details of your plan!
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>
@@ -94,7 +114,7 @@ const Fitness = () => {
               variant="success"
               className="border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickCreate}
-              style={{fontSize:"22px"}}
+              style={{ fontSize: "22px" }}
             >
               Create Plan
             </Button>
@@ -103,7 +123,7 @@ const Fitness = () => {
             <Button
               className=" border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickShowPlans}
-              style={{fontSize:"22px"}}
+              style={{ fontSize: "22px" }}
             >
               Show Plans
             </Button>
@@ -112,13 +132,13 @@ const Fitness = () => {
       </Container>
 
       <Collapse in={open}>
-        <div>
+        <div id="create-fitnessplan-container">
           <CreatePlan />
         </div>
       </Collapse>
 
       <Collapse in={openPlans}>
-        <Container className="mt-4">
+        <Container id="show-fitnessplan-container" className="mt-4">
           <Row>
             {plans?.plans && plans?.plans.length > 0 ? (
               plans.plans.map((plan, idx) => (
@@ -164,7 +184,6 @@ const Fitness = () => {
           </Row>
         </Container>
       </Collapse>
-      
     </>
   );
 };

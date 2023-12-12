@@ -3,7 +3,9 @@ import Urls from "../Urls";
 import { Link } from "react-router-dom";
 import BACKEND_URL from "../Config";
 import rl from "../svg/RotatingLoad.svg";
+import gIcon from "../svg/GoogleIcon.svg";
 import StatusCodes from "../StatusCodes";
+import { Button } from "react-bootstrap";
 
 const Login = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -63,9 +65,33 @@ const Login = () => {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await fetch(`${BACKEND_URL}${Urls.googleSignIn}`, {
+        method: "GET",
+      });
+
+      if (result.status === StatusCodes.Ok) {
+        const googleUrl = (await result.json()) as { googleUrl: string };
+        location.assign(googleUrl.googleUrl);
+        return;
+      }
+
+      setErrMsg("Unexpected Error Happened, Try again later!");
+      setTimeout(() => {
+        setErrMsg("");
+        setErr(false);
+      }, 5000);
+      return;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
   return (
     <>
-      <div className="container mt-5 mb-5 mx-auto">
+      <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
           <div className="col mx-5">
             <div style={{ marginBottom: "20px" }}>
@@ -106,9 +132,9 @@ const Login = () => {
         </div>
         <div style={{ marginTop: "10px", textAlign: "center" }}>
           <Link to={Urls.signup}>
-            <button className="btn btn-info">
+            <Button variant="outline-primary">
               Need An Account? Click Here
-            </button>
+            </Button>
           </Link>
         </div>
 
@@ -122,6 +148,21 @@ const Login = () => {
             {successMsg}
           </div>
         )}
+      </div>
+
+      <div style={{ fontSize: "30px" }} className="text-center text-light mb-3">
+        OR
+      </div>
+      <div className="text-center">
+        <Button
+          variant="dark"
+          style={{ boxShadow: "1px 1px 5px rgb(0, 86, 86)" }}
+          onClick={handleGoogleSignIn}
+        >
+          {" "}
+          <span style={{ fontSize: "18px" }}>Sign In With Google </span>{" "}
+          <img src={gIcon} alt="Google Icon" height={"60px"} width={"60px"} />
+        </Button>
       </div>
     </>
   );

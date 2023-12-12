@@ -1,10 +1,11 @@
 import { FormEvent, useRef, useState } from "react";
 import Urls from "../Urls";
 import { Link } from "react-router-dom";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import BACKEND_URL from "../Config";
 import rl from "../svg/RotatingLoad.svg";
 import StatusCodes from "../StatusCodes";
+import gIcon from "../svg/GoogleIcon.svg";
 
 const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -32,7 +33,6 @@ const Signup = () => {
       );
       return;
     }
-
     setPassMsg("");
     return;
   }
@@ -66,6 +66,17 @@ const Signup = () => {
     if (passwordRef.current?.value !== passwordConfRef.current?.value) {
       setLoading(false);
       setErrMsg("Password confirmation does not match the initial password");
+      setTimeout(() => {
+        setErrMsg("");
+      }, 5000);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(emailRef.current?.value as string);
+    if (!isValid) {
+      setLoading(false);
+      setErrMsg("Please enter a valid email address!");
       setTimeout(() => {
         setErrMsg("");
       }, 5000);
@@ -124,9 +135,32 @@ const Signup = () => {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await fetch(`${BACKEND_URL}${Urls.googleSignIn}`, {
+        method: "GET",
+      });
+
+      if (result.status === StatusCodes.Ok) {
+        const googleUrl = (await result.json()) as { googleUrl: string };
+        location.assign(googleUrl.googleUrl);
+        return;
+      }
+
+      setErrMsg("Unexpected Error Happened, Try again later!");
+      setTimeout(() => {
+        setErrMsg("");
+      }, 5000);
+      return;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
   return (
     <>
-      <div className="container mt-5 mb-5 mx-auto">
+      <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
           <div className="col mx-5">
             <div style={{ marginBottom: "20px" }}>
@@ -148,6 +182,7 @@ const Signup = () => {
                 id="email"
                 placeholder="Email Address"
                 ref={emailRef}
+                required
               />
               <Form.Control
                 className="form-control"
@@ -157,6 +192,7 @@ const Signup = () => {
                 placeholder="Password"
                 ref={passwordRef}
                 onChange={handlePassword}
+                required
               />
               <Form.Control
                 className="form-control"
@@ -165,6 +201,7 @@ const Signup = () => {
                 id="password"
                 placeholder="Password Confirmation"
                 ref={passwordConfRef}
+                required
               />
               <Form.Text className="text-danger">{passMsg}</Form.Text>
               <div style={{ marginTop: "10px", textAlign: "center" }}>
@@ -177,9 +214,9 @@ const Signup = () => {
         </div>
         <div style={{ marginTop: "10px", textAlign: "center" }}>
           <Link to={Urls.login}>
-            <button className="btn btn-info">
+            <Button variant="outline-primary">
               Already Have An Account? Click Here
-            </button>
+            </Button>
           </Link>
         </div>
         {errMsg !== "" ? (
@@ -194,6 +231,15 @@ const Signup = () => {
             Signed in successfully! Redirecting to home page...
           </div>
         )}
+      </div>
+
+      <div style={{fontSize:"30px"}} className="text-center text-light mb-3">OR</div>
+      <div className="text-center">
+
+        <Button variant="dark" style={{boxShadow:"1px 1px 5px rgb(0, 86, 86)"}} onClick={handleGoogleSignIn}>
+          {" "}
+          <span style={{fontSize:"18px"}}>Sign In With Google </span> <img src={gIcon} alt="Google Icon" height={"60px"} width={"60px"} />
+        </Button>
       </div>
     </>
   );

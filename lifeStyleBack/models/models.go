@@ -159,6 +159,7 @@ func (c *CapitalExpensesRes) AddCreationDate(rawDate []uint8) error {
 }
 
 type AllExpensesRes struct {
+	BudgetName             string                    `json:"budget_name"`
 	CapitalExpenses        []db.CapitalExpense       `json:"capitalExpenses"`
 	EatoutExpenses         []db.EatoutExpense        `json:"eatoutExpenses"`
 	EntertainmentExpenses  []db.EntertainmentExpense `json:"entertainmentExpenses"`

@@ -39,15 +39,23 @@ const SubmitExpenses = () => {
         if (result.status === StatusCodes.Ok) {
           const data = await result.json();
           setBalance(data);
-        } else if (result.status === StatusCodes.NoContent) {
+          return;
+        }
+
+        if (result.status === StatusCodes.NoContent) {
           setBalance(null);
-        } else if (result.status === StatusCodes.InternalServerError) {
+          return;
+        }
+
+        if (result.status === StatusCodes.InternalServerError) {
           console.log("Failed to fetch the data!");
           setBalance(null);
-        } else {
-          console.log("Unexpected error happened!");
-          setBalance(null);
+          return;
         }
+
+        console.log("Unexpected error happened!");
+        setBalance(null);
+        return;
       };
 
       fetchSingleBalance();
@@ -155,8 +163,8 @@ const SubmitExpenses = () => {
         className="mx-4"
       >
         <Row className="align-items-center mx-1">
-          <legend className="text-center text-light">Budget ID: {id}</legend>
-          <legend style={{ textAlign: "center", fontSize: "17px" }}>
+          {/* <legend className="text-center text-light">Budget ID: {id}</legend> */}
+          <legend style={{ textAlign: "center", fontSize: "22px" }}>
             Total Remaining:{" "}
             <span className="text-success">
               ${balance ? balance.total.String : ""} &#128176;

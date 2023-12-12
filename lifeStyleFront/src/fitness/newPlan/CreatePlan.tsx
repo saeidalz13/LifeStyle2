@@ -77,7 +77,7 @@ const CreatePlan = () => {
   };
 
   return (
-    <>
+    <div id="create-fitnessplan-container">
       <Container className="mb-2 mt-4">
         <Form onSubmit={handleValidation} className="mx-2 form-fitfin">
           <Row className="align-items-center">
@@ -124,7 +124,7 @@ const CreatePlan = () => {
       ) : (
         ""
       )}
-    </>
+    </div>
   );
 };
 

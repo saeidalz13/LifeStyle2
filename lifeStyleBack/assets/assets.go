@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -112,4 +113,108 @@ func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q 
 		return -1, err
 	}
 	return user.ID, nil
+}
+
+func ConcurrentCapExpenses(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	limit int32,
+	offset int32,
+	capitalExpenses *[]db.CapitalExpense,
+	capitalRowsCount *int64,
+) {
+	defer wg.Done()
+	var err error
+	*capitalExpenses, err = q.FetchAllCapitalExpenses(ctx, db.FetchAllCapitalExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+		Limit:    limit,
+		Offset:   offset,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	*capitalRowsCount, err = q.CountCapitalRows(ctx, db.CountCapitalRowsParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
+func ConcurrentEatExpenses(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	limit int32,
+	offset int32,
+	eatoutExpenses *[]db.EatoutExpense,
+	eatoutRowscount *int64,
+) {
+	defer wg.Done()
+	var err error
+	*eatoutExpenses, err = q.FetchAllEatoutExpenses(ctx, db.FetchAllEatoutExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+		Limit:    limit,
+		Offset:   offset,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	*eatoutRowscount, err = q.CountEatoutRows(ctx, db.CountEatoutRowsParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
+func ConcurrentEnterExpenses(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	limit int32,
+	offset int32,
+	entertainmentExpenses *[]db.EntertainmentExpense,
+	entertRowscount *int64,
+) {
+	defer wg.Done()
+	var err error
+	*entertainmentExpenses, err = q.FetchAllEntertainmentExpenses(ctx, db.FetchAllEntertainmentExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+		Limit:    limit,
+		Offset:   offset,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	*entertRowscount, err = q.CountEntertainmentRows(ctx, db.CountEntertainmentRowsParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
 }

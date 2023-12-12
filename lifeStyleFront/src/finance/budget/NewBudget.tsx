@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Constants from "../Constants";
 import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
@@ -123,13 +123,21 @@ const NewBudget = () => {
     }
   }
 
+  useEffect(() => {
+    const targetElement = document.getElementById('create-budget-container');
+
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth'});
+    }
+  }, []);
+
   return (
-    <>
+    <div id="create-budget-container">
       <div className="container">
         <div className="row mt-3 mb-2">
           <div className="col">
             <div style={{ padding: "20px" }} id="new-budget-tips">
-              <h2>Tips:</h2>
+              <h2 className="text-center text-primary">Before you start...</h2>
               <p>The category of the budgets are:</p>
               <Badge bg="dark" className="border border-primary me-2 py-2">
                 Capital
@@ -321,7 +329,7 @@ const NewBudget = () => {
           </NavLink>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
