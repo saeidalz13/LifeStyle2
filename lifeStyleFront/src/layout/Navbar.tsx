@@ -26,7 +26,6 @@ const NavbarComp = () => {
       <Navbar
         expand="lg"
         data-bs-theme="dark"
-        sticky="top"
         style={{
           backgroundColor: "rgba(1, 21, 28, 0.95)",
           boxShadow: "1px 1px 3px 1px rgb(100, 86, 86)",

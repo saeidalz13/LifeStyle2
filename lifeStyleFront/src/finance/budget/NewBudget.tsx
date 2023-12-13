@@ -6,6 +6,7 @@ import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
 import { useRouteLoaderData, NavLink } from "react-router-dom";
 import { Badge, Button } from "react-bootstrap";
+import ScrUp from "../../images/ScrollUp.png";
 
 const NewBudget = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -327,6 +328,12 @@ const NewBudget = () => {
               </Button>
             </div>
           </NavLink>
+
+          <div className="text-center mt-3">
+        <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
+          <img src={ScrUp} height={30}/>
+        </Button>
+      </div>
         </div>
       </div>
     </div>

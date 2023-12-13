@@ -9,7 +9,7 @@ const CHEST_MOVES = [
 
 const LEG_MOVES = [
   "Squats",
-  "Bulgarian Squats",
+  "Bulgarian Split Squats",
   "Leg Press",
   "Hack Squats",
   "Calves",
@@ -90,7 +90,7 @@ const YOUTUBE_LINKS_MOVES: { [key: string]: string } = {
 
   // Legs
   Squats: "https://www.youtube.com/embed/t2b8UdqmlFs?si=RcU1esSH5fW-0Rv3",
-  "Bulgarian Squats":
+  "Bulgarian Split Squats":
     "https://www.youtube.com/embed/hPlKPjohFS0?si=BAvUdWq3ABzBUVGK",
   "Leg Press": "https://www.youtube.com/embed/Gk8cCEQh-CE?si=Ewr1270Rn1p2jUBI",
   "Hack Squats":

@@ -3,6 +3,7 @@ import Urls from "../../Urls";
 import { useRouteLoaderData } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
 import { Accordion } from "react-bootstrap";
+import { useEffect } from "react";
 
 const Finance = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -19,8 +20,17 @@ const Finance = () => {
     fontSize: "19px",
   }
 
+  useEffect(() => {
+    const targetElement = document.getElementById('main-finance-div');
+
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth'});
+      window.scrollTo(0, 0);
+    }
+  }, []);
+  
   return (
-    <div>
+    <div id="main-finance-div">
       <BackHomeBtn />
 
       <div className="mt-3 mx-4 p-4 page-explanations">
