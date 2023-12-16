@@ -9,6 +9,9 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+const ACCESS_USER_URL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+const GPT_API_URL = "https://api.openai.com/v1/chat/completions"
+
 type ApiRes struct {
 	ResType string `json:"responseType"`
 	Msg     string `json:"message"`
@@ -49,8 +52,6 @@ var GoogleOAuthConfig = &oauth2.Config{
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 	Endpoint:     google.Endpoint,
 }
-
-const AccessUserUrl = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 var GoogleState string
 

@@ -204,7 +204,7 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 		ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
-	resp, err := http.Get(AccessUserUrl + gToken.AccessToken)
+	resp, err := http.Get(ACCESS_USER_URL + gToken.AccessToken)
 	if err != nil {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}

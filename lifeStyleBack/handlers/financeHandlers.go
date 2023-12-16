@@ -13,6 +13,7 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
 	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
+	"github.com/sashabaranov/go-openai"
 )
 
 func GetAllBudgets(ftx *fiber.Ctx) error {
@@ -276,6 +277,43 @@ func PostExpenses(ftx *fiber.Ctx) error {
 }
 
 
+func PostGptApi(ftx *fiber.Ctx) error {
+	if err := assets.ValidateContentType(ftx); err != nil {
+		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
+	}
+
+	_, err := assets.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var body map[string]string
+	if err := ftx.BodyParser(&body); err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	client := openai.NewClient(cn.EnvVars.GptApiKey)
+	response, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo0613,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: body["prompt"],
+				},
+			},
+		},
+	)
+	if err != nil {
+		log.Printf("ChatCompletion error: %v\n", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Faild to get response from GPT API"})
+	}
+	log.Println(response.Choices[0].Message.Content)
+	return ftx.Status(fiber.StatusOK).JSON(map[string]string{"GPTResp": response.Choices[0].Message.Content})
+}
+
 func DeleteBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -309,7 +347,6 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 	log.Printf("Budget ID: %v -> Deleted", budgetId)
 	return ftx.Status(fiber.StatusAccepted).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Budget was deleted successfully!"})
 }
-
 
 /*
 PATCH Section

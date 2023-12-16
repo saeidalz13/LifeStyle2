@@ -9,14 +9,70 @@ import {
   ListGroup,
   Accordion,
 } from "react-bootstrap";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreatePlan from "../newPlan/CreatePlan";
 import { FitnessPlans } from "../../assets/FitnessInterfaces";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import React from "react";
 import Urls from "../../Urls";
+import WS_URL from "../../WsUrl";
+import rl from "../../svg/RotatingLoad.svg";
 
 const Fitness = () => {
+  const [startOrEndConn, setStartOrEndConn] = useState<"start" | "end">(
+    "start"
+  );
+  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
+  const [message, setMessage] = useState("");
+  let newWebsocket: null | WebSocket = null;
+  const [responses, setResponses] = useState<string[]>([]);
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleStartWsConn = () => {
+    setLoading(true);
+    if (!websocket || websocket.readyState === WebSocket.CLOSED) {
+      newWebsocket = new WebSocket(WS_URL);
+      setWebsocket(newWebsocket);
+
+      setLoading(false);
+      newWebsocket.onopen = () => {
+        console.log("WebSocket connection established");
+      };
+      newWebsocket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+      newWebsocket.onerror = (error: Event) => {
+        console.error("WebSocket error:", error);
+      };
+      newWebsocket.onmessage = (event: MessageEvent) => {
+        setResponses((prevResponses) => [...prevResponses, event.data]);
+      };
+    }
+    setStartOrEndConn("end");
+  };
+
+  const handleEndWsConn = () => {
+    setStartOrEndConn("start");
+    setResponses([]);
+    setMessage("")
+    if (websocket) {
+      websocket.close();
+    }
+  };
+
+  const sendMessage = () => {
+    setResponses([]);
+    setMsgLoading(true);
+    setTimeout(() => {
+      setMsgLoading(false);
+    }, 2000);
+
+    if (websocket && message) {
+      websocket.send(message);
+    }
+  };
+
   const navigate = useNavigate();
   const plansPerPage = 3;
   const plans = useLoaderData() as null | FitnessPlans;
@@ -68,8 +124,17 @@ const Fitness = () => {
     return;
   };
 
+  useEffect(() => {
+    const targetElement = document.getElementById("main-fitness-div");
+
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth" });
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   return (
-    <>
+    <div id="main-fitness-div">
       <BackHomeBtn />
 
       <div className="mt-3 mx-4 p-4 page-explanations">
@@ -107,6 +172,72 @@ const Fitness = () => {
           </Accordion.Item>
         </Accordion>
       </div>
+
+      <Container className="text-center mt-3 p-3 ">
+        <div className="page-explanations">
+          <Row>
+            <h2 className="text-primary">Ask GPT!</h2>
+            <div
+              style={{ fontSize: "18px" }}
+              className="text-light text-center mb-3"
+            >
+              Note: Your response will have maximum of 1000 characters for
+              financial reasons!
+            </div>
+            <Col className="m-1" lg>
+              <h4 className="mb-3 text-info">Question:</h4>
+              {startOrEndConn === "start" ? (
+                <Button onClick={handleStartWsConn} variant="success">
+                  {loading ? (
+                    <img src={rl} alt="Rotation" />
+                  ) : (
+                    "Start Connection"
+                  )}
+                </Button>
+              ) : (
+                <div>
+                  <textarea
+                    className="rounded mb-2 p-2 fancy-textarea"
+                    placeholder="Type your question here!"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  ></textarea>
+                  <div></div>
+                  <Button
+                    onClick={sendMessage}
+                    className="mb-2 px-4"
+                    variant="info"
+                  >
+                    {msgLoading ? <img src={rl} alt="Rotation" /> : "Send"}
+                  </Button>
+                  <br />
+                  <Button onClick={handleEndWsConn} variant="outline-danger">
+                    End Connection
+                  </Button>
+                </div>
+              )}
+            </Col>
+            <Col className="m-1" lg>
+              <div>
+                <h4 className="text-warning">Response:</h4>
+                <span>
+                  {responses.length > 0 ? (
+                    responses.map((response, index) => (
+                      <span key={index}>{response} </span>
+                    ))
+                  ) : (
+                    <span className="text-secondary">
+                      Your response will be streamed here...
+                    </span>
+                  )}
+                </span>
+              </div>
+            </Col>
+          </Row>
+        </div>
+      </Container>
+
+
       <Container className="text-center mt-4">
         <Row>
           <Col md className="mb-2">
@@ -114,7 +245,7 @@ const Fitness = () => {
               variant="success"
               className="border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickCreate}
-              style={{ fontSize: "22px" }}
+              style={{ fontSize: "20px" }}
             >
               Create Plan
             </Button>
@@ -123,7 +254,7 @@ const Fitness = () => {
             <Button
               className=" border border-dark rounded page-explanations-homepanels px-5"
               onClick={handleClickShowPlans}
-              style={{ fontSize: "22px" }}
+              style={{ fontSize: "20px" }}
             >
               Show Plans
             </Button>
@@ -184,7 +315,7 @@ const Fitness = () => {
           </Row>
         </Container>
       </Collapse>
-    </>
+    </div>
   );
 };
 

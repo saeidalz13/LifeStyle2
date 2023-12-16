@@ -36,6 +36,7 @@ type DotEnvVars struct {
 	GClientId   string
 	GClientSec  string
 	GRedirUrl   string
+	GptApiKey   string
 }
 
 type DevStagesStruct struct {
@@ -78,6 +79,9 @@ type ProjUrls struct {
 	AllDayPlanMoves          string
 	AddDayPlanMoves          string
 	AddPlanRecord            string
+
+	// GPT
+	GptApi string
 }
 
 var URLS = &ProjUrls{
@@ -135,6 +139,7 @@ func GetEnvVars() (*DotEnvVars, error) {
 		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
 		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
 		GRedirUrl:   os.Getenv("GOOGLE_REDIRECT_URL"),
+		GptApiKey:   os.Getenv("GPT_API_KEY"),
 	}, nil
 }
 

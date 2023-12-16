@@ -7,6 +7,7 @@ class Urls {
   signout = "/signout";
   about = "/about";
   googleSignIn = "/google-sign-in"
+  gptFinance = "/finance/gpt-call"
 
   fitness = {
     index: "/fitness",
