@@ -68,8 +68,6 @@ func Setup(app *fiber.App) {
 			}
 			prompt := string(msg)
 
-			log.Println(prompt)
-
 			req := openai.ChatCompletionRequest{
 				Model:     openai.GPT3Dot5Turbo,
 				MaxTokens: 500,

@@ -114,9 +114,7 @@ const ShowExpenses = () => {
           </NavLink>
         </div>
         <div className="mt-5" style={{ textAlign: "center" }}>
-          <Button variant="light" className="p-4" disabled>
-            <img src={rl} height="150px" width="150px" alt="Rotation" />
-          </Button>
+          <img src={rl} height="150px" width="150px" alt="Rotation" />
         </div>
       </>
     );
@@ -174,7 +172,9 @@ const ShowExpenses = () => {
               </Button>
             </NavLink>
           </div>
-          <h2 className="mt-2 mb-3 text-center">{allExpenses.allExpenses.budget_name}</h2>
+          <h2 className="mt-2 mb-3 text-center">
+            {allExpenses.allExpenses.budget_name}
+          </h2>
           <select
             name="expenseType"
             id="expenseType"
