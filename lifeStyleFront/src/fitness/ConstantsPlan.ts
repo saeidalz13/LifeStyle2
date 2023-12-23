@@ -11,6 +11,7 @@ const LEG_MOVES = [
   "Squats",
   "Bulgarian Split Squats",
   "Leg Press",
+  "Leg Press Seated",
   "Hack Squats",
   "Calves",
   "Hip Thrust",

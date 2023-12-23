@@ -13,6 +13,7 @@ var LEG_MOVES = []string{
 	"Squats",
 	"Bulgarian Split Squats",
 	"Leg Press",
+	"Leg Press Seated",
 	"Hack Squats",
 	"Calves",
 	"Hip Thrust",
