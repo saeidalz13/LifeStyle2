@@ -17,6 +17,7 @@ var LEG_MOVES = []string{
 	"Hack Squats",
 	"Calves",
 	"Hip Thrust",
+	"Leg Extension",
 }
 
 var SHOULDER_MOVES = []string{

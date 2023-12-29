@@ -218,3 +218,66 @@ func ConcurrentEnterExpenses(
 	}
 	return
 }
+
+func ConcurrentTotalCapital(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	totalCapital *string,
+) {
+	defer wg.Done()
+	var err error
+	*totalCapital, err = q.SumCapitalExpenses(ctx, db.SumCapitalExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
+func ConcurrentTotalEatout(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	totalEatout *string,
+) {
+	defer wg.Done()
+	var err error
+	*totalEatout, err = q.SumEatoutExpenses(ctx, db.SumEatoutExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
+func ConcurrentTotalEnter(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	q *db.Queries,
+	user db.User,
+	budgetID int64,
+	totalEnter *string,
+) {
+	defer wg.Done()
+	var err error
+	*totalEnter, err = q.SumEntertainmentExpenses(ctx, db.SumEntertainmentExpensesParams{
+		UserID:   user.ID,
+		BudgetID: budgetID,
+	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}

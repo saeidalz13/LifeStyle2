@@ -160,12 +160,19 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(6)
 	var capitalExpenses []db.CapitalExpense
 	var eatoutExpenses []db.EatoutExpense
 	var entertainmentExpenses []db.EntertainmentExpense
 	var capitalRowsCount, eatoutRowscount, entertRowscount int64 = -1, -1, -1
+	var totalCapital, totalEatout, totalEnter string = "NA", "NA", "NA"
 
+	// Fetch the Total amounts for each expense type
+	go assets.ConcurrentTotalCapital(&wg, ctx, q, user, budgetID, &totalCapital)
+	go assets.ConcurrentTotalEatout(&wg, ctx, q, user, budgetID, &totalEatout)
+	go assets.ConcurrentTotalEnter(&wg, ctx, q, user, budgetID, &totalEnter)
+
+	// Fetch all expenses for each expense type
 	go assets.ConcurrentCapExpenses(&wg, ctx, q, user, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount)
 	go assets.ConcurrentEatExpenses(&wg, ctx, q, user, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount)
 	go assets.ConcurrentEnterExpenses(&wg, ctx, q, user, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount)
@@ -184,6 +191,9 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 		CapitalRowsCount:       capitalRowsCount,
 		EatoutRowsCount:        eatoutRowscount,
 		EntertainmentRowsCount: entertRowscount,
+		TotalCapital:           totalCapital,
+		TotalEatout:            totalEatout,
+		TotalEnter:             totalEnter,
 	}})
 }
 
@@ -275,7 +285,6 @@ func PostExpenses(ftx *fiber.Ctx) error {
 	log.Println(newExpense.ExpenseType + " expense was added for " + user.Email)
 	return ftx.Status(fiber.StatusOK).JSON(updatedBalance)
 }
-
 
 func PostGptApi(ftx *fiber.Ctx) error {
 	if err := assets.ValidateContentType(ftx); err != nil {

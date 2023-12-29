@@ -50,6 +50,7 @@ const ExpensesRows: React.FC<{
         )}
       </>
     );
+
   } else if (expenseType === "entertainment") {
     return (
       <>

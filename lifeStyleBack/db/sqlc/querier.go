@@ -45,9 +45,9 @@ type Querier interface {
 	SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error)
 	SelectSingleBudget(ctx context.Context, arg SelectSingleBudgetParams) (Budget, error)
 	SelectUser(ctx context.Context, email string) (User, error)
-	SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (int64, error)
-	SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (int64, error)
-	SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (int64, error)
+	SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (string, error)
+	SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (string, error)
+	SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (string, error)
 	UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
 }

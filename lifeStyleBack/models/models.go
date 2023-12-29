@@ -166,6 +166,9 @@ type AllExpensesRes struct {
 	CapitalRowsCount       int64                     `json:"capital_rows_count"`
 	EatoutRowsCount        int64                     `json:"eatout_rows_count"`
 	EntertainmentRowsCount int64                     `json:"entertainment_rows_count"`
+	TotalCapital           string                    `json:"total_capital"`
+	TotalEatout            string                    `json:"total_eatout"`
+	TotalEnter             string                    `json:"total_entertainment"`
 }
 
 type BudgetUpdateOptionsType struct {

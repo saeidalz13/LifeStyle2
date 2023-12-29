@@ -74,6 +74,9 @@ export type Expenses = {
   capital_rows_count: number;
   eatout_rows_count: number;
   entertainment_rows_count: number;
+  total_capital: string;
+  total_eatout: string;
+  total_entertainment: string;
 };
 
 export type TAllExpensesArr = {

@@ -15,6 +15,7 @@ const LEG_MOVES = [
   "Hack Squats",
   "Calves",
   "Hip Thrust",
+  "Leg Extension",
 ];
 
 const SHOULDER_MOVES = [

@@ -22,9 +22,6 @@ const ShowExpenses = () => {
   const [totalCapitalRows, setTotalCapitalRows] = useState(0);
   const [totalEatoutRows, setTotalEatoutRows] = useState(0);
   const [totalEntertRows, setTotalEntertRows] = useState(0);
-  // const [pageNumsCapital, setPageNumsCapital] = useState(1);
-  // const [pageNumsEatout, setPageNumsEatout] = useState(1);
-  // const [pageNumsEntert, setPageNumsEntert] = useState(1);
 
   const [currentPage, setCurrentPage] = useState(1);
   const handleNextPage = () => {
@@ -37,7 +34,6 @@ const ShowExpenses = () => {
 
   useEffect(() => {
     if (mount.current) {
-      mount.current = false;
       const fetchAllExpenses = async (): Promise<
         "nodata" | TAllExpensesArr | null
       > => {
@@ -99,7 +95,7 @@ const ShowExpenses = () => {
 
       invokeFetch();
     }
-  }, [id, currentPage, allExpenses]);
+  }, [id, currentPage]);
 
   if (allExpenses === "waiting") {
     return (
@@ -149,6 +145,7 @@ const ShowExpenses = () => {
             </Button>
           </NavLink>
         </div>
+
         <h1 className="mt-5" style={{ textAlign: "center" }}>
           Server error! Try again later
         </h1>
@@ -172,9 +169,11 @@ const ShowExpenses = () => {
               </Button>
             </NavLink>
           </div>
+
           <h2 className="mt-2 mb-3 text-center">
             {allExpenses.allExpenses.budget_name}
           </h2>
+
           <select
             name="expenseType"
             id="expenseType"
@@ -186,6 +185,31 @@ const ShowExpenses = () => {
             <option value="eatout">Eatout</option>
             <option value="entertainment">Entertainment</option>
           </select>
+
+          {expenseType === "capital" ? (
+            <div className="mt-3 text-center">
+              <Button variant="info" className="px-5" style={{ fontSize: "18px" }}>
+                Total: ${allExpenses.allExpenses.total_capital}
+              </Button>
+            </div>
+          ) : expenseType === "eatout" ? (
+            <div className="mt-3 text-center">
+              <Button variant="warning" className="px-5" style={{ fontSize: "18px" }}>
+                Total: ${allExpenses.allExpenses.total_eatout}
+              </Button>
+            </div>
+          ) : expenseType === "entertainment" ? (
+            <div className="mt-3 text-center">
+              <Button variant="danger" className="px-5" style={{ fontSize: "18px" }}>
+                Total: ${allExpenses.allExpenses.total_entertainment}
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-3 text-center">
+              <Button variant="light">"Invalid type for expenses!"</Button>
+            </div>
+          )}
+
           <table className="table table-hover mt-3 expenses-table">
             <thead>
               <tr>

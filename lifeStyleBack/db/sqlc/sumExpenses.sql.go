@@ -10,7 +10,8 @@ import (
 )
 
 const sumCapitalExpenses = `-- name: SumCapitalExpenses :one
-SELECT SUM(expenses) FROM capital_expenses
+SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
+FROM capital_expenses
 WHERE user_id = $1 AND budget_id = $2
 `
 
@@ -19,15 +20,16 @@ type SumCapitalExpensesParams struct {
 	BudgetID int64 `json:"budget_id"`
 }
 
-func (q *Queries) SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (int64, error) {
+func (q *Queries) SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (string, error) {
 	row := q.db.QueryRowContext(ctx, sumCapitalExpenses, arg.UserID, arg.BudgetID)
-	var sum int64
-	err := row.Scan(&sum)
-	return sum, err
+	var total string
+	err := row.Scan(&total)
+	return total, err
 }
 
 const sumEatoutExpenses = `-- name: SumEatoutExpenses :one
-SELECT SUM(expenses) FROM eatout_expenses
+SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
+FROM eatout_expenses
 WHERE user_id = $1 AND budget_id = $2
 `
 
@@ -36,15 +38,16 @@ type SumEatoutExpensesParams struct {
 	BudgetID int64 `json:"budget_id"`
 }
 
-func (q *Queries) SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (int64, error) {
+func (q *Queries) SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (string, error) {
 	row := q.db.QueryRowContext(ctx, sumEatoutExpenses, arg.UserID, arg.BudgetID)
-	var sum int64
-	err := row.Scan(&sum)
-	return sum, err
+	var total string
+	err := row.Scan(&total)
+	return total, err
 }
 
 const sumEntertainmentExpenses = `-- name: SumEntertainmentExpenses :one
-SELECT SUM(expenses) FROM entertainment_expenses
+SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total
+FROM entertainment_expenses
 WHERE user_id = $1 AND budget_id = $2
 `
 
@@ -53,9 +56,9 @@ type SumEntertainmentExpensesParams struct {
 	BudgetID int64 `json:"budget_id"`
 }
 
-func (q *Queries) SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (int64, error) {
+func (q *Queries) SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (string, error) {
 	row := q.db.QueryRowContext(ctx, sumEntertainmentExpenses, arg.UserID, arg.BudgetID)
-	var sum int64
-	err := row.Scan(&sum)
-	return sum, err
+	var total string
+	err := row.Scan(&total)
+	return total, err
 }
