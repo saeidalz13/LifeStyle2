@@ -376,7 +376,7 @@ const StartWorkout = () => {
         </NavLink>
       </div>
 
-      <div className="text-center mt-4 mx-4 p-2 page-explanations">
+      <div className="text-center mt-4 mx-2 p-2 page-explanations">
         <h1 className="mt-1 mb-3 text-primary">Workout Time!</h1>
         <p style={{ fontSize: "20px" }}>
           First, add all the sets for every move with the corresponding reps and
@@ -385,7 +385,7 @@ const StartWorkout = () => {
       </div>
 
       <div
-        className="text-center mt-4 mx-4 p-3 page-explanations"
+        className="text-center mt-4 mx-2 p-3 page-explanations"
         style={{ backgroundColor: "#212226" }}
       >
         {planRecords === "waiting" ? (

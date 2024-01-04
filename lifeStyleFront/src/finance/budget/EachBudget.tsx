@@ -42,6 +42,11 @@ const EachBudget = () => {
             }
           );
 
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login)
+            return null;
+          }
+
           if (result.status === StatusCodes.Ok) {
             return await result.json();
           } else {
@@ -63,6 +68,11 @@ const EachBudget = () => {
               credentials: "include",
             }
           );
+
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login)
+            return null;
+          }
 
           if (result.status === StatusCodes.Ok) {
             return await result.json();
