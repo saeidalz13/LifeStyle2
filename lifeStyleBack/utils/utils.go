@@ -1,4 +1,4 @@
-package assets
+package utils
 
 import (
 	"context"
@@ -13,12 +13,10 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
-/*
-Assets and Auxilary
-*/
+
 func ConvertStringToInt64(strArr []string) ([]int64, error) {
 	var convertedInts []int64
 	for _, str := range strArr {
@@ -100,7 +98,7 @@ func ValidateContentType(ftx *fiber.Ctx) error {
 	return nil
 }
 
-func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q *db.Queries) (int64, error) {
+func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q *sqlc.Queries) (int64, error) {
 	if err := ValidateContentType(ftx); err != nil {
 		return -1, err
 	}
@@ -118,17 +116,17 @@ func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q 
 func ConcurrentCapExpenses(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	limit int32,
 	offset int32,
-	capitalExpenses *[]db.CapitalExpense,
+	capitalExpenses *[]sqlc.CapitalExpense,
 	capitalRowsCount *int64,
 ) {
 	defer wg.Done()
 	var err error
-	*capitalExpenses, err = q.FetchAllCapitalExpenses(ctx, db.FetchAllCapitalExpensesParams{
+	*capitalExpenses, err = q.FetchAllCapitalExpenses(ctx, sqlc.FetchAllCapitalExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 		Limit:    limit,
@@ -139,7 +137,7 @@ func ConcurrentCapExpenses(
 		return
 	}
 
-	*capitalRowsCount, err = q.CountCapitalRows(ctx, db.CountCapitalRowsParams{
+	*capitalRowsCount, err = q.CountCapitalRows(ctx, sqlc.CountCapitalRowsParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
@@ -153,17 +151,17 @@ func ConcurrentCapExpenses(
 func ConcurrentEatExpenses(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	limit int32,
 	offset int32,
-	eatoutExpenses *[]db.EatoutExpense,
+	eatoutExpenses *[]sqlc.EatoutExpense,
 	eatoutRowscount *int64,
 ) {
 	defer wg.Done()
 	var err error
-	*eatoutExpenses, err = q.FetchAllEatoutExpenses(ctx, db.FetchAllEatoutExpensesParams{
+	*eatoutExpenses, err = q.FetchAllEatoutExpenses(ctx, sqlc.FetchAllEatoutExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 		Limit:    limit,
@@ -173,7 +171,7 @@ func ConcurrentEatExpenses(
 		log.Println(err)
 		return
 	}
-	*eatoutRowscount, err = q.CountEatoutRows(ctx, db.CountEatoutRowsParams{
+	*eatoutRowscount, err = q.CountEatoutRows(ctx, sqlc.CountEatoutRowsParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
@@ -187,17 +185,17 @@ func ConcurrentEatExpenses(
 func ConcurrentEnterExpenses(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	limit int32,
 	offset int32,
-	entertainmentExpenses *[]db.EntertainmentExpense,
+	entertainmentExpenses *[]sqlc.EntertainmentExpense,
 	entertRowscount *int64,
 ) {
 	defer wg.Done()
 	var err error
-	*entertainmentExpenses, err = q.FetchAllEntertainmentExpenses(ctx, db.FetchAllEntertainmentExpensesParams{
+	*entertainmentExpenses, err = q.FetchAllEntertainmentExpenses(ctx, sqlc.FetchAllEntertainmentExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 		Limit:    limit,
@@ -208,7 +206,7 @@ func ConcurrentEnterExpenses(
 		return
 	}
 
-	*entertRowscount, err = q.CountEntertainmentRows(ctx, db.CountEntertainmentRowsParams{
+	*entertRowscount, err = q.CountEntertainmentRows(ctx, sqlc.CountEntertainmentRowsParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
@@ -222,14 +220,14 @@ func ConcurrentEnterExpenses(
 func ConcurrentTotalCapital(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	totalCapital *string,
 ) {
 	defer wg.Done()
 	var err error
-	*totalCapital, err = q.SumCapitalExpenses(ctx, db.SumCapitalExpensesParams{
+	*totalCapital, err = q.SumCapitalExpenses(ctx, sqlc.SumCapitalExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
@@ -243,14 +241,14 @@ func ConcurrentTotalCapital(
 func ConcurrentTotalEatout(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	totalEatout *string,
 ) {
 	defer wg.Done()
 	var err error
-	*totalEatout, err = q.SumEatoutExpenses(ctx, db.SumEatoutExpensesParams{
+	*totalEatout, err = q.SumEatoutExpenses(ctx, sqlc.SumEatoutExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})
@@ -264,14 +262,14 @@ func ConcurrentTotalEatout(
 func ConcurrentTotalEnter(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	q *db.Queries,
-	user db.User,
+	q *sqlc.Queries,
+	user sqlc.User,
 	budgetID int64,
 	totalEnter *string,
 ) {
 	defer wg.Done()
 	var err error
-	*totalEnter, err = q.SumEntertainmentExpenses(ctx, db.SumEntertainmentExpensesParams{
+	*totalEnter, err = q.SumEntertainmentExpenses(ctx, sqlc.SumEntertainmentExpensesParams{
 		UserID:   user.ID,
 		BudgetID: budgetID,
 	})

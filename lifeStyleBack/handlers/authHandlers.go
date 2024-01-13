@@ -11,17 +11,17 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/assets"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
-	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func GetHome(ftx *fiber.Ctx) error {
 	// User Authentication
-	_, err := assets.ExtractEmailFromClaim(ftx)
+	_, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
@@ -29,14 +29,14 @@ func GetHome(ftx *fiber.Ctx) error {
 }
 
 func GetProfile(ftx *fiber.Ctx) error {
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		 return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
@@ -59,9 +59,9 @@ func GetSignOut(ftx *fiber.Ctx) error {
 }
 
 func PostSignUp(ftx *fiber.Ctx) error {
-	var newUser db.CreateUserParams
+	var newUser sqlc.CreateUserParams
 
-	if err := assets.ValidateContentType(ftx); err != nil {
+	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
@@ -83,7 +83,7 @@ func PostSignUp(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 
 	createdUser, err := q.CreateUser(ctx, newUser)
 	if err != nil {
@@ -114,8 +114,8 @@ func PostSignUp(ftx *fiber.Ctx) error {
 }
 
 func PostLogin(ftx *fiber.Ctx) error {
-	var userLogin db.CreateUserParams
-	if err := assets.ValidateContentType(ftx); err != nil {
+	var userLogin sqlc.CreateUserParams
+	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
@@ -131,7 +131,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	foundUser, err := q.SelectUser(ctx, userLogin.Email)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong email address! Please try again!"})
@@ -162,14 +162,14 @@ func PostLogin(ftx *fiber.Ctx) error {
 }
 
 func DeleteUser(ftx *fiber.Ctx) error {
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	if err := q.DeleteUser(ctx, userEmail); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "User was NOT deleted!"})
 	}
@@ -218,7 +218,7 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	user, err := q.SelectUser(ctx, userData.Email)
@@ -231,7 +231,7 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 				log.Println(err)
 				return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 			}
-			createdUser, err := q.CreateUser(ctx, db.CreateUserParams{Email: userData.Email, Password: string(hashedPassword)})
+			createdUser, err := q.CreateUser(ctx, sqlc.CreateUserParams{Email: userData.Email, Password: string(hashedPassword)})
 			log.Println(createdUser)
 			if err != nil {
 				return ftx.Redirect(cn.EnvVars.FrontEndUrl)

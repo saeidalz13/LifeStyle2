@@ -4,3 +4,4 @@ Makefile
 az webapp log tail --name lifestylefrontend --resource-group lifestylefrontend_group
 mySqlApp
 docker-compose.yaml
+*/.env

@@ -8,20 +8,21 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/assets"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
-	db "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
 	"github.com/sashabaranov/go-openai"
+
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
 )
 
 func GetAllBudgets(ftx *fiber.Ctx) error {
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -34,7 +35,7 @@ func GetAllBudgets(ftx *fiber.Ctx) error {
 
 	// Later that I set the pagination in frontend
 	// offset := (pageNumber - 1) * pageSize
-	budgets, err := q.SelectAllBudgets(ctx, db.SelectAllBudgetsParams{UserID: user.ID, Offset: 0, Limit: 15})
+	budgets, err := q.SelectAllBudgets(ctx, sqlc.SelectAllBudgetsParams{UserID: user.ID, Offset: 0, Limit: 15})
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Could not find the budgets!"})
@@ -46,12 +47,12 @@ func GetAllBudgets(ftx *fiber.Ctx) error {
 
 func GetSingleBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	user, err := q.SelectUser(ctx, userEmail)
@@ -61,13 +62,13 @@ func GetSingleBudget(ftx *fiber.Ctx) error {
 	}
 
 	// Extracting Budget ID
-	budgetId, err := assets.FetchIntOfParamId(ftx, "id")
+	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
-	var singleBudget db.SelectSingleBudgetParams
+	var singleBudget sqlc.SelectSingleBudgetParams
 	singleBudget.BudgetID = int64(budgetId)
 	singleBudget.UserID = user.ID
 	budget, err := q.SelectSingleBudget(ctx, singleBudget)
@@ -84,13 +85,13 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 	defer cancel()
 
 	// User Authorization
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
@@ -98,13 +99,13 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 	}
 
 	// Extracting Budget ID
-	budgetId, err := assets.FetchIntOfParamId(ftx, "id")
+	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
-	balance, err := q.SelectBalance(ctx, db.SelectBalanceParams{UserID: user.ID, BudgetID: int64(budgetId)})
+	balance, err := q.SelectBalance(ctx, sqlc.SelectBalanceParams{UserID: user.ID, BudgetID: int64(budgetId)})
 	if err != nil {
 		if err.Error() == SqlErrors.ErrNoRows {
 			return ftx.Status(fiber.StatusNoContent).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the budget ID"})
@@ -118,7 +119,7 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 
 func GetAllExpenses(ftx *fiber.Ctx) error {
 	// User Authentication
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -126,7 +127,7 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
@@ -146,14 +147,14 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 
 	limitQry := ftx.Query("limit", "10")
 	offsetQry := ftx.Query("offset", "1")
-	convertedInts, err := assets.ConvertStringToInt64([]string{limitQry, offsetQry})
+	convertedInts, err := utils.ConvertStringToInt64([]string{limitQry, offsetQry})
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch data"})
 	}
 	limit, offset := int32(convertedInts[0]), int32(convertedInts[1])
 
-	bugdet, err := q.SelectSingleBudget(ctx, db.SelectSingleBudgetParams{BudgetID: budgetID, UserID: user.ID})
+	bugdet, err := q.SelectSingleBudget(ctx, sqlc.SelectSingleBudgetParams{BudgetID: budgetID, UserID: user.ID})
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch expenses"})
@@ -161,21 +162,21 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 
 	var wg sync.WaitGroup
 	wg.Add(6)
-	var capitalExpenses []db.CapitalExpense
-	var eatoutExpenses []db.EatoutExpense
-	var entertainmentExpenses []db.EntertainmentExpense
+	var capitalExpenses []sqlc.CapitalExpense
+	var eatoutExpenses []sqlc.EatoutExpense
+	var entertainmentExpenses []sqlc.EntertainmentExpense
 	var capitalRowsCount, eatoutRowscount, entertRowscount int64 = -1, -1, -1
 	var totalCapital, totalEatout, totalEnter string = "NA", "NA", "NA"
 
 	// Fetch the Total amounts for each expense type
-	go assets.ConcurrentTotalCapital(&wg, ctx, q, user, budgetID, &totalCapital)
-	go assets.ConcurrentTotalEatout(&wg, ctx, q, user, budgetID, &totalEatout)
-	go assets.ConcurrentTotalEnter(&wg, ctx, q, user, budgetID, &totalEnter)
+	go utils.ConcurrentTotalCapital(&wg, ctx, q, user, budgetID, &totalCapital)
+	go utils.ConcurrentTotalEatout(&wg, ctx, q, user, budgetID, &totalEatout)
+	go utils.ConcurrentTotalEnter(&wg, ctx, q, user, budgetID, &totalEnter)
 
 	// Fetch all expenses for each expense type
-	go assets.ConcurrentCapExpenses(&wg, ctx, q, user, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount)
-	go assets.ConcurrentEatExpenses(&wg, ctx, q, user, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount)
-	go assets.ConcurrentEnterExpenses(&wg, ctx, q, user, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount)
+	go utils.ConcurrentCapExpenses(&wg, ctx, q, user, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount)
+	go utils.ConcurrentEatExpenses(&wg, ctx, q, user, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount)
+	go utils.ConcurrentEnterExpenses(&wg, ctx, q, user, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount)
 
 	wg.Wait()
 
@@ -199,11 +200,11 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 
 func PostNewBudget(ftx *fiber.Ctx) error {
 	// User Authentication
-	if err := assets.ValidateContentType(ftx); err != nil {
+	if err := utils.ValidateContentType(ftx); err != nil {
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -211,7 +212,7 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
@@ -219,15 +220,15 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	var newBudget db.CreateBudgetParams
+	var newBudget sqlc.CreateBudgetParams
 	if err := ftx.BodyParser(&newBudget); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	operationBudget := db.CreateBudgetBalanceTx(newBudget)
+	operationBudget := sqlc.CreateBudgetBalanceTx(newBudget)
 	operationBudget.UserID = user.ID
-	op := db.NewBudgetBalance(database.DB)
+	op := sqlc.NewBudgetBalance(database.DB)
 	result, err := op.CreateBudgetBalance(ctx, operationBudget)
 	if err != nil {
 		log.Println(err)
@@ -242,11 +243,11 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 
 func PostExpenses(ftx *fiber.Ctx) error {
 	// User Authentication
-	if err := assets.ValidateContentType(ftx); err != nil {
+	if err := utils.ValidateContentType(ftx); err != nil {
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -254,7 +255,7 @@ func PostExpenses(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
@@ -268,8 +269,8 @@ func PostExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	q2 := db.NewBudgetBalance(database.DB)
-	updatedBalance, err := q2.AddExpenseUpdateBalance(ctx, db.AddExpenseUpdateBalanceTx{
+	q2 := sqlc.NewBudgetBalance(database.DB)
+	updatedBalance, err := q2.AddExpenseUpdateBalance(ctx, sqlc.AddExpenseUpdateBalanceTx{
 		BudgetID:    newExpense.BudgetID,
 		UserID:      user.ID,
 		Expenses:    newExpense.ExpenseAmount,
@@ -287,11 +288,11 @@ func PostExpenses(ftx *fiber.Ctx) error {
 }
 
 func PostGptApi(ftx *fiber.Ctx) error {
-	if err := assets.ValidateContentType(ftx); err != nil {
+	if err := utils.ValidateContentType(ftx); err != nil {
 		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
-	_, err := assets.ExtractEmailFromClaim(ftx)
+	_, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -327,13 +328,13 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extract user ID
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
@@ -341,12 +342,12 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Budget ID
-	budgetId, err := assets.FetchIntOfParamId(ftx, "id")
+	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	if err = q.DeleteBudget(ctx, db.DeleteBudgetParams{
+	if err = q.DeleteBudget(ctx, sqlc.DeleteBudgetParams{
 		BudgetID: int64(budgetId),
 		UserID:   user.ID,
 	}); err != nil {
@@ -362,7 +363,7 @@ PATCH Section
 */
 func PatchBudget(ftx *fiber.Ctx) error {
 	// Authenticate User
-	userEmail, err := assets.ExtractEmailFromClaim(ftx)
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
@@ -370,7 +371,7 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	defer cancel()
 
 	// Extract user ID
-	q := db.New(database.DB)
+	q := sqlc.New(database.DB)
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
@@ -378,7 +379,7 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	}
 
 	// Prepare the input
-	var updateBudgetBalance db.UpdateBudgetBalanceTx
+	var updateBudgetBalance sqlc.UpdateBudgetBalanceTx
 	if err := ftx.BodyParser(&updateBudgetBalance); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
@@ -387,7 +388,7 @@ func PatchBudget(ftx *fiber.Ctx) error {
 	log.Printf("Incoming: %#v", updateBudgetBalance)
 
 	// Do the transaction
-	q2 := db.NewBudgetBalance(database.DB)
+	q2 := sqlc.NewBudgetBalance(database.DB)
 	updatedBudget, updatedBalance, err := q2.UpdateBudgetBalance(ctx, updateBudgetBalance)
 	if err != nil {
 		log.Println(err)

@@ -5,6 +5,8 @@ const CHEST_MOVES = [
   "Machine Press",
   "Incline Press DB",
   "Incline Machine Press",
+  "Dips",
+
 ];
 
 const LEG_MOVES = [
@@ -33,6 +35,7 @@ const BACK_MOVES = [
   "Inclined DB Row",
   "Row Cable Seated",
   "Row Cable Single",
+  "Shrugs DB",
 ];
 
 const BICEPS_MOVES = [

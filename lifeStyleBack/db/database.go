@@ -11,7 +11,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	dbsqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
 var DB *sql.DB
@@ -62,7 +62,7 @@ func ConnectToDb() {
 	defer cancel()
 
 	// Add move types
-	q := dbsqlc.New(db)
+	q := sqlc.New(db)
 	for _, moveType := range cn.MOVE_TYPES_SLICE {
 		if err := q.AddMoveType(ctx, moveType); err != nil {
 			log.Panicln("Failed to add move types", err)
@@ -87,7 +87,7 @@ func ConnectToDb() {
 			log.Panicln(cn.ErrsFitFin.InvalidMoveType)
 		}
 		for _, move := range moves {
-			if err := q.AddMoves(ctx, dbsqlc.AddMovesParams{
+			if err := q.AddMoves(ctx, sqlc.AddMovesParams{
 				MoveName:   move,
 				MoveTypeID: mType.MoveTypeID,
 			}); err != nil {

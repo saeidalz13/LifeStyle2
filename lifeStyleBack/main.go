@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/database"
+	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/routes"
 )
 

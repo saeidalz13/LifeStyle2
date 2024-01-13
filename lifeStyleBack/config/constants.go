@@ -7,6 +7,7 @@ var CHEST_MOVES = []string{
 	"Machine Press",
 	"Incline Press DB",
 	"Incline Machine Press",
+	"Dips",
 }
 
 var LEG_MOVES = []string{
@@ -35,6 +36,7 @@ var BACK_MOVES = []string{
 	"Inclined DB Row",
 	"Row Cable Seated",
 	"Row Cable Single",
+	"Shrugs DB",
 }
 
 var BICEPS_MOVES = []string{
