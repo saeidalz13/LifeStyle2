@@ -88,7 +88,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) erro
 const selectAllBudgets = `-- name: SelectAllBudgets :many
 SELECT budget_id, user_id, budget_name, start_date, end_date, savings, capital, eatout, entertainment, income, created_at FROM budgets
 WHERE user_id = $1
-ORDER by budget_id
+ORDER by created_at DESC
 LIMIT $2
 OFFSET $3
 `

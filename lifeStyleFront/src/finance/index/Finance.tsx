@@ -66,6 +66,9 @@ const Finance = () => {
   };
 
   const sendMessage = () => {
+    if (message == "") {
+      return
+    }
     setResponses([]);
     setMsgLoading(true);
     setTimeout(() => {

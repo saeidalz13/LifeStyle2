@@ -62,6 +62,9 @@ const Fitness = () => {
   };
 
   const sendMessage = () => {
+    if (message == "") {
+      return
+    }
     setResponses([]);
     setMsgLoading(true);
     setTimeout(() => {

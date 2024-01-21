@@ -29,7 +29,7 @@ LIMIT 1;
 -- name: SelectAllBudgets :many
 SELECT * FROM budgets
 WHERE user_id = $1
-ORDER by budget_id
+ORDER by created_at DESC
 LIMIT $2
 OFFSET $3;
 

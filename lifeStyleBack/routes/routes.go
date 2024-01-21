@@ -15,7 +15,6 @@ import (
 )
 
 func Setup(app *fiber.App) {
-
 	// Get
 	app.Get(cn.URLS.OAuthSignIn, h.GetGoogleSignIn)
 	app.Get(cn.URLS.OAuthCallback, h.GetGoogleCallback)
