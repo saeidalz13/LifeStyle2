@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	"golang.org/x/crypto/bcrypt"
+
 )
+
 
 func GetHome(ftx *fiber.Ctx) error {
 	// User Authentication
@@ -30,18 +32,13 @@ func GetHome(ftx *fiber.Ctx) error {
 
 func GetProfile(ftx *fiber.Ctx) error {
 	q := sqlc.New(database.DB)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
-	userEmail, err := utils.ExtractEmailFromClaim(ftx)
+	user, err := utils.InitialNecessaryValidationsGetReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		 return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-	user, err := q.SelectUser(ctx, userEmail)
-	if err != nil {
-		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	return ftx.Status(fiber.StatusOK).JSON(user)
 }
@@ -63,115 +60,115 @@ func PostSignUp(ftx *fiber.Ctx) error {
 
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
+		return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
 	if err := ftx.BodyParser(&newUser); err != nil {
 		log.Println("Failed to parse the request body", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	// Hashing the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 14)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Internal Server Error"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
 	newUser.Password = string(hashedPassword)
 	// Normalizing Email
 	newUser.Email = strings.ToLower(newUser.Email)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
 	createdUser, err := q.CreateUser(ctx, newUser)
 	if err != nil {
 		if strings.Contains(err.Error(), "users_email_key") {
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "User with this email already exists!"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "User with this email already exists!"})
 		}
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Internal Server Error"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
 	log.Printf("%#v", createdUser)
 
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, cn.Duration)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Internal Server Error"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
 		Name:     "paseto",
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  ExpirationTime,
+		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
 		Path:     "/",
 	})
-	return ftx.Status(fiber.StatusOK).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Successful signing in!"})
+	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
 }
 
 func PostLogin(ftx *fiber.Ctx) error {
 	var userLogin sqlc.CreateUserParams
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
+		return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
 	if err := ftx.BodyParser(&userLogin); err != nil {
 		log.Println("Failed to parse the request body")
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	// Normalizing Email
 	userLogin.Email = strings.ToLower(userLogin.Email)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 	foundUser, err := q.SelectUser(ctx, userLogin.Email)
 	if err != nil {
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong email address! Please try again!"})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Wrong email address! Please try again!"})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(userLogin.Password)); err != nil {
 		log.Println("Failed to match the passwords and find the user: ", err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Wrong Password! Try Again Please!"})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Wrong Password! Try Again Please!"})
 	}
 
 	// Paseto Settings
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(foundUser.Email, Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(foundUser.Email, cn.Duration)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
 		Name:     "paseto",
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  ExpirationTime,
+		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
 		Path:     "/",
 	})
-	return ftx.Status(fiber.StatusOK).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
+	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
 }
 
 func DeleteUser(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 	if err := q.DeleteUser(ctx, userEmail); err != nil {
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "User was NOT deleted!"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "User was NOT deleted!"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
@@ -184,27 +181,27 @@ func DeleteUser(ftx *fiber.Ctx) error {
 		Path:     "/",
 	})
 
-	return ftx.Status(fiber.StatusNoContent).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "User was deleted successfully!"})
+	return ftx.Status(fiber.StatusNoContent).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "User was deleted successfully!"})
 }
 
 func GetGoogleSignIn(ftx *fiber.Ctx) error {
-	randString := GenerateRandomString(20)
-	url := GoogleOAuthConfig.AuthCodeURL(randString)
+	randString := cn.GenerateRandomString(20)
+	url := cn.GoogleOAuthConfig.AuthCodeURL(randString)
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"googleUrl": url})
 }
 
 func GetGoogleCallback(ftx *fiber.Ctx) error {
 	state := ftx.Query("state")
-	if state != GoogleState {
+	if state != cn.GoogleState {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 	code := ftx.Query("code")
-	gToken, err := GoogleOAuthConfig.Exchange(context.Background(), code)
+	gToken, err := cn.GoogleOAuthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
-	resp, err := http.Get(ACCESS_USER_URL + gToken.AccessToken)
+	resp, err := http.Get(cn.OPENAI_ACCESS_USER_URL + gToken.AccessToken)
 	if err != nil {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
@@ -213,19 +210,19 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 	if err != nil {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
-	var userData OAuthResp
+	var userData cn.OAuthResp
 	if err := json.Unmarshal(userDataByte, &userData); err != nil {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
 	q := sqlc.New(database.DB)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	user, err := q.SelectUser(ctx, userData.Email)
 	log.Println(user)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			randString := GenerateRandomString(20)
+			randString := cn.GenerateRandomString(20)
 			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(randString), 14)
 			if err != nil {
 				log.Println(err)
@@ -242,17 +239,17 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 	}
 
 	// Paseto Settings
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(userData.Email, Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(userData.Email, cn.Duration)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
 	}
 
 	ftx.Cookie(&fiber.Cookie{
 		Name:     "paseto",
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  ExpirationTime,
+		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
 		Path:     "/",

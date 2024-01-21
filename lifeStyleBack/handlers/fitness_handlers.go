@@ -4,38 +4,37 @@ import (
 	"context"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
-	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 )
 
 func GetAllFitnessPlans(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	q := sqlc.New(database.DB)
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println("GetAllFitnessPlans: Select User Section", err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	plans, err := q.FetchFitnessPlans(ctx, user.ID)
 	if err != nil {
 		log.Println("GetAllFitnessPlans: Fetch Fitness Plans section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch fitness plans"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch fitness plans"})
 	}
 
 	log.Printf("%#v", plans)
@@ -43,7 +42,7 @@ func GetAllFitnessPlans(ftx *fiber.Ctx) error {
 }
 
 func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
@@ -51,19 +50,19 @@ func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extract Plan ID
 	planId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println("GetAllFitnessDayPlans: FetchIntOfParamId section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	dayPlans, err := q.FetchFitnessDayPlans(ctx, sqlc.FetchFitnessDayPlansParams{
@@ -72,7 +71,7 @@ func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch data"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
 	}
 
 	log.Println("Day Plans found; sending to frontend...")
@@ -80,7 +79,7 @@ func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 }
 
 func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
@@ -88,25 +87,25 @@ func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extract Plan ID
 	planId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println("GetAllFitnessDayPlanMoves: FetchIntOfParamId section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	joinedData, err := q.JoinDayPlanAndDayPlanMovesAndMoves(ctx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to join day_plans and day_plan_moves"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to join day_plans and day_plan_moves"})
 	}
 
 	var moves []models.RespMoves
@@ -128,7 +127,7 @@ func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 }
 
 func GetSinglePlan(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
@@ -136,18 +135,18 @@ func GetSinglePlan(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	// Extract Plan ID
 	planId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	plan, err := q.FetchSingleFitnessPlan(ctx, sqlc.FetchSingleFitnessPlanParams{
@@ -156,13 +155,13 @@ func GetSinglePlan(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch single plan"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch single plan"})
 	}
 	return ftx.Status(fiber.StatusOK).JSON(plan)
 }
 
 func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
@@ -170,19 +169,19 @@ func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extract Day Plan ID
 	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	dayPlanMoves, err := q.FetchFitnessDayPlanMoves(ctx, sqlc.FetchFitnessDayPlanMovesParams{
@@ -191,14 +190,14 @@ func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch all day plan moves"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch all day plan moves"})
 	}
 
 	var moves []models.RespStartWorkoutDayPlanMoves
 	for _, row := range dayPlanMoves {
 		moveName, err := q.FetchMoveName(ctx, row.MoveID)
 		if err != nil {
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveName})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveName})
 		}
 		moves = append(moves, models.RespStartWorkoutDayPlanMoves{
 			DayPlanMoveID: row.DayPlanMoveID,
@@ -214,7 +213,7 @@ func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 }
 
 func GetPlanRecords(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
@@ -222,19 +221,19 @@ func GetPlanRecords(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	user, err := q.SelectUser(ctx, userEmail)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extract Day Plan ID
 	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	planRecords, err := q.FetchPlanRecords(ctx, sqlc.FetchPlanRecordsParams{
@@ -243,37 +242,27 @@ func GetPlanRecords(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch plan records"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch plan records"})
 	}
 
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"plan_records": planRecords})
 }
 
 func PostAddPlan(ftx *fiber.Ctx) error {
-	if err := utils.ValidateContentType(ftx); err != nil {
-		return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
-	}
-
-	userEmail, err := utils.ExtractEmailFromClaim(ftx)
-	if err != nil {
-		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	user, err := q.SelectUser(ctx, userEmail)
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	var plan models.IncomingPlan
 	if err := ftx.BodyParser(&plan); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	addedPlan, err := q.AddPlan(ctx, sqlc.AddPlanParams{
@@ -286,28 +275,28 @@ func PostAddPlan(ftx *fiber.Ctx) error {
 	if err != nil {
 		log.Println(err)
 		if strings.Contains(err.Error(), "unique_plan_name") {
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "This plan name already exists!"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "This plan name already exists!"})
 		}
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add new plan"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to add new plan"})
 	}
 	return ftx.Status(fiber.StatusOK).JSON(addedPlan)
 }
 
 func PostEditPlan(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	userId, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	var incomingEditPlan models.IncomingEditPlan
 	if err := ftx.BodyParser(&incomingEditPlan); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	var movesToAdd []sqlc.AddDayPlanMovesParams
@@ -315,10 +304,10 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 		moveSql, err := q.FetchMoveId(ctx, eachMove.Move)
 		if err != nil {
 			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to get move id from database"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to get move id from database"})
 		}
 		temp := &sqlc.AddDayPlanMovesParams{
-			UserID: userId,
+			UserID: user.ID,
 			PlanID: incomingEditPlan.PlanID,
 			MoveID: moveSql.MoveID,
 		}
@@ -328,7 +317,7 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 	q2 := sqlc.NewDayPlanMoves(database.DB)
 	dayPlan, err := q2.CreateDayPlanMoves(ctx, sqlc.DayPlanMovesTx{
 		AddDayPlanTx: sqlc.AddDayPlanParams{
-			UserID: userId,
+			UserID: user.ID,
 			PlanID: incomingEditPlan.PlanID,
 			Day:    incomingEditPlan.Day,
 		},
@@ -337,10 +326,10 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "unique_plan_day") {
-			return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Plan for this day already exists!"})
+			return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Plan for this day already exists!"})
 		}
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the day plan"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to add the day plan"})
 	}
 
 	log.Printf("%#v", dayPlan)
@@ -348,72 +337,72 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 }
 
 func PostAddDayPlanMoves(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	userId, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	planId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	var incomingMoves models.IncomingAddDayPlanMoves
 	if err := ftx.BodyParser(&incomingMoves); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	for _, eachMove := range incomingMoves.MoveNames {
 		moveSql, err := q.FetchMoveId(ctx, eachMove)
 		if err != nil {
 			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveId})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveId})
 		}
 
 		if err := q.AddDayPlanMoves(ctx, sqlc.AddDayPlanMovesParams{
-			UserID:    userId,
+			UserID:    user.ID,
 			PlanID:    int64(planId),
 			DayPlanID: incomingMoves.DayPlanId,
 			MoveID:    moveSql.MoveID,
 		}); err != nil {
 			if strings.Contains(err.Error(), cn.UniqueConstraints.DayPlanMove) {
-				return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "One of the provided moves already exists!"})
+				return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "One of the provided moves already exists!"})
 			}
 			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add to day_plan_moves"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to add to day_plan_moves"})
 		}
 	}
 
-	return ftx.Status(fiber.StatusOK).JSON(&ApiRes{ResType: ResTypes.Success, Msg: "Moves added!"})
+	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Moves added!"})
 }
 
 func PostAddPlanRecord(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	userId, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	var planRecord models.IncomingAddPlanRecord
 	if err = ftx.BodyParser(&planRecord); err != nil {
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
 	log.Printf("%#v", planRecord)
@@ -422,12 +411,12 @@ func PostAddPlanRecord(ftx *fiber.Ctx) error {
 	move, err := q.FetchMoveId(ctx, planRecord.MoveName)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveId})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveId})
 	}
 
 	for idx, eachRecordReps := range planRecord.Reps {
 		err := q.AddPlanRecord(ctx, sqlc.AddPlanRecordParams{
-			UserID:        userId,
+			UserID:        user.ID,
 			DayPlanID:     int64(dayPlanId),
 			DayPlanMoveID: planRecord.DayPlanMoveID,
 			MoveID:        move.MoveID,
@@ -438,37 +427,30 @@ func PostAddPlanRecord(ftx *fiber.Ctx) error {
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "unique_plan_records") {
-				return ftx.Status(fiber.StatusBadRequest).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "You have already added sets for this move"})
+				return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "You have already added sets for this move"})
 			}
 			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to add the record!"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to add the record!"})
 		}
 	}
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
 func DeletePlan(ftx *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-
-	userEmail, err := utils.ExtractEmailFromClaim(ftx)
-	if err != nil {
-		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-
-	// Extract user ID
 	q := sqlc.New(database.DB)
-	user, err := q.SelectUser(ctx, userEmail)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	planId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	deletedPlan, err := q.DeletePlan(ctx, sqlc.DeletePlanParams{
@@ -477,34 +459,28 @@ func DeletePlan(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
 	return ftx.Status(fiber.StatusOK).JSON(deletedPlan)
 }
 
 func DeleteDayPlan(ftx *fiber.Ctx) error {
-	// Authenticate User
-	userEmail, err := utils.ExtractEmailFromClaim(ftx)
-	if err != nil {
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-
-	// Extract user ID
 	q := sqlc.New(database.DB)
-	user, err := q.SelectUser(ctx, userEmail)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extracting Day Plan ID
 	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the day plan ID"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the day plan ID"})
 	}
 
 	if err = q.DeleteFitnessDayPlan(ctx, sqlc.DeleteFitnessDayPlanParams{
@@ -512,34 +488,28 @@ func DeleteDayPlan(ftx *fiber.Ctx) error {
 		DayPlanID: int64(dayPlanId),
 	}); err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete the day plan ID"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the day plan ID"})
 	}
 
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
 func DeleteDayPlanMove(ftx *fiber.Ctx) error {
-	// Authenticate User
-	userEmail, err := utils.ExtractEmailFromClaim(ftx)
-	if err != nil {
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-
-	// Extract user ID
 	q := sqlc.New(database.DB)
-	user, err := q.SelectUser(ctx, userEmail)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&ApiRes{ResType: ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
 	// Extracting Day Plan ID
 	dayPlanMoveId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to fetch the day plan Move ID"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the day plan Move ID"})
 	}
 
 	deletedDayPlanMove, err := q.DeleteFitnessDayPlanMove(ctx, sqlc.DeleteFitnessDayPlanMoveParams{
@@ -548,7 +518,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println("FetchFitnessDayPlanMoves failure:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete the day plan move"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the day plan move"})
 	}
 
 	dayPlanMoves, err := q.FetchFitnessDayPlanMoves(ctx, sqlc.FetchFitnessDayPlanMovesParams{
@@ -557,7 +527,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Println("FetchFitnessDayPlanMoves failure:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to check database if day plan has any day plan moves"})
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to check database if day plan has any day plan moves"})
 	}
 
 	log.Printf("%#v", dayPlanMoves)
@@ -567,7 +537,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 			DayPlanID: deletedDayPlanMove.DayPlanID,
 		}); err != nil {
 			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&ApiRes{ResType: ResTypes.Err, Msg: "Failed to delete day plan because of no more day plan moves"})
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete day plan because of no more day plan moves"})
 		}
 	}
 	return ftx.SendStatus(fiber.StatusOK)
