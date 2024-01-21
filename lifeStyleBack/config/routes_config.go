@@ -1,49 +1,5 @@
 package config
 
-import (
-	"log"
-	"os"
-
-	"github.com/joho/godotenv"
-)
-
-var EnvVars *DotEnvVars
-
-var DevStages = &DevStagesStruct{
-	Development: "dev",
-	Production:  "prod",
-}
-
-var ExpenseTypes = ExpenseTypesStruct{
-	Capital:       "capital",
-	Eatout:        "eatout",
-	Entertainment: "entertainment",
-}
-
-type ExpenseTypesStruct struct {
-	Capital       string
-	Eatout        string
-	Entertainment string
-}
-
-type DotEnvVars struct {
-	FrontEndUrl string
-	Port        string
-	PasetoKey   string
-	DbConn      string
-	DbUrl       string
-	DevStage    string
-	GClientId   string
-	GClientSec  string
-	GRedirUrl   string
-	GptApiKey   string
-}
-
-type DevStagesStruct struct {
-	Development string
-	Production  string
-}
-
 type ProjUrls struct {
 	Home          string
 	UpdateBudget  string
@@ -121,33 +77,4 @@ var URLS = &ProjUrls{
 	AllDayPlanMoves:          "/fitness/all-day-plans/day-plan-moves/:id",
 	AddDayPlanMoves:          "/fitness/all-day-plans/add-moves/:id",
 	AddPlanRecord:            "/fitness/add-plan-record/:id",
-}
-
-func GetEnvVars() (*DotEnvVars, error) {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-		return nil, err
-	}
-
-	return &DotEnvVars{
-		FrontEndUrl: os.Getenv("FRONTENDURL"),
-		Port:        os.Getenv("PORT"),
-		PasetoKey:   os.Getenv("PASETO_KEY"),
-		DbConn:      os.Getenv("DB_CONNECTION"),
-		DbUrl:       os.Getenv("DATABASE_URL"),
-		DevStage:    os.Getenv("DEV_STAGE"),
-		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
-		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
-		GRedirUrl:   os.Getenv("GOOGLE_REDIRECT_URL"),
-		GptApiKey:   os.Getenv("GPT_API_KEY"),
-	}, nil
-}
-
-func init() {
-	envConsts, err := GetEnvVars()
-	if err != nil {
-		log.Println("Failed to retrieve data from dotenv file")
-		panic(err.Error())
-	}
-	EnvVars = envConsts
 }
