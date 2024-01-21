@@ -3,10 +3,10 @@ package token
 import (
 	"errors"
 	"time"
-	
-	"github.com/google/uuid"
-)
 
+	"github.com/google/uuid"
+	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+)
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
@@ -17,7 +17,7 @@ type Payload struct {
 
 func (py *Payload) Valid() error {
 	if time.Now().After(py.ExpiredAt) {
-		return errors.New(expiredTokenErr)
+		return errors.New(cn.DefaultTokenErrors.Expired)
 	}
 	return nil
 }
@@ -30,9 +30,9 @@ func NewPayLoad(email string, duration time.Duration) (*Payload, error) {
 	}
 
 	payload := &Payload{
-		ID: tokenId,
-		Email: email,
-		IssuedAt: time.Now(),
+		ID:        tokenId,
+		Email:     email,
+		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
 

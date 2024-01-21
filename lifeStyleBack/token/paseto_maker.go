@@ -8,15 +8,10 @@ import (
 
 	"github.com/aead/chacha20poly1305"
 	"github.com/o1egl/paseto"
-	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 )
 
 var PasetoMakerGlobal Maker
-
-const (
-	invalidTokenErr = "Invalid Token!"
-	expiredTokenErr = "Token has expired!"
-)
 
 type Maker interface {
 	CreateToken(email string, duration time.Duration) (string, error)
@@ -24,7 +19,7 @@ type Maker interface {
 }
 
 // in the function "NewPasetoMaker", we want PasetoMaker
-// to be have a Maker interface. So, it has to have its 2 methods
+// to have a Maker interface. So, it has to have its 2 methods
 type PasetoMaker struct {
 	paseto  *paseto.V2
 	symmKey []byte
@@ -35,7 +30,6 @@ func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string,
 	if err != nil {
 		return "", err
 	}
-
 	// Compared to JWT that returns an encoded payload,
 	// Paseto returns an encrypted payload
 	return p.paseto.Encrypt(p.symmKey, payload, nil)
@@ -45,7 +39,7 @@ func (p *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
 	if err := p.paseto.Decrypt(token, p.symmKey, payload, nil); err != nil {
-		return nil, errors.New(invalidTokenErr)
+		return nil, errors.New(cn.DefaultTokenErrors.Invalid)
 	}
 	if err := payload.Valid(); err != nil {
 		return nil, err
@@ -65,7 +59,7 @@ func NewPasetoMaker(symmKey string) (Maker, error) {
 }
 
 func init() {
-	tempPaseto, err := NewPasetoMaker(config.EnvVars.PasetoKey)
+	tempPaseto, err := NewPasetoMaker(cn.EnvVars.PasetoKey)
 	if err != nil {
 		log.Fatalln("Failed to extract Paseto Key!")
 	}
