@@ -9,7 +9,7 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const TEST_ENV = false
+var RUN_ENV = DefaultDevStages.Test
 
 type DotEnvVars struct {
 	FrontEndUrl string
@@ -26,14 +26,16 @@ type DotEnvVars struct {
 
 var EnvVars *DotEnvVars
 
-type DevStagesStruct struct {
+type DevStages struct {
 	Development string
 	Production  string
+	Test        string
 }
 
-var DevStages = &DevStagesStruct{
+var DefaultDevStages = &DevStages{
 	Development: "dev",
 	Production:  "prod",
+	Test:        "test",
 }
 
 func GetEnvVars() (*DotEnvVars, error) {
@@ -46,7 +48,6 @@ func GetEnvVars() (*DotEnvVars, error) {
 		FrontEndUrl: os.Getenv("FRONTENDURL"),
 		Port:        os.Getenv("PORT"),
 		PasetoKey:   os.Getenv("PASETO_KEY"),
-		DbConn:      os.Getenv("DB_CONNECTION"),
 		DbUrl:       os.Getenv("DATABASE_URL"),
 		DevStage:    os.Getenv("DEV_STAGE"),
 		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
@@ -59,9 +60,11 @@ func GetEnvVars() (*DotEnvVars, error) {
 var GoogleOAuthConfig = &oauth2.Config{}
 
 func init() {
-	if TEST_ENV {
+	if RUN_ENV == DefaultDevStages.Test {
 		EnvVars = &DotEnvVars{
 			PasetoKey: "some_random_key_that_has_32chars",
+			DbUrl:     "postgresql://root:testpassword@localhost:2000/lfdb?sslmode=disable",
+			DevStage:  "dev",
 		}
 		return
 	}
@@ -79,6 +82,4 @@ func init() {
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
-	return
-
 }

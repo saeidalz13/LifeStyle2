@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,8 +16,6 @@ import (
 var DB *sql.DB
 
 func ConnectToDb() {
-	log.Println(cn.EnvVars.DbUrl)
-
 	db, err := sql.Open("postgres", cn.EnvVars.DbUrl)
 	if err != nil {
 		log.Println(err)
@@ -34,9 +31,9 @@ func ConnectToDb() {
 	DB = db
 
 	var migrationDir string
-	if cn.EnvVars.DevStage == cn.DevStages.Production {
+	if cn.EnvVars.DevStage == cn.DefaultDevStages.Production {
 		migrationDir = "file:migration"
-	} else if cn.EnvVars.DevStage == cn.DevStages.Development {
+	} else if cn.EnvVars.DevStage == cn.DefaultDevStages.Development {
 		migrationDir = "file:db/migration"
 	} else {
 		log.Fatalln(cn.ErrsFitFin.DevStage)
@@ -58,7 +55,7 @@ func ConnectToDb() {
 	m.Up()
 
 	// Initial necessary tables for Fitness module
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
 	// Add move types

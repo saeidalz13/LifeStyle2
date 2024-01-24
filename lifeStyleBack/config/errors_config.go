@@ -1,15 +1,14 @@
 package config
 
 type TokenErrors struct {
-    Invalid string
-    Expired string
+	Invalid string
+	Expired string
 }
 
-var DefaultTokenErrors = TokenErrors {
-    Invalid: "Invalid Token!",
-    Expired: "Token has expired!",
+var DefaultTokenErrors = TokenErrors{
+	Invalid: "Invalid Token!",
+	Expired: "Token has expired!",
 }
-
 
 type ErrsFitFinStrct struct {
 	DevStage          string
@@ -23,6 +22,8 @@ type ErrsFitFinStrct struct {
 	ContentType       string
 	ExtractMoveId     string
 	ExtractMoveName   string
+	CookiePasetoName  string
+	CookiePasetoValue string
 }
 
 var ErrsFitFin = &ErrsFitFinStrct{
@@ -37,4 +38,6 @@ var ErrsFitFin = &ErrsFitFinStrct{
 	ContentType:       "Invalid Content-Type; MUST be application/json",
 	ExtractMoveId:     "Failed to get move_id from database based on move_name",
 	ExtractMoveName:   "Failed to get move_name from database based on move_id",
+	CookiePasetoName:  "Cookie named 'paseto' does NOT exist in the request",
+	CookiePasetoValue: "Could not verify the token extracted from 'paseto' cookie",
 }

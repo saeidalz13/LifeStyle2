@@ -11,13 +11,13 @@ import (
 func IsLoggedIn(ftx *fiber.Ctx) error {
 	cookie := ftx.Cookies("paseto")
 	if cookie == "" {
-		log.Println(cn.ErrsFitFin.TokenVerification)
+		log.Println(cn.ErrsFitFin.CookiePasetoName)
 		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	_, err := token.PasetoMakerGlobal.VerifyToken(cookie)
 	if err != nil {
-		log.Println(cn.ErrsFitFin.TokenVerification)
+		log.Println(cn.ErrsFitFin.CookiePasetoValue)
 		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
 
