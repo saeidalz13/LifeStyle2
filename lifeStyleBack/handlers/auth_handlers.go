@@ -17,9 +17,15 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	"golang.org/x/crypto/bcrypt"
-
 )
 
+type AuthHandlerReqs struct {
+	cn.GeneralHandlerReqs
+}
+
+var DefaultAuthHandlerReqs = &AuthHandlerReqs{
+	cn.GeneralHandlerReqs{Db: database.DB},
+}
 
 func GetHome(ftx *fiber.Ctx) error {
 	// User Authentication
@@ -30,8 +36,8 @@ func GetHome(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func GetProfile(ftx *fiber.Ctx) error {
-	q := sqlc.New(database.DB)
+func (a *AuthHandlerReqs) GetProfile(ftx *fiber.Ctx) error {
+	q := sqlc.New(a.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -45,27 +51,31 @@ func GetProfile(ftx *fiber.Ctx) error {
 
 func GetSignOut(ftx *fiber.Ctx) error {
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "paseto",                     // Replace with your cookie name
+		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    "",                           // Clear the cookie value
 		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
-		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
-		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
+		HTTPOnly: true,
+		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func PostSignUp(ftx *fiber.Ctx) error {
-	var newUser sqlc.CreateUserParams
-
+func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
 
+	var newUser sqlc.CreateUserParams
 	if err := ftx.BodyParser(&newUser); err != nil {
 		log.Println("Failed to parse the request body", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	if err := utils.ValidatePassword(newUser.Password); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusConflict).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: err.Error()})
 	}
 
 	// Hashing the password
@@ -75,23 +85,24 @@ func PostSignUp(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
 	newUser.Password = string(hashedPassword)
-	// Normalizing Email
 	newUser.Email = strings.ToLower(newUser.Email)
+
+	if err = utils.ValidateEmail(newUser.Email); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusConflict).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: err.Error()})
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
-
-	createdUser, err := q.CreateUser(ctx, newUser)
+	q := sqlc.New(a.Db)
+	_, err = q.CreateUser(ctx, newUser)
 	if err != nil {
 		if strings.Contains(err.Error(), "users_email_key") {
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "User with this email already exists!"})
+			return ftx.Status(fiber.StatusConflict).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "User with this email already exists!"})
 		}
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
-	log.Printf("%#v", createdUser)
-
 	tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, cn.Duration)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
@@ -104,7 +115,7 @@ func PostSignUp(ftx *fiber.Ctx) error {
 		HTTPOnly: true,
 		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
-		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
+		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
 	})
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
@@ -147,12 +158,12 @@ func PostLogin(ftx *fiber.Ctx) error {
 	}
 
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "paseto",
+		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    tokenString,
 		HTTPOnly: true,
 		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
-		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
+		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
 	})
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
@@ -172,11 +183,11 @@ func DeleteUser(ftx *fiber.Ctx) error {
 	}
 
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "paseto",                     // Replace with your cookie name
+		Name:     cn.PASETO_COOKIE_NAME,        // Replace with your cookie name
 		Value:    "",                           // Clear the cookie value
 		Expires:  time.Now().AddDate(0, 0, -1), // Set expiration to the past
 		HTTPOnly: true,                         // Ensure it's set as HttpOnly if needed
-		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
+		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Path:     "/",
 	})
@@ -246,12 +257,12 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 	}
 
 	ftx.Cookie(&fiber.Cookie{
-		Name:     "paseto",
+		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    tokenString,
 		HTTPOnly: true,
 		Expires:  cn.ExpirationTime,
 		SameSite: fiber.CookieSameSiteLaxMode,
-		Secure:   cn.EnvVars.DevStage == cn.DevStages.Production,
+		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
 	})
 
