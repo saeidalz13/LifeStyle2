@@ -9,7 +9,7 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-var RUN_ENV = DefaultDevStages.Test
+var RUN_ENV = DefaultDevStages.Production
 
 type DotEnvVars struct {
 	FrontEndUrl string
@@ -64,7 +64,7 @@ func init() {
 		EnvVars = &DotEnvVars{
 			PasetoKey: "some_random_key_that_has_32chars",
 			DbUrl:     "postgresql://root:testpassword@localhost:2000/lfdb?sslmode=disable",
-			DevStage:  "dev",
+			DevStage:  DefaultDevStages.Test,
 		}
 		return
 	}

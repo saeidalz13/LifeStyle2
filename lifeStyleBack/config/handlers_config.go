@@ -16,6 +16,10 @@ type GeneralHandlerReqs struct {
 	Db *sql.DB
 }
 
+type AuthHandlerReqs struct {
+	GeneralHandlerReqs
+}
+
 type ApiRes struct {
 	ResType string `json:"responseType"`
 	Msg     string `json:"message"`

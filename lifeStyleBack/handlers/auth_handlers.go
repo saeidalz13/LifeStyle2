@@ -23,10 +23,6 @@ type AuthHandlerReqs struct {
 	cn.GeneralHandlerReqs
 }
 
-var DefaultAuthHandlerReqs = &AuthHandlerReqs{
-	cn.GeneralHandlerReqs{Db: database.DB},
-}
-
 func (a *AuthHandlerReqs) GetHome(ftx *fiber.Ctx) error {
 	validEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
