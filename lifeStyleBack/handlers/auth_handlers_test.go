@@ -16,11 +16,14 @@ import (
 	_ "github.com/lib/pq"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 )
 
 var DB_TEST *sql.DB
 
 const TEST_REQUEST_TIMEOUT_MS = 5000
+const EXISTENT_EMAIL_IN_TEST_DB = "test@gmail.com"
+const NON_EXISTENT_EMAIL_IN_TEST_DB = "emaildoesnotexist@gmail.com" 
 
 func setUp() {
 	db, err := sql.Open("postgres", cn.EnvVars.DbUrl)
@@ -47,7 +50,7 @@ func setUp() {
 	m.Up()
 }
 
-func checkRespBehaviour(app *fiber.App, req *http.Request, expectedStatusCode int) error {
+func checkResp(app *fiber.App, req *http.Request, expectedStatusCode int) error {
 	resp, err := app.Test(req, TEST_REQUEST_TIMEOUT_MS)
 	if err != nil {
 		return err
@@ -70,17 +73,38 @@ func testFails(app *fiber.App, req *http.Request) bool {
 }
 
 func TestGetHome(t *testing.T) {
-	test := cn.Test{
-		Description:        "get 404 with invalid paseto cookie value",
-		Route:              cn.URLS.Home,
-		ExpectedStatusCode: fiber.StatusUnauthorized,
-	}
-	app := fiber.New()
-	app.Get(test.Route, GetHome)
+	setUp()
+	test := &cn.Test{}
+	test.Route = cn.URLS.Home
+	localPasetoMaker := token.PasetoMakerGlobal
+	TestHandlerReqs := &AuthHandlerReqs{cn.GeneralHandlerReqs{Db: DB_TEST}}
 
+	app := fiber.New()
+	app.Get(test.Route, TestHandlerReqs.GetHome)
+
+	// Test 1 
+	test.Description = "should get home with 200"
+	test.ExpectedStatusCode = fiber.StatusOK
+	token, err := localPasetoMaker.CreateToken(EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	if err != nil {
+		t.Fatal("Failed to create a token", err)
+	}
 	req := httptest.NewRequest("GET", test.Route, nil)
-	req.AddCookie(&http.Cookie{Name: "paseto", Value: "your_cookie_value"})
-	if err := checkRespBehaviour(app, req, fiber.StatusUnauthorized); err != nil {
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: token})
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
+		t.Fatal(err)
+	}
+
+	// Test 2
+	test.Description = "should get home with 401"
+	test.ExpectedStatusCode = fiber.StatusUnauthorized
+	token, err = localPasetoMaker.CreateToken(NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	if err != nil {
+		t.Fatal("Failed to create a token", err)
+	}
+	req = httptest.NewRequest("GET", test.Route, nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: token})
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -96,7 +120,7 @@ func TestPostSignUp(t *testing.T) {
 	app := fiber.New()
 	app.Post(cn.URLS.SignUp, TestHandlerReqs.PostSignUp)
 
-	// First Test
+	// Test 1
 	test.Description = "should not create profile with invalid email addr"
 	test.ExpectedStatusCode = fiber.StatusConflict
 
@@ -108,11 +132,11 @@ func TestPostSignUp(t *testing.T) {
 	}
 	req := httptest.NewRequest("POST", test.Route, bytes.NewReader(newUserJSON))
 	req.Header.Set("Content-Type", "application/json")
-	if err := checkRespBehaviour(app, req, test.ExpectedStatusCode); err != nil {
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
 		t.Fatal(err)
 	}
 
-	// Second Test
+	// Test 2
 	test.Description = "should not create profile when email already exists"
 	test.ExpectedStatusCode = fiber.StatusConflict
 
@@ -124,11 +148,11 @@ func TestPostSignUp(t *testing.T) {
 	}
 	req = httptest.NewRequest("POST", test.Route, bytes.NewReader(newUserJSON))
 	req.Header.Set("Content-Type", "application/json")
-	if err := checkRespBehaviour(app, req, test.ExpectedStatusCode); err != nil {
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
 		t.Fatal(err)
 	}
 
-	// Third Test
+	// Test 3
 	test.Description = "should not create profile with short password (Less than 8 chars)"
 	test.ExpectedStatusCode = fiber.StatusConflict
 
@@ -140,11 +164,11 @@ func TestPostSignUp(t *testing.T) {
 	}
 	req = httptest.NewRequest("POST", test.Route, bytes.NewReader(newUserJSON))
 	req.Header.Set("Content-Type", "application/json")
-	if err := checkRespBehaviour(app, req, test.ExpectedStatusCode); err != nil {
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
 		t.Fatal(err)
 	}
 
-	// Fourth Test
+	// Test 4
 	test.Description = "should create profile"
 	test.ExpectedStatusCode = fiber.StatusOK
 
@@ -157,25 +181,49 @@ func TestPostSignUp(t *testing.T) {
 
 	req = httptest.NewRequest("POST", test.Route, bytes.NewReader(newUserJSON))
 	req.Header.Set("Content-Type", "application/json")
-	if err := checkRespBehaviour(app, req, test.ExpectedStatusCode); err != nil {
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
 		t.Fatal(err)
 	}
 }
 
-// func TestGetProfile(t *testing.T) {
-// 	setUp()
-// 	test := cn.Test{
-// 		Description:        "should not get profile with invalid paseto cookie value",
-// 		Route:              cn.URLS.Profile,
-// 		ExpectedStatusCode: fiber.StatusUnauthorized,
-// 	}
-// 	app := fiber.New()
-// 	TestHandlerReqs := &AuthHandlerReqs{cn.GeneralHandlerReqs{Db: DB_TEST}}
-// 	app.Get(test.Route, TestHandlerReqs.GetProfile)
 
-// 	req := httptest.NewRequest("GET", test.Route, nil)
-// 	req.AddCookie(&http.Cookie{Name: "paseto", Value: "your_cookie_value"})
-// 	if !testFails(app, req) {
-// 		t.Fatal()
-// 	}
-// }
+func TestGetProfile(t *testing.T) {
+	setUp()
+	TestHandlerReqs := &AuthHandlerReqs{cn.GeneralHandlerReqs{Db: DB_TEST}}
+	test := &cn.Test{}
+	test.Route = cn.URLS.Profile
+	localPasetoMaker := token.PasetoMakerGlobal
+
+	// Setting up app for Fiber Post requests
+	app := fiber.New()
+	app.Get(test.Route, TestHandlerReqs.GetProfile)
+	
+	// Test 1 
+	test.Description = "should fetch profile"
+	test.ExpectedStatusCode = fiber.StatusOK
+
+	token, err := localPasetoMaker.CreateToken(EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	if err != nil {
+		t.Fatal("Failed to create a token", err)
+	}
+	req := httptest.NewRequest("GET", test.Route, nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: token})
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
+		t.Fatal(err)
+	}
+
+	// Test 2 
+	test.Description = "should not fetch profile with invalid token/non-existent email"
+	test.ExpectedStatusCode = fiber.StatusUnauthorized
+
+	token, err = localPasetoMaker.CreateToken(NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	if err != nil {
+		t.Fatal("Failed to create a token", err)
+	}
+
+	req = httptest.NewRequest("GET", test.Route, nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: token})
+	if err := checkResp(app, req, test.ExpectedStatusCode); err != nil {
+		t.Fatal(err)
+	}
+}

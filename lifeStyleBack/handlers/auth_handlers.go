@@ -27,12 +27,22 @@ var DefaultAuthHandlerReqs = &AuthHandlerReqs{
 	cn.GeneralHandlerReqs{Db: database.DB},
 }
 
-func GetHome(ftx *fiber.Ctx) error {
-	// User Authentication
-	_, err := utils.ExtractEmailFromClaim(ftx)
+func (a *AuthHandlerReqs) GetHome(ftx *fiber.Ctx) error {
+	validEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
+		log.Println(err)
 		return ftx.SendStatus(fiber.StatusUnauthorized)
 	}
+
+	q := sqlc.New(a.Db)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	_, err = q.SelectUser(ctx, validEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.SendStatus(fiber.StatusUnauthorized)
+	}
+
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
