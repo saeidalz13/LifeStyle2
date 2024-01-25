@@ -9,7 +9,7 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-var RUN_ENV = DefaultDevStages.Production
+var RUN_ENV = DefaultDevStages.Test
 
 type DotEnvVars struct {
 	FrontEndUrl string

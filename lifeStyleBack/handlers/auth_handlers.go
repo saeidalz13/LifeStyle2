@@ -12,7 +12,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
@@ -127,7 +126,7 @@ func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
 }
 
-func PostLogin(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) PostLogin(ftx *fiber.Ctx) error {
 	var userLogin sqlc.CreateUserParams
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
@@ -145,7 +144,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(a.Db)
 	foundUser, err := q.SelectUser(ctx, userLogin.Email)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Wrong email address! Please try again!"})
@@ -175,7 +174,7 @@ func PostLogin(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
 }
 
-func DeleteUser(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) DeleteUser(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -183,7 +182,14 @@ func DeleteUser(ftx *fiber.Ctx) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(a.Db)
+
+	_, err = q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
 	if err := q.DeleteUser(ctx, userEmail); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "User was NOT deleted!"})
 	}
@@ -207,7 +213,7 @@ func GetGoogleSignIn(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"googleUrl": url})
 }
 
-func GetGoogleCallback(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 	state := ftx.Query("state")
 	if state != cn.GoogleState {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
@@ -232,7 +238,7 @@ func GetGoogleCallback(ftx *fiber.Ctx) error {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
-	q := sqlc.New(database.DB)
+	q := sqlc.New(a.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	user, err := q.SelectUser(ctx, userData.Email)

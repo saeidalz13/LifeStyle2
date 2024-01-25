@@ -17,7 +17,7 @@ import (
 func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs) {
 	// Get
 	app.Get(cn.URLS.OAuthSignIn, h.GetGoogleSignIn)
-	app.Get(cn.URLS.OAuthCallback, h.GetGoogleCallback)
+	app.Get(cn.URLS.OAuthCallback, DefaultAuthHandlerReqs.GetGoogleCallback)
 	app.Get(cn.URLS.Home, DefaultAuthHandlerReqs.GetHome)
 	app.Get(cn.URLS.Profile, DefaultAuthHandlerReqs.GetProfile)
 	app.Get(cn.URLS.SignOut, h.GetSignOut)
@@ -34,7 +34,7 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs) {
 
 	// Post
 	app.Post(cn.URLS.SignUp, DefaultAuthHandlerReqs.PostSignUp)
-	app.Post(cn.URLS.Login, h.PostLogin)
+	app.Post(cn.URLS.Login, DefaultAuthHandlerReqs.PostLogin)
 	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, h.PostNewBudget)
 	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, h.PostExpenses)
 	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, h.GetAllExpenses)
@@ -45,7 +45,7 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs) {
 
 	// Delete
 	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, h.DeleteBudget)
-	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, h.DeleteUser)
+	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, DefaultAuthHandlerReqs.DeleteUser)
 	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.DeletePlan)
 	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.DeleteDayPlan)
 	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, h.DeleteDayPlanMove)
