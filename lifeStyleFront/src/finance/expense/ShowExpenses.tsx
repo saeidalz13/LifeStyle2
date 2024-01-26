@@ -1,8 +1,8 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
-import { useEffect, useRef, useState } from "react";
+import { Button, Col, Container, Form, Row, Badge } from "react-bootstrap";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import ExpensesRows from "./ExpensesRows";
 import rl from "../../svg/RotatingLoad.svg";
@@ -34,6 +34,10 @@ const ShowExpenses = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
+  const handleRadioChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setExpenseType(e.target.value);
+  };
+
   useEffect(() => {
     if (mount.current) {
       const fetchAllExpenses = async (): Promise<
@@ -50,7 +54,7 @@ const ShowExpenses = () => {
                 credentials: "include",
                 body: JSON.stringify({
                   budget_id: +id,
-                  search_string: searchRef.current?.value
+                  search_string: searchRef.current?.value,
                 }),
                 headers: {
                   Accept: "application/json",
@@ -106,18 +110,19 @@ const ShowExpenses = () => {
     }
   }, [id, currentPage, trigger]);
 
-  const handleSearch = () => {
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
     if (searchRef.current) {
-      setTrigger(prev => !prev)
+      setTrigger((prev) => !prev);
     }
   };
 
   const handleResetSearch = () => {
     if (searchRef.current) {
-      searchRef.current.value = ""
-      setTrigger(prev => !prev)
+      searchRef.current.value = "";
+      setTrigger((prev) => !prev);
     }
-  }
+  };
 
   if (allExpenses === "waiting") {
     return (
@@ -196,7 +201,7 @@ const ShowExpenses = () => {
             {allExpenses.allExpenses.budget_name}
           </h2>
 
-          <Form className="mb-3">
+          <Form onSubmit={handleSearch} className="mb-3">
             <Row className="align-items-center">
               <Col>
                 <Form.Control
@@ -209,10 +214,14 @@ const ShowExpenses = () => {
                   required
                 />
                 <div className="text-center">
-                  <Button className="px-3" variant="success" onClick={handleSearch}>
+                  <Button type="submit" className="px-3" variant="success">
                     Search &#128269;
                   </Button>
-                  <Button className="px-3 ms-1" variant="danger" onClick={handleResetSearch}>
+                  <Button
+                    className="px-3 ms-1"
+                    variant="danger"
+                    onClick={handleResetSearch}
+                  >
                     Reset
                   </Button>
                 </div>
@@ -220,55 +229,71 @@ const ShowExpenses = () => {
             </Row>
           </Form>
 
-          <select
-            name="expenseType"
-            id="expenseType"
-            className="form-select"
-            value={expenseType}
-            onChange={(e) => setExpenseType(e.target.value)}
-          >
-            <option value="capital">Capital</option>
-            <option value="eatout">Eatout</option>
-            <option value="entertainment">Entertainment</option>
-          </select>
+          <Form className=" mt-3 mb-0">
+            <Form.Check
+              label="Capital"
+              name="group1"
+              type="radio"
+              defaultChecked
+              style={{ fontSize: "18px" }}
+              value="capital"
+              onChange={handleRadioChange}
+            />
+            <Form.Check
+              label="Eat Out"
+              name="group1"
+              type="radio"
+              style={{ fontSize: "18px" }}
+              value="eatout"
+              onChange={handleRadioChange}
+            />
+            <Form.Check
+              label="Entertainment"
+              name="group1"
+              type="radio"
+              style={{ fontSize: "18px" }}
+              value="entertainment"
+              onChange={handleRadioChange}
+            />
+          </Form>
 
           {expenseType === "capital" ? (
-            <div className="mt-3 text-center">
-              <Button
-                variant="info"
-                className="px-5"
-                style={{ fontSize: "18px" }}
+            <div className="mt-2 text-center">
+              <Badge
+                bg="dark"
+                className="px-3 text-light border border-success"
+                style={{ fontSize: "15px" }}
               >
-                Total: ${allExpenses.allExpenses.total_capital}
-              </Button>
+                Total: ${allExpenses.allExpenses.total_capital} &#128184;
+              </Badge>
             </div>
           ) : expenseType === "eatout" ? (
-            <div className="mt-3 text-center">
-              <Button
-                variant="warning"
-                className="px-5"
-                style={{ fontSize: "18px" }}
+            <div className="mt-2 text-center">
+              <Badge
+                bg="dark"
+                className="px-3 text-light border border-warning"
+                style={{ fontSize: "15px" }}
               >
-                Total: ${allExpenses.allExpenses.total_eatout}
-              </Button>
+                Total: ${allExpenses.allExpenses.total_eatout} &#128184;
+              </Badge>
             </div>
           ) : expenseType === "entertainment" ? (
-            <div className="mt-3 text-center">
-              <Button
-                variant="danger"
-                className="px-5"
-                style={{ fontSize: "18px" }}
+            <div className="mt-2 text-center">
+              <Badge
+                bg="dark"
+                className="px-3 text-light border border-danger"
+                style={{ fontSize: "15px" }}
               >
-                Total: ${allExpenses.allExpenses.total_entertainment}
-              </Button>
+                Total: ${allExpenses.allExpenses.total_entertainment} &#128184;
+              </Badge>
             </div>
           ) : (
-            <div className="mt-3 text-center">
+            <div className="mt-2 text-center">
               <Button variant="light">"Invalid type for expenses!"</Button>
             </div>
           )}
 
-          <table className="table table-hover mt-3 expenses-table">
+          <table className="table table-hover mt-1 expenses-table">
             <thead>
               <tr>
                 <th

@@ -37,6 +37,7 @@ func ConcurrentCapExpenses(
 	*capitalRowsCount, err = q.CountCapitalRows(ctx, sqlc.CountCapitalRowsParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -73,6 +74,7 @@ func ConcurrentEatExpenses(
 	*eatoutRowscount, err = q.CountEatoutRows(ctx, sqlc.CountEatoutRowsParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -110,6 +112,7 @@ func ConcurrentEnterExpenses(
 	*entertRowscount, err = q.CountEntertainmentRows(ctx, sqlc.CountEntertainmentRowsParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -149,6 +152,7 @@ func ConcurrentTotalEatout(
 	budgetID int64,
 	totalEatout *string,
 	searchString string,
+
 ) {
 	defer wg.Done()
 	var err error
@@ -172,6 +176,7 @@ func ConcurrentTotalEnter(
 	budgetID int64,
 	totalEnter *string,
 	searchString string,
+
 ) {
 	defer wg.Done()
 	var err error

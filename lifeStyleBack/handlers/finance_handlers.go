@@ -155,6 +155,7 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 	go utils.ConcurrentTotalEatout(&wg, ctx, q, user.ID, budgetID, &totalEatout, searchString)
 	go utils.ConcurrentTotalEnter(&wg, ctx, q, user.ID, budgetID, &totalEnter, searchString)
 
+	log.Println()
 	// Fetch all expenses for each expense type
 	go utils.ConcurrentCapExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount, searchString)
 	go utils.ConcurrentEatExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount, searchString)
