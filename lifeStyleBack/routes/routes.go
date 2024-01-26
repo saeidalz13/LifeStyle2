@@ -14,16 +14,16 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs) {
+func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFinanceHandlerReqs *h.FinanceHandlerReqs) {
 	// Get
 	app.Get(cn.URLS.OAuthSignIn, h.GetGoogleSignIn)
 	app.Get(cn.URLS.OAuthCallback, DefaultAuthHandlerReqs.GetGoogleCallback)
 	app.Get(cn.URLS.Home, DefaultAuthHandlerReqs.GetHome)
 	app.Get(cn.URLS.Profile, DefaultAuthHandlerReqs.GetProfile)
 	app.Get(cn.URLS.SignOut, h.GetSignOut)
-	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, h.GetAllBudgets)
-	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, h.GetSingleBalance)
-	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, h.GetSingleBudget)
+	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetAllBudgets)
+	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBalance)
+	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBudget)
 	app.Get(cn.URLS.FetchSinglePlan, m.IsLoggedIn, h.GetSinglePlan)
 	app.Get(cn.URLS.AllPlans, m.IsLoggedIn, h.GetAllFitnessPlans)
 	app.Get(cn.URLS.AllDayPlans, m.IsLoggedIn, h.GetAllFitnessDayPlans)
@@ -35,23 +35,23 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs) {
 	// Post
 	app.Post(cn.URLS.SignUp, DefaultAuthHandlerReqs.PostSignUp)
 	app.Post(cn.URLS.Login, DefaultAuthHandlerReqs.PostLogin)
-	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, h.PostNewBudget)
-	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, h.PostExpenses)
-	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, h.GetAllExpenses)
+	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostNewBudget)
+	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostExpenses)
+	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetAllExpenses)
 	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.PostAddPlan)
 	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.PostEditPlan)
 	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, h.PostAddDayPlanMoves)
 	app.Post(cn.URLS.AddPlanRecord, m.IsLoggedIn, h.PostAddPlanRecord)
 
 	// Delete
-	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, h.DeleteBudget)
+	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteBudget)
 	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, DefaultAuthHandlerReqs.DeleteUser)
 	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.DeletePlan)
 	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.DeleteDayPlan)
 	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, h.DeleteDayPlanMove)
 
 	// Patch
-	app.Patch(cn.URLS.UpdateBudget, m.IsLoggedIn, h.PatchBudget)
+	app.Patch(cn.URLS.UpdateBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PatchBudget)
 
 	// Websockets
 	app.Get("/ws", websocket.New(func(wsc *websocket.Conn) {

@@ -13,14 +13,18 @@ import (
 	h "github.com/saeidalz13/LifeStyle2/lifeStyleBack/handlers"
 )
 
-var DefaultAuthHandlerReqs = &h.AuthHandlerReqs{}
+var ( 
+	DefaultAuthHandlerReqs = &h.AuthHandlerReqs{}
+	DefaultFinanceHandlerReqs = &h.FinanceHandlerReqs{}
+)
 
 func main() {
 	database.ConnectToDb()
 	app := fiber.New()
 	app.Use(logger.New())
 	DefaultAuthHandlerReqs.Db = database.DB
-	
+	DefaultFinanceHandlerReqs.Db = database.DB
+
 	app.Use(cors.New(cors.Config{
 		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,X-CSRF-Token,Set-Cookie,Authorization",
 		AllowOrigins:     cn.EnvVars.FrontEndUrl,
@@ -29,7 +33,7 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	routes.Setup(app, DefaultAuthHandlerReqs)
+	routes.Setup(app, DefaultAuthHandlerReqs, DefaultFinanceHandlerReqs)
 
 	log.Printf("Listening to port %v...", cn.EnvVars.Port)
 	app.Listen(cn.EnvVars.Port)

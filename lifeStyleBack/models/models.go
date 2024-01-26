@@ -22,6 +22,11 @@ type IncomingMove struct {
 	Move string `json:"move"`
 }
 
+type IncomingAllExpenses struct {
+	BudgetId     int64  `json:"budget_id"`
+	SearchString string `json:"search_string"`
+}
+
 type IncomingEditPlan struct {
 	PlanID int64          `json:"plan_id"`
 	Day    int32          `json:"day"`
@@ -68,14 +73,14 @@ type ExpenseReq struct {
 }
 
 type AllExpensesRes struct {
-	BudgetName             string                    `json:"budget_name"`
+	BudgetName             string                      `json:"budget_name"`
 	CapitalExpenses        []sqlc.CapitalExpense       `json:"capitalExpenses"`
 	EatoutExpenses         []sqlc.EatoutExpense        `json:"eatoutExpenses"`
 	EntertainmentExpenses  []sqlc.EntertainmentExpense `json:"entertainmentExpenses"`
-	CapitalRowsCount       int64                     `json:"capital_rows_count"`
-	EatoutRowsCount        int64                     `json:"eatout_rows_count"`
-	EntertainmentRowsCount int64                     `json:"entertainment_rows_count"`
-	TotalCapital           string                    `json:"total_capital"`
-	TotalEatout            string                    `json:"total_eatout"`
-	TotalEnter             string                    `json:"total_entertainment"`
+	CapitalRowsCount       int64                       `json:"capital_rows_count"`
+	EatoutRowsCount        int64                       `json:"eatout_rows_count"`
+	EntertainmentRowsCount int64                       `json:"entertainment_rows_count"`
+	TotalCapital           string                      `json:"total_capital"`
+	TotalEatout            string                      `json:"total_eatout"`
+	TotalEnter             string                      `json:"total_entertainment"`
 }

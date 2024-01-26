@@ -18,6 +18,7 @@ func ConcurrentCapExpenses(
 	offset int32,
 	capitalExpenses *[]sqlc.CapitalExpense,
 	capitalRowsCount *int64,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
@@ -26,6 +27,7 @@ func ConcurrentCapExpenses(
 		BudgetID: budgetID,
 		Limit:    limit,
 		Offset:   offset,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -53,6 +55,7 @@ func ConcurrentEatExpenses(
 	offset int32,
 	eatoutExpenses *[]sqlc.EatoutExpense,
 	eatoutRowscount *int64,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
@@ -61,6 +64,7 @@ func ConcurrentEatExpenses(
 		BudgetID: budgetID,
 		Limit:    limit,
 		Offset:   offset,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -87,6 +91,7 @@ func ConcurrentEnterExpenses(
 	offset int32,
 	entertainmentExpenses *[]sqlc.EntertainmentExpense,
 	entertRowscount *int64,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
@@ -95,6 +100,7 @@ func ConcurrentEnterExpenses(
 		BudgetID: budgetID,
 		Limit:    limit,
 		Offset:   offset,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -119,12 +125,14 @@ func ConcurrentTotalCapital(
 	userId int64,
 	budgetID int64,
 	totalCapital *string,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
 	*totalCapital, err = q.SumCapitalExpenses(ctx, sqlc.SumCapitalExpensesParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -140,12 +148,14 @@ func ConcurrentTotalEatout(
 	userId int64,
 	budgetID int64,
 	totalEatout *string,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
 	*totalEatout, err = q.SumEatoutExpenses(ctx, sqlc.SumEatoutExpensesParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -161,12 +171,14 @@ func ConcurrentTotalEnter(
 	userId int64,
 	budgetID int64,
 	totalEnter *string,
+	searchString string,
 ) {
 	defer wg.Done()
 	var err error
 	*totalEnter, err = q.SumEntertainmentExpenses(ctx, sqlc.SumEntertainmentExpensesParams{
 		UserID:   userId,
 		BudgetID: budgetID,
+		Lower:    searchString,
 	})
 	if err != nil {
 		log.Println(err)

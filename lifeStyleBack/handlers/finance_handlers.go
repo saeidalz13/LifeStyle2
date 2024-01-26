@@ -16,8 +16,12 @@ import (
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
-func GetAllBudgets(ftx *fiber.Ctx) error {
-	q := sqlc.New(database.DB)
+type FinanceHandlerReqs struct {
+	cn.GeneralHandlerReqs
+}
+
+func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -39,8 +43,8 @@ func GetAllBudgets(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"budgets": budgets})
 }
 
-func GetSingleBudget(ftx *fiber.Ctx) error {
-	q := sqlc.New(database.DB)
+func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -69,8 +73,8 @@ func GetSingleBudget(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(budget)
 }
 
-func GetSingleBalance(ftx *fiber.Ctx) error {
-	q := sqlc.New(database.DB)
+func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -98,8 +102,8 @@ func GetSingleBalance(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(balance)
 }
 
-func GetAllExpenses(ftx *fiber.Ctx) error {
-	q := sqlc.New(database.DB)
+func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -109,15 +113,19 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	budgetId := make(map[string]int64)
-	budgetId["budget_id"] = -1
-	if err := ftx.BodyParser(&budgetId); err != nil {
+	allExpensesReq := &models.IncomingAllExpenses{}
+	allExpensesReq.BudgetId = -1
+
+	if err := ftx.BodyParser(&allExpensesReq); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
-	budgetID, ok := budgetId["budget_id"]
-	if !ok || budgetID == -1 {
+	budgetID := allExpensesReq.BudgetId
+	searchString := allExpensesReq.SearchString
+	if budgetID == -1 {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
+	searchString = "%" + strings.TrimSpace(searchString) + "%"
+	log.Println(searchString)
 
 	limitQry := ftx.Query("limit", "10")
 	offsetQry := ftx.Query("offset", "1")
@@ -143,14 +151,14 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 	var totalCapital, totalEatout, totalEnter string = "NA", "NA", "NA"
 
 	// Fetch the Total amounts for each expense type
-	go utils.ConcurrentTotalCapital(&wg, ctx, q, user.ID, budgetID, &totalCapital)
-	go utils.ConcurrentTotalEatout(&wg, ctx, q, user.ID, budgetID, &totalEatout)
-	go utils.ConcurrentTotalEnter(&wg, ctx, q, user.ID, budgetID, &totalEnter)
+	go utils.ConcurrentTotalCapital(&wg, ctx, q, user.ID, budgetID, &totalCapital, searchString)
+	go utils.ConcurrentTotalEatout(&wg, ctx, q, user.ID, budgetID, &totalEatout, searchString)
+	go utils.ConcurrentTotalEnter(&wg, ctx, q, user.ID, budgetID, &totalEnter, searchString)
 
 	// Fetch all expenses for each expense type
-	go utils.ConcurrentCapExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount)
-	go utils.ConcurrentEatExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount)
-	go utils.ConcurrentEnterExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount)
+	go utils.ConcurrentCapExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount, searchString)
+	go utils.ConcurrentEatExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount, searchString)
+	go utils.ConcurrentEnterExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount, searchString)
 	wg.Wait()
 
 	if capitalRowsCount == -1 || eatoutRowscount == -1 || entertRowscount == -1 {
@@ -171,10 +179,10 @@ func GetAllExpenses(ftx *fiber.Ctx) error {
 	}})
 }
 
-func PostNewBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -203,10 +211,10 @@ func PostNewBudget(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusCreated).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Budget Created Successfully!"})
 }
 
-func PostExpenses(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -274,10 +282,10 @@ func PostGptApi(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]string{"GPTResp": response.Choices[0].Message.Content})
 }
 
-func DeleteBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -305,10 +313,10 @@ func DeleteBudget(ftx *fiber.Ctx) error {
 /*
 PATCH Section
 */
-func PatchBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) PatchBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
