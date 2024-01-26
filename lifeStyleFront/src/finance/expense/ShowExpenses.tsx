@@ -1,7 +1,7 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import { Button, Container } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import ExpensesRows from "./ExpensesRows";
@@ -12,6 +12,8 @@ import {
 } from "../../assets/FinanceInterfaces";
 
 const ShowExpenses = () => {
+  const [trigger, setTrigger] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
   const { id } = useParams<{ id: string }>();
   const mount = useRef(true);
   const [allExpenses, setAllExpenses] = useState<
@@ -48,6 +50,7 @@ const ShowExpenses = () => {
                 credentials: "include",
                 body: JSON.stringify({
                   budget_id: +id,
+                  search_string: searchRef.current?.value
                 }),
                 headers: {
                   Accept: "application/json",
@@ -58,13 +61,19 @@ const ShowExpenses = () => {
 
             if (result.status === StatusCodes.Ok) {
               return (await result.json()) as TAllExpensesArr;
-            } else if (result.status === StatusCodes.NoContent) {
+            }
+            if (result.status === StatusCodes.NoContent) {
               return "nodata";
-            } else {
-              const errResp = await result.json();
-              console.log(errResp.message);
+            }
+
+            if (result.status === StatusCodes.UnAuthorized) {
+              location.assign(Urls.login);
               return null;
             }
+
+            const errResp = await result.json();
+            console.log(errResp.message);
+            return null;
           } catch (error) {
             console.log(error);
             return null;
@@ -95,7 +104,20 @@ const ShowExpenses = () => {
 
       invokeFetch();
     }
-  }, [id, currentPage]);
+  }, [id, currentPage, trigger]);
+
+  const handleSearch = () => {
+    if (searchRef.current) {
+      setTrigger(prev => !prev)
+    }
+  };
+
+  const handleResetSearch = () => {
+    if (searchRef.current) {
+      searchRef.current.value = ""
+      setTrigger(prev => !prev)
+    }
+  }
 
   if (allExpenses === "waiting") {
     return (
@@ -174,6 +196,30 @@ const ShowExpenses = () => {
             {allExpenses.allExpenses.budget_name}
           </h2>
 
+          <Form className="mb-3">
+            <Row className="align-items-center">
+              <Col>
+                <Form.Control
+                  className="form-control"
+                  type="text"
+                  name="email"
+                  id="email"
+                  placeholder="Search in All Expenses"
+                  ref={searchRef}
+                  required
+                />
+                <div className="text-center">
+                  <Button className="px-3" variant="success" onClick={handleSearch}>
+                    Search &#128269;
+                  </Button>
+                  <Button className="px-3 ms-1" variant="danger" onClick={handleResetSearch}>
+                    Reset
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </Form>
+
           <select
             name="expenseType"
             id="expenseType"
@@ -188,19 +234,31 @@ const ShowExpenses = () => {
 
           {expenseType === "capital" ? (
             <div className="mt-3 text-center">
-              <Button variant="info" className="px-5" style={{ fontSize: "18px" }}>
+              <Button
+                variant="info"
+                className="px-5"
+                style={{ fontSize: "18px" }}
+              >
                 Total: ${allExpenses.allExpenses.total_capital}
               </Button>
             </div>
           ) : expenseType === "eatout" ? (
             <div className="mt-3 text-center">
-              <Button variant="warning" className="px-5" style={{ fontSize: "18px" }}>
+              <Button
+                variant="warning"
+                className="px-5"
+                style={{ fontSize: "18px" }}
+              >
                 Total: ${allExpenses.allExpenses.total_eatout}
               </Button>
             </div>
           ) : expenseType === "entertainment" ? (
             <div className="mt-3 text-center">
-              <Button variant="danger" className="px-5" style={{ fontSize: "18px" }}>
+              <Button
+                variant="danger"
+                className="px-5"
+                style={{ fontSize: "18px" }}
+              >
                 Total: ${allExpenses.allExpenses.total_entertainment}
               </Button>
             </div>
