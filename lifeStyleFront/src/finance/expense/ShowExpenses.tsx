@@ -113,6 +113,7 @@ const ShowExpenses = () => {
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchRef.current) {
+      setCurrentPage(1)
       setTrigger((prev) => !prev);
     }
   };
@@ -120,6 +121,7 @@ const ShowExpenses = () => {
   const handleResetSearch = () => {
     if (searchRef.current) {
       searchRef.current.value = "";
+      setCurrentPage(1)
       setTrigger((prev) => !prev);
     }
   };
