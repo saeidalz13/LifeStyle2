@@ -12,16 +12,17 @@ import (
 const sumCapitalExpenses = `-- name: SumCapitalExpenses :one
 SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
 FROM capital_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type SumCapitalExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) SumCapitalExpenses(ctx context.Context, arg SumCapitalExpensesParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, sumCapitalExpenses, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, sumCapitalExpenses, arg.UserID, arg.BudgetID, arg.Lower)
 	var total string
 	err := row.Scan(&total)
 	return total, err
@@ -30,16 +31,17 @@ func (q *Queries) SumCapitalExpenses(ctx context.Context, arg SumCapitalExpenses
 const sumEatoutExpenses = `-- name: SumEatoutExpenses :one
 SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
 FROM eatout_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type SumEatoutExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, sumEatoutExpenses, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, sumEatoutExpenses, arg.UserID, arg.BudgetID, arg.Lower)
 	var total string
 	err := row.Scan(&total)
 	return total, err
@@ -48,16 +50,17 @@ func (q *Queries) SumEatoutExpenses(ctx context.Context, arg SumEatoutExpensesPa
 const sumEntertainmentExpenses = `-- name: SumEntertainmentExpenses :one
 SELECT CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total
 FROM entertainment_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type SumEntertainmentExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, sumEntertainmentExpenses, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, sumEntertainmentExpenses, arg.UserID, arg.BudgetID, arg.Lower)
 	var total string
 	err := row.Scan(&total)
 	return total, err

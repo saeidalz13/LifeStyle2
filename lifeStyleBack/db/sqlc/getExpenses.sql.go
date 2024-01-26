@@ -10,48 +10,51 @@ import (
 )
 
 const countCapitalRows = `-- name: CountCapitalRows :one
-SELECT COUNT(*) FROM capital_expenses WHERE user_id = $1 AND budget_id = $2
+SELECT COUNT(*) FROM capital_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountCapitalRowsParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countCapitalRows, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, countCapitalRows, arg.UserID, arg.BudgetID, arg.Lower)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const countEatoutRows = `-- name: CountEatoutRows :one
-SELECT COUNT(*) FROM eatout_expenses WHERE user_id = $1 AND budget_id = $2
+SELECT COUNT(*) FROM eatout_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountEatoutRowsParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEatoutRows, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, countEatoutRows, arg.UserID, arg.BudgetID, arg.Lower)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const countEntertainmentRows = `-- name: CountEntertainmentRows :one
-SELECT COUNT(*) FROM entertainment_expenses WHERE user_id = $1 AND budget_id = $2
+SELECT COUNT(*) FROM entertainment_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountEntertainmentRowsParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
 }
 
 func (q *Queries) CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEntertainmentRows, arg.UserID, arg.BudgetID)
+	row := q.db.QueryRowContext(ctx, countEntertainmentRows, arg.UserID, arg.BudgetID, arg.Lower)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -59,23 +62,25 @@ func (q *Queries) CountEntertainmentRows(ctx context.Context, arg CountEntertain
 
 const fetchAllCapitalExpenses = `-- name: FetchAllCapitalExpenses :many
 SELECT capital_exp_id, budget_id, user_id, expenses, description, created_at FROM capital_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $3
-OFFSET $4
+LIMIT $4
+OFFSET $5
 `
 
 type FetchAllCapitalExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
-	Limit    int32 `json:"limit"`
-	Offset   int32 `json:"offset"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
 }
 
 func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllCapitalExpenses,
 		arg.UserID,
 		arg.BudgetID,
+		arg.Lower,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -109,23 +114,25 @@ func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapit
 
 const fetchAllEatoutExpenses = `-- name: FetchAllEatoutExpenses :many
 SELECT eatout_exp_id, budget_id, user_id, expenses, description, created_at FROM eatout_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $3
-OFFSET $4
+LIMIT $4
+OFFSET $5
 `
 
 type FetchAllEatoutExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
-	Limit    int32 `json:"limit"`
-	Offset   int32 `json:"offset"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
 }
 
 func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllEatoutExpenses,
 		arg.UserID,
 		arg.BudgetID,
+		arg.Lower,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -159,23 +166,25 @@ func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatout
 
 const fetchAllEntertainmentExpenses = `-- name: FetchAllEntertainmentExpenses :many
 SELECT entertainment_exp_id, budget_id, user_id, expenses, description, created_at FROM entertainment_expenses
-WHERE user_id = $1 AND budget_id = $2
+WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $3
-OFFSET $4
+LIMIT $4
+OFFSET $5
 `
 
 type FetchAllEntertainmentExpensesParams struct {
-	UserID   int64 `json:"user_id"`
-	BudgetID int64 `json:"budget_id"`
-	Limit    int32 `json:"limit"`
-	Offset   int32 `json:"offset"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+	Lower    string `json:"lower"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
 }
 
 func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllEntertainmentExpenses,
 		arg.UserID,
 		arg.BudgetID,
+		arg.Lower,
 		arg.Limit,
 		arg.Offset,
 	)
