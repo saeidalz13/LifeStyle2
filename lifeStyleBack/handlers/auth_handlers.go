@@ -108,7 +108,7 @@ func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
 	}
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, cn.Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(newUser.Email, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Internal Server Error"})
@@ -118,7 +118,7 @@ func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
 		Name:     "paseto",
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  cn.ExpirationTime,
+		Expires:  cn.COOKIE_EXPIRATION_TIME,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
@@ -156,7 +156,7 @@ func (a *AuthHandlerReqs) PostLogin(ftx *fiber.Ctx) error {
 	}
 
 	// Paseto Settings
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(foundUser.Email, cn.Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(foundUser.Email, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
@@ -166,7 +166,7 @@ func (a *AuthHandlerReqs) PostLogin(ftx *fiber.Ctx) error {
 		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  cn.ExpirationTime,
+		Expires:  cn.COOKIE_EXPIRATION_TIME,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
@@ -224,7 +224,7 @@ func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 		ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 
-	resp, err := http.Get(cn.OPENAI_ACCESS_USER_URL + gToken.AccessToken)
+	resp, err := http.Get(cn.GOOGLE_API_OAUTH2_URL + gToken.AccessToken)
 	if err != nil {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
@@ -243,6 +243,7 @@ func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 	defer cancel()
 	user, err := q.SelectUser(ctx, userData.Email)
 	log.Println(user)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			randString := cn.GenerateRandomString(20)
@@ -262,7 +263,7 @@ func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 	}
 
 	// Paseto Settings
-	tokenString, err := token.PasetoMakerGlobal.CreateToken(userData.Email, cn.Duration)
+	tokenString, err := token.PasetoMakerGlobal.CreateToken(userData.Email, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		log.Println("Failed to generate token string:", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
@@ -272,7 +273,7 @@ func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    tokenString,
 		HTTPOnly: true,
-		Expires:  cn.ExpirationTime,
+		Expires:  cn.COOKIE_EXPIRATION_TIME,
 		SameSite: fiber.CookieSameSiteLaxMode,
 		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",

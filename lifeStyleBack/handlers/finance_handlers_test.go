@@ -53,7 +53,7 @@ func TestFinance(t *testing.T) {
 	test.ExpectedStatusCode = fiber.StatusOK
 	test.Route = cn.URLS.ShowBudgets
 
-	token, err := localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err := localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -67,7 +67,7 @@ func TestFinance(t *testing.T) {
 	test.Description = "should not get all budgets with invalid token"
 	test.ExpectedStatusCode = fiber.StatusUnauthorized
 
-	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -83,16 +83,13 @@ func TestFinance(t *testing.T) {
 	// test.ExpectedStatusCode = fiber.StatusOK
 	// test.Route = cn.URLS.EachBudget
 
-
-
-
 	// Delete the user
 	app.Delete(cn.URLS.DeleteProfile, TestAuthHandlerReqs.DeleteUser)
 	test.Description = "should delete user with valid token of existent email"
 	test.ExpectedStatusCode = fiber.StatusNoContent
 	test.Route = cn.URLS.DeleteProfile
 
-	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}

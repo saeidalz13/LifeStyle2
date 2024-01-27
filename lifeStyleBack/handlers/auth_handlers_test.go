@@ -14,7 +14,6 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 )
 
-
 func TestAuth(t *testing.T) {
 	dbTest := utils.SetUp()
 	TestHandlerReqs := &AuthHandlerReqs{cn.GeneralHandlerReqs{Db: dbTest}}
@@ -156,7 +155,7 @@ func TestAuth(t *testing.T) {
 	test.Description = "should get home with 200 via existing email token"
 	test.ExpectedStatusCode = fiber.StatusOK
 
-	token, err := localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err := localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -169,7 +168,7 @@ func TestAuth(t *testing.T) {
 	// Test 9
 	test.Description = "should get home with 401 via non-existent email"
 	test.ExpectedStatusCode = fiber.StatusUnauthorized
-	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -187,7 +186,7 @@ func TestAuth(t *testing.T) {
 	test.Description = "should fetch profile with valid token of existent email"
 	test.ExpectedStatusCode = fiber.StatusOK
 
-	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -201,7 +200,7 @@ func TestAuth(t *testing.T) {
 	test.Description = "should not fetch profile with invalid token/non-existent email"
 	test.ExpectedStatusCode = fiber.StatusUnauthorized
 
-	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -220,7 +219,7 @@ func TestAuth(t *testing.T) {
 	test.Description = "should not delete user with invalid token/non-existent email"
 	test.ExpectedStatusCode = fiber.StatusUnauthorized
 
-	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.NON_EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}
@@ -235,7 +234,7 @@ func TestAuth(t *testing.T) {
 	test.Description = "should delete user with valid token of existent email"
 	test.ExpectedStatusCode = fiber.StatusNoContent
 
-	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.Duration)
+	token, err = localPasetoMaker.CreateToken(cn.EXISTENT_EMAIL_IN_TEST_DB, cn.PASETO_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		t.Fatal("Failed to create a token", err)
 	}

@@ -8,9 +8,10 @@ import (
 
 const CONTEXT_TIMEOUT = 5 * time.Second
 const PASETO_COOKIE_NAME = "paseto"
-const OPENAI_ACCESS_USER_URL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
-const GPT_API_URL = "https://api.openai.com/v1/chat/completions"
+const GOOGLE_API_OAUTH2_URL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+const OPENAI_ACCESS_USER_URL = "https://api.openai.com/v1/chat/completions"
 const PASSWORD_MIN_LEN = 8
+
 
 type GeneralHandlerReqs struct {
 	Db *sql.DB
@@ -49,9 +50,6 @@ var ResTypes = &ResTypesStruct{
 	Success: "success",
 	Err:     "error",
 }
-
-var Duration = time.Hour * 24
-var ExpirationTime = time.Now().Add(Duration)
 
 var GoogleState string
 
