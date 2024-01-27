@@ -1,18 +1,30 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import { Button, Col, Container, Form, Row, Badge } from "react-bootstrap";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Row,
+  Tab,
+  Tabs,
+} from "react-bootstrap";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
-import ExpensesRows from "./ExpensesRows";
 import rl from "../../svg/RotatingLoad.svg";
 import {
   TAllExpensesArr,
   TNoExpensesData,
 } from "../../assets/FinanceInterfaces";
+import ExpenseBadge from "./ExpenseBadge";
+import ExpenseTable from "./ExpenseTable";
+
 
 const ShowExpenses = () => {
+  const [keyTab, setKeyTab] = useState("capital");
   const [trigger, setTrigger] = useState(false);
+  const [badgeText, setBadgeText] = useState<string>("Total");
   const searchRef = useRef<HTMLInputElement>(null);
   const { id } = useParams<{ id: string }>();
   const mount = useRef(true);
@@ -34,9 +46,6 @@ const ShowExpenses = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
-  const handleRadioChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setExpenseType(e.target.value);
-  };
 
   useEffect(() => {
     if (mount.current) {
@@ -113,7 +122,8 @@ const ShowExpenses = () => {
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchRef.current) {
-      setCurrentPage(1)
+      setCurrentPage(1);
+      setBadgeText(`'${searchRef.current.value}'`);
       setTrigger((prev) => !prev);
     }
   };
@@ -121,7 +131,8 @@ const ShowExpenses = () => {
   const handleResetSearch = () => {
     if (searchRef.current) {
       searchRef.current.value = "";
-      setCurrentPage(1)
+      setCurrentPage(1);
+      setBadgeText("Total");
       setTrigger((prev) => !prev);
     }
   };
@@ -185,7 +196,7 @@ const ShowExpenses = () => {
   return (
     <>
       <div className="container">
-        <div className="row mx-3">
+        <div className="row mx-1">
           <div className="text-center mt-3 mb-3">
             <NavLink
               to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
@@ -231,101 +242,53 @@ const ShowExpenses = () => {
             </Row>
           </Form>
 
-          <Form className=" mt-3 mb-0">
-            <Form.Check
-              label="Capital"
-              name="group1"
-              type="radio"
-              defaultChecked
-              style={{ fontSize: "18px" }}
-              value="capital"
-              onChange={handleRadioChange}
-            />
-            <Form.Check
-              label="Eat Out"
-              name="group1"
-              type="radio"
-              style={{ fontSize: "18px" }}
-              value="eatout"
-              onChange={handleRadioChange}
-            />
-            <Form.Check
-              label="Entertainment"
-              name="group1"
-              type="radio"
-              style={{ fontSize: "18px" }}
-              value="entertainment"
-              onChange={handleRadioChange}
-            />
-          </Form>
+          <Tabs
+        id="controlled-tab-example"
+        activeKey={keyTab}
+        onSelect={(k) => {
+          if (k !== null && k !== undefined) {
+            setKeyTab(k);
+            setExpenseType(k);
+          }
+        }}
+        className="mt-3 mb-3"
+        fill
+      >
+        <Tab eventKey="capital" title="Capital">
+          <ExpenseBadge
+            expenseType="capital"
+            allExpenses={allExpenses}
+            badgeText={badgeText}
+          />
+          <ExpenseTable
+            expenseType="capital"
+            allExpenses={allExpenses}
+          />
+        </Tab>
+        <Tab eventKey="eatout" title="Eat Out">
+        <ExpenseBadge
+            expenseType="eatout"
+            allExpenses={allExpenses}
+            badgeText={badgeText}
+          />
+          <ExpenseTable
+            expenseType="eatout"
+            allExpenses={allExpenses}
+          />
+        </Tab>
+        <Tab eventKey="entertainment" title="Entertainment">
+        <ExpenseBadge
+            expenseType="entertainment"
+            allExpenses={allExpenses}
+            badgeText={badgeText}
+          />
+          <ExpenseTable
+            expenseType="entertainment"
+            allExpenses={allExpenses}
+          />
+        </Tab>
+      </Tabs>
 
-          {expenseType === "capital" ? (
-            <div className="mt-2 text-center">
-              <Badge
-                bg="dark"
-                className="px-3 text-light border border-success"
-                style={{ fontSize: "15px" }}
-              >
-                Total: ${allExpenses.allExpenses.total_capital} &#128184;
-              </Badge>
-            </div>
-          ) : expenseType === "eatout" ? (
-            <div className="mt-2 text-center">
-              <Badge
-                bg="dark"
-                className="px-3 text-light border border-warning"
-                style={{ fontSize: "15px" }}
-              >
-                Total: ${allExpenses.allExpenses.total_eatout} &#128184;
-              </Badge>
-            </div>
-          ) : expenseType === "entertainment" ? (
-            <div className="mt-2 text-center">
-              <Badge
-                bg="dark"
-                className="px-3 text-light border border-danger"
-                style={{ fontSize: "15px" }}
-              >
-                Total: ${allExpenses.allExpenses.total_entertainment} &#128184;
-              </Badge>
-            </div>
-          ) : (
-            <div className="mt-2 text-center">
-              <Button variant="light">"Invalid type for expenses!"</Button>
-            </div>
-          )}
-
-          <table className="table table-hover mt-1 expenses-table">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  className="table-success text-center expenses-table-header"
-                >
-                  Expenses
-                </th>
-                <th
-                  scope="col"
-                  className="table-success text-center expenses-table-header"
-                >
-                  Description
-                </th>
-                <th
-                  scope="col"
-                  className="table-success text-center expenses-table-header"
-                >
-                  Time Created
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <ExpensesRows
-                expenses={allExpenses.allExpenses}
-                expenseType={expenseType}
-              />
-            </tbody>
-          </table>
         </div>
       </div>
 
