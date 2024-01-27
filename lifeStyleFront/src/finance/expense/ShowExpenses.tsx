@@ -249,6 +249,7 @@ const ShowExpenses = () => {
           if (k !== null && k !== undefined) {
             setKeyTab(k);
             setExpenseType(k);
+            setCurrentPage(1);
           }
         }}
         className="mt-3 mb-3"
