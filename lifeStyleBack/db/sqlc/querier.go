@@ -28,7 +28,9 @@ type Querier interface {
 	DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDayPlanParams) error
 	DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnessDayPlanMoveParams) (DayPlanMove, error)
 	DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error)
+	DeletePlanRecord(ctx context.Context, arg DeletePlanRecordParams) error
 	DeleteUser(ctx context.Context, email string) error
+	DeleteWeekPlanRecords(ctx context.Context, arg DeleteWeekPlanRecordsParams) error
 	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
 	FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error)
 	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error)
@@ -50,6 +52,7 @@ type Querier interface {
 	SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (string, error)
 	UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
+	UpdatePlanRecord(ctx context.Context, arg UpdatePlanRecordParams) (PlanRecord, error)
 }
 
 var _ Querier = (*Queries)(nil)

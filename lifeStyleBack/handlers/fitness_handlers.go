@@ -436,6 +436,37 @@ func PostAddPlanRecord(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
+// PATCH
+func PatchPlanRecord(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(database.DB)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var updatedPlanRec models.IncomingUpdatePlanRecord
+	if err = ftx.BodyParser(&updatedPlanRec); err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	_, err = q.UpdatePlanRecord(ctx, sqlc.UpdatePlanRecordParams{
+		Reps:         updatedPlanRec.Reps,
+		Weight:       updatedPlanRec.Weight,
+		UserID:       user.ID,
+		PlanRecordID: updatedPlanRec.PlanRecordID,
+	})
+	if err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to update the plan record details"})
+	}
+
+	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Updated Successfully!"})
+}
+
+// DELETE
 func DeletePlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -541,4 +572,60 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 		}
 	}
 	return ftx.SendStatus(fiber.StatusOK)
+}
+
+func DeleteWeekFromPlanRecords(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(database.DB)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	incomingBody := map[string]int32{"week": 0}
+	if err = ftx.BodyParser(&incomingBody); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	if err := q.DeleteWeekPlanRecords(ctx, sqlc.DeleteWeekPlanRecordsParams{
+		UserID: user.ID,
+		Week:   incomingBody["week"],
+	}); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Could not delete requested week!" + err.Error()})
+	}
+
+	return ftx.SendStatus(fiber.StatusNoContent)
+}
+
+func DeleteSetFromPlanRecord(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(database.DB)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var deletePlanRecord models.IncomingDeletePlanRecord
+	if err = ftx.BodyParser(&deletePlanRecord); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	if err := q.DeletePlanRecord(ctx, sqlc.DeletePlanRecordParams{
+		UserID:       user.ID,
+		PlanRecordID: deletePlanRecord.PlanRecordID,
+	}); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the record"})
+	}
+
+	return ftx.SendStatus(fiber.StatusNoContent)
 }

@@ -47,6 +47,17 @@ type IncomingAddPlanRecord struct {
 	Weight        []int32 `json:"weight"`
 }
 
+type IncomingUpdatePlanRecord struct {
+	Reps         int32 `json:"reps"`
+	Weight       int32 `json:"weight"`
+	PlanRecordID int64 `json:"plan_record_id"`
+}
+
+type IncomingDeletePlanRecord struct {
+	PlanRecordID int64 `json:"plan_record_id"`
+}
+
+
 type RespStartWorkoutDayPlanMoves struct {
 	DayPlanMoveID int64  `json:"day_plan_move_id"`
 	UserID        int64  `json:"user_id"`

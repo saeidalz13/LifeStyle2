@@ -49,9 +49,12 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFin
 	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.DeletePlan)
 	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.DeleteDayPlan)
 	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, h.DeleteDayPlanMove)
+	app.Delete(cn.URLS.DeleteWeekPlanRecords, m.IsLoggedIn, h.DeleteWeekFromPlanRecords)
+	app.Delete(cn.URLS.DeletePlanRecord, m.IsLoggedIn, h.DeleteSetFromPlanRecord)
 
 	// Patch
 	app.Patch(cn.URLS.UpdateBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PatchBudget)
+	app.Patch(cn.URLS.UpdatePlanRecord, m.IsLoggedIn, h.PatchPlanRecord)
 
 	// Websockets
 	app.Get("/ws", websocket.New(func(wsc *websocket.Conn) {

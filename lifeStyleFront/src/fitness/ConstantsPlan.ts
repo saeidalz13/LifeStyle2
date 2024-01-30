@@ -1,4 +1,4 @@
-const CHEST_MOVES = [
+const CHEST_MOVES: Array<string> = [
   "Bench Press BB",
   "Incline Press BB",
   "Bench Press DB",
@@ -9,7 +9,7 @@ const CHEST_MOVES = [
 
 ];
 
-const LEG_MOVES = [
+const LEG_MOVES: Array<string> = [
   "Squats",
   "Bulgarian Split Squats",
   "Leg Press",
@@ -20,7 +20,7 @@ const LEG_MOVES = [
   "Leg Extension",
 ];
 
-const SHOULDER_MOVES = [
+const SHOULDER_MOVES: Array<string> = [
   "Arnold Press",
   "Military Press",
   "Shoulder Press DB",
@@ -28,7 +28,7 @@ const SHOULDER_MOVES = [
   "Lateral Raise Cable",
 ];
 
-const BACK_MOVES = [
+const BACK_MOVES: Array<string> = [
   "Pull Ups",
   "Chin Ups",
   "Lat Pulldown",
@@ -38,18 +38,18 @@ const BACK_MOVES = [
   "Shrugs DB",
 ];
 
-const BICEPS_MOVES = [
+const BICEPS_MOVES: Array<string> = [
   "Biceps Curl DB",
   "Biceps Seated Incline DB",
   "Biceps Curl BB",
   "Biceps Hammer Curl",
 ];
 
-const TRICEPS_MOVES = ["Triceps Extenstion DB", "Triceps Pushdown Cable"];
+const TRICEPS_MOVES: Array<string> = ["Triceps Extenstion DB", "Triceps Pushdown Cable"];
 
-const ABS_MOVES = ["Hanging Leg Raise", "Russian Twist", "Reverse Crunch"];
+const ABS_MOVES: Array<string> = ["Hanging Leg Raise", "Russian Twist", "Reverse Crunch"];
 
-let MOVESARRAY = [
+let MOVESARRAY: Array<string> = [
   ...CHEST_MOVES,
   ...LEG_MOVES,
   ...SHOULDER_MOVES,
@@ -140,9 +140,19 @@ const YOUTUBE_LINKS_MOVES: { [key: string]: string } = {
     "https://www.youtube.com/embed/7rRWy7-Gokg?si=IlAiJKlO9ZqZ7CUT",
 };
 
-const WEEKS = [];
+const WEEKS: Array<number> = [];
 for (let i = 1; i <= 20; i++) {
   WEEKS.push(i);
+}
+
+const WEIGHTS: Array<number> = [];
+for (let i = 5;  i <= 200; i+=5) {
+  WEIGHTS.push(i)
+}
+
+const REPS: Array<number> = [];
+for (let i = 1; i <= 30; i++) {
+  REPS.push(i)
 }
 
 export default {
@@ -150,4 +160,6 @@ export default {
   SETSREPS,
   YOUTUBE_LINKS_MOVES,
   WEEKS,
+  WEIGHTS,
+  REPS
 };

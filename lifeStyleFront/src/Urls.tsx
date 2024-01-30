@@ -6,8 +6,8 @@ class Urls {
   login = "/login";
   signout = "/signout";
   about = "/about";
-  googleSignIn = "/google-sign-in"
-  gptFinance = "/finance/gpt-call"
+  googleSignIn = "/google-sign-in";
+  gptFinance = "/finance/gpt-call";
 
   fitness = {
     index: "/fitness",
@@ -24,9 +24,11 @@ class Urls {
     fetchSinglePlan: "/fitness/plan",
     addPlanRecord: "/fitness/add-plan-record",
     getPlanRecords: "/fitness/plan-records",
-
+    deleteWeekPlanRecords: "/fitness/delete-week-plan-records",
+    updatePlanRecord: "/fitness/update-plan-record",
+    deletePlanRecord: "/fitness/delete-plan-record",
     startWorkoutApp: "/fitness/start-workout/:id",
-    startWorkout:"/fitness/start-workout"
+    startWorkout: "/fitness/start-workout",
   };
 
   finance = {
@@ -40,8 +42,8 @@ class Urls {
     showBudgets: "show-all-budgets",
     showSingleBudget: "show-all-budgets/:id",
     updateSingleBudget: "show-all-budgets/update/:id",
-    
-    newShowSingleBudget:"/finance/show-all-budgets/:id",
+
+    newShowSingleBudget: "/finance/show-all-budgets/:id",
     newUpdateSingleBudget: "/finance/show-all-budgets/update/:id",
 
     // Expenses

@@ -125,7 +125,7 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 	searchString = "%" + strings.TrimSpace(searchString) + "%"
-	log.Println(searchString)
+	log.Println("Search term for postgres:", searchString)
 
 	limitQry := ftx.Query("limit", "10")
 	offsetQry := ftx.Query("offset", "1")
@@ -155,7 +155,6 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 	go utils.ConcurrentTotalEatout(&wg, ctx, q, user.ID, budgetID, &totalEatout, searchString)
 	go utils.ConcurrentTotalEnter(&wg, ctx, q, user.ID, budgetID, &totalEnter, searchString)
 
-	log.Println()
 	// Fetch all expenses for each expense type
 	go utils.ConcurrentCapExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount, searchString)
 	go utils.ConcurrentEatExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount, searchString)

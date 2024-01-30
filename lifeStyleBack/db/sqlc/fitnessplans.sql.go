@@ -10,15 +10,8 @@ import (
 )
 
 const addDayPlan = `-- name: AddDayPlan :one
-INSERT INTO day_plans (
-    user_id,
-    plan_id,
-    day
-) VALUES (
-    $1, 
-    $2,
-    $3
-)
+INSERT INTO day_plans (user_id, plan_id, day)
+VALUES ($1, $2, $3)
 RETURNING day_plan_id, user_id, plan_id, day
 `
 
@@ -42,16 +35,12 @@ func (q *Queries) AddDayPlan(ctx context.Context, arg AddDayPlanParams) (DayPlan
 
 const addDayPlanMoves = `-- name: AddDayPlanMoves :exec
 INSERT INTO day_plan_moves (
-    user_id,
-    plan_id,
-    day_plan_id,
-    move_id
-)   VALUES (
-    $1, 
-    $2,
-    $3,
-    $4
-)
+        user_id,
+        plan_id,
+        day_plan_id,
+        move_id
+    )
+VALUES ($1, $2, $3, $4)
 `
 
 type AddDayPlanMovesParams struct {
@@ -72,15 +61,8 @@ func (q *Queries) AddDayPlanMoves(ctx context.Context, arg AddDayPlanMovesParams
 }
 
 const addPlan = `-- name: AddPlan :one
-INSERT INTO plans (
-    user_id,
-    plan_name,
-    days
-) VALUES (
-    $1, 
-    $2,
-    $3
-)
+INSERT INTO plans (user_id, plan_name, days)
+VALUES ($1, $2, $3)
 RETURNING plan_id, user_id, plan_name, days, created_at
 `
 
@@ -105,24 +87,25 @@ func (q *Queries) AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error) 
 
 const addPlanRecord = `-- name: AddPlanRecord :exec
 INSERT INTO plan_records (
-    user_id,
-    day_plan_id,
-    day_plan_move_id,
-    move_id,
-    week,
-    set_record,
-    reps,
-    weight
-)   VALUES (
-    $1, 
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8
-)
+        user_id,
+        day_plan_id,
+        day_plan_move_id,
+        move_id,
+        week,
+        set_record,
+        reps,
+        weight
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8
+    )
 `
 
 type AddPlanRecordParams struct {
@@ -152,7 +135,8 @@ func (q *Queries) AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) er
 
 const deleteFitnessDayPlan = `-- name: DeleteFitnessDayPlan :exec
 DELETE FROM day_plans
-WHERE user_id = $1 AND day_plan_id = $2
+WHERE user_id = $1
+    AND day_plan_id = $2
 `
 
 type DeleteFitnessDayPlanParams struct {
@@ -167,7 +151,8 @@ func (q *Queries) DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDay
 
 const deleteFitnessDayPlanMove = `-- name: DeleteFitnessDayPlanMove :one
 DELETE FROM day_plan_moves
-WHERE user_id = $1 AND day_plan_move_id = $2
+WHERE user_id = $1
+    AND day_plan_move_id = $2
 RETURNING day_plan_move_id, user_id, plan_id, day_plan_id, move_id
 `
 
@@ -191,7 +176,8 @@ func (q *Queries) DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnes
 
 const deletePlan = `-- name: DeletePlan :one
 DELETE FROM plans
-WHERE user_id = $1 AND plan_id = $2
+WHERE user_id = $1
+    AND plan_id = $2
 RETURNING plan_id, user_id, plan_name, days, created_at
 `
 
@@ -213,9 +199,42 @@ func (q *Queries) DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, e
 	return i, err
 }
 
+const deletePlanRecord = `-- name: DeletePlanRecord :exec
+DELETE FROM plan_records
+WHERE user_id = $1 AND plan_record_id = $2
+`
+
+type DeletePlanRecordParams struct {
+	UserID       int64 `json:"user_id"`
+	PlanRecordID int64 `json:"plan_record_id"`
+}
+
+func (q *Queries) DeletePlanRecord(ctx context.Context, arg DeletePlanRecordParams) error {
+	_, err := q.db.ExecContext(ctx, deletePlanRecord, arg.UserID, arg.PlanRecordID)
+	return err
+}
+
+const deleteWeekPlanRecords = `-- name: DeleteWeekPlanRecords :exec
+DELETE FROM plan_records
+WHERE user_id = $1
+    AND week = $2
+`
+
+type DeleteWeekPlanRecordsParams struct {
+	UserID int64 `json:"user_id"`
+	Week   int32 `json:"week"`
+}
+
+func (q *Queries) DeleteWeekPlanRecords(ctx context.Context, arg DeleteWeekPlanRecordsParams) error {
+	_, err := q.db.ExecContext(ctx, deleteWeekPlanRecords, arg.UserID, arg.Week)
+	return err
+}
+
 const fetchFitnessDayPlanMoves = `-- name: FetchFitnessDayPlanMoves :many
-SELECT day_plan_move_id, user_id, plan_id, day_plan_id, move_id FROM day_plan_moves
-WHERE user_id = $1 AND day_plan_id = $2
+SELECT day_plan_move_id, user_id, plan_id, day_plan_id, move_id
+FROM day_plan_moves
+WHERE user_id = $1
+    AND day_plan_id = $2
 `
 
 type FetchFitnessDayPlanMovesParams struct {
@@ -253,8 +272,10 @@ func (q *Queries) FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitness
 }
 
 const fetchFitnessDayPlans = `-- name: FetchFitnessDayPlans :many
-SELECT day_plan_id, user_id, plan_id, day FROM day_plans
-WHERE user_id = $1 AND plan_id = $2
+SELECT day_plan_id, user_id, plan_id, day
+FROM day_plans
+WHERE user_id = $1
+    AND plan_id = $2
 `
 
 type FetchFitnessDayPlansParams struct {
@@ -291,7 +312,8 @@ func (q *Queries) FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayP
 }
 
 const fetchFitnessPlans = `-- name: FetchFitnessPlans :many
-SELECT plan_id, user_id, plan_name, days, created_at FROM plans
+SELECT plan_id, user_id, plan_name, days, created_at
+FROM plans
 WHERE user_id = $1
 `
 
@@ -325,8 +347,7 @@ func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, 
 }
 
 const fetchPlanRecords = `-- name: FetchPlanRecords :many
-SELECT 
-    plan_records.plan_record_id,
+SELECT plan_records.plan_record_id,
     plan_records.user_id,
     plan_records.day_plan_id,
     plan_records.day_plan_move_id,
@@ -338,8 +359,12 @@ SELECT
     moves.move_name,
     moves.move_type_id
 FROM plan_records
-JOIN moves ON plan_records.move_id = moves.move_id
-WHERE user_id = $1 AND day_plan_id = $2
+    JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1
+    AND day_plan_id = $2
+ORDER BY 
+    plan_records.day_plan_move_id, 
+    plan_records.set_record
 `
 
 type FetchPlanRecordsParams struct {
@@ -397,8 +422,10 @@ func (q *Queries) FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsPara
 }
 
 const fetchSingleFitnessPlan = `-- name: FetchSingleFitnessPlan :one
-SELECT plan_id, user_id, plan_name, days, created_at FROM plans
-WHERE user_id = $1 AND plan_id = $2
+SELECT plan_id, user_id, plan_name, days, created_at
+FROM plans
+WHERE user_id = $1
+    AND plan_id = $2
 `
 
 type FetchSingleFitnessPlanParams struct {
@@ -420,11 +447,19 @@ func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFit
 }
 
 const joinDayPlanAndDayPlanMovesAndMoves = `-- name: JoinDayPlanAndDayPlanMovesAndMoves :many
-SELECT day_plan_moves.user_id ,day_plan_moves.plan_id, day_plan_moves.day_plan_id, day_plan_moves.day_plan_move_id, day, move_name, plans.days
+SELECT day_plan_moves.user_id,
+    day_plan_moves.plan_id,
+    day_plan_moves.day_plan_id,
+    day_plan_moves.day_plan_move_id,
+    day,
+    move_name,
+    plans.days
 FROM day_plan_moves
-INNER JOIN plans ON day_plan_moves.user_id = plans.user_id AND day_plan_moves.plan_id = plans.plan_id
-INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id AND day_plan_moves.day_plan_id = day_plans.day_plan_id
-INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
+    INNER JOIN plans ON day_plan_moves.user_id = plans.user_id
+    AND day_plan_moves.plan_id = plans.plan_id
+    INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id
+    AND day_plan_moves.day_plan_id = day_plans.day_plan_id
+    INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
 `
 
 type JoinDayPlanAndDayPlanMovesAndMovesRow struct {
@@ -466,4 +501,42 @@ func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]Joi
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePlanRecord = `-- name: UpdatePlanRecord :one
+UPDATE plan_records
+SET reps = $1,
+    weight = $2
+WHERE user_id = $3
+    AND plan_record_id = $4
+RETURNING plan_record_id, user_id, day_plan_id, day_plan_move_id, move_id, week, set_record, reps, weight
+`
+
+type UpdatePlanRecordParams struct {
+	Reps         int32 `json:"reps"`
+	Weight       int32 `json:"weight"`
+	UserID       int64 `json:"user_id"`
+	PlanRecordID int64 `json:"plan_record_id"`
+}
+
+func (q *Queries) UpdatePlanRecord(ctx context.Context, arg UpdatePlanRecordParams) (PlanRecord, error) {
+	row := q.db.QueryRowContext(ctx, updatePlanRecord,
+		arg.Reps,
+		arg.Weight,
+		arg.UserID,
+		arg.PlanRecordID,
+	)
+	var i PlanRecord
+	err := row.Scan(
+		&i.PlanRecordID,
+		&i.UserID,
+		&i.DayPlanID,
+		&i.DayPlanMoveID,
+		&i.MoveID,
+		&i.Week,
+		&i.SetRecord,
+		&i.Reps,
+		&i.Weight,
+	)
+	return i, err
 }

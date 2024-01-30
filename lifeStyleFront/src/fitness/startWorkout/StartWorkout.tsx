@@ -23,6 +23,7 @@ import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import { ReqAddPlanRecord } from "../../assets/FitnessInterfaces";
 import cn from "../ConstantsPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
+import ModalUpdatePlanRecord from "./ModalUpdatePlanRecord";
 
 // TODO: After submitting the record, check what records exist and show the user what's left to do!
 
@@ -42,15 +43,17 @@ const StartWorkout = () => {
 
   const [addSetErrs, setAddSetErrs] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-  const [repsForm, setRepsForm] = useState<number>(0);
-  const [weightsForm, setWeightsForm] = useState<number>(0);
   const [week, setWeek] = useState(1);
   const [moveName, setMoveName] = useState("");
+  const [reps, setReps] = useState<number>(cn.REPS[0]);
+  const [weights, setWeights] = useState<number>(cn.WEIGHTS[0]);
 
   const [addedReps, setAddedReps] = useState<number[]>([]);
   const [addedWeights, setAddedWeights] = useState<number[]>([]);
+
+  const [selectedMoveToUpdate, setSelectedMoveToUpdate] = useState<PlanRecord|null>(null);
+  const [updateRecModalShow, setUpdateRecModalShow] = useState(false);
 
   const [dayPlanMoves, setDayPlanMoves] = useState<
     DayPlanMovesStartWorkout | "error" | "waiting"
@@ -65,9 +68,9 @@ const StartWorkout = () => {
     setPossibleErrs("");
     setLoading(false);
 
-    if (repsForm !== 0 && weightsForm !== 0) {
-      setAddedReps((prevReps) => [...prevReps, +repsForm]);
-      setAddedWeights((prevWeights) => [...prevWeights, weightsForm]);
+    if (reps !== 0 && weights !== 0) {
+      setAddedReps((prevReps) => [...prevReps, +reps]);
+      setAddedWeights((prevWeights) => [...prevWeights, weights]);
       return;
     }
 
@@ -90,6 +93,49 @@ const StartWorkout = () => {
     );
 
     return;
+  };
+
+
+  const handlePlanRecordRowClick = (moveRec: PlanRecord) => {
+    setSelectedMoveToUpdate(moveRec)
+    setUpdateRecModalShow(true);
+    return;
+  }
+
+  const handleDeleteWeek = async (week: number) => {
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.fitness.deleteWeekPlanRecords}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json;charset=UTF-8",
+          },
+          body: JSON.stringify({
+            week: week,
+          }),
+        }
+      );
+
+      if (result.status === StatusCodes.InternalServerError) {
+        const data = (await result.json()) as ApiRes;
+        alert(data.message);
+        return;
+      }
+
+      if (result.status === StatusCodes.NoContent) {
+        handleUpdateHistory();
+        return;
+      }
+
+      location.assign(Urls.login);
+      return;
+    } catch (error) {
+      alert(error);
+      return;
+    }
   };
 
   const handleSubmitRecord = async () => {
@@ -157,6 +203,7 @@ const StartWorkout = () => {
         }
 
         if (result.status === StatusCodes.Ok) {
+          handleUpdateHistory();
           setPossibleSuccess("Record added successfully!");
           setAddedReps([]);
           setAddedWeights([]);
@@ -186,7 +233,7 @@ const StartWorkout = () => {
   };
 
   const handleUpdateHistory = async () => {
-    setLoadingUpdate(true);
+    // setLoadingUpdate(true);
     setUpdatePossibleErrs("");
 
     try {
@@ -198,7 +245,7 @@ const StartWorkout = () => {
         }
       );
 
-      setLoadingUpdate(false);
+      // setLoadingUpdate(false);
       if (result.status === StatusCodes.UnAuthorized) {
         location.assign(Urls.login);
         return;
@@ -378,7 +425,7 @@ const StartWorkout = () => {
 
       <div className="text-center mt-4 mx-2 p-2 page-explanations">
         <h1 className="mt-1 mb-3 text-primary">Workout Time!</h1>
-        <p style={{ fontSize: "20px" }}>
+        <p style={{ fontSize: "18px" }}>
           First, add all the sets for every move with the corresponding reps and
           weights. Then, smash the submit button!
         </p>
@@ -397,7 +444,7 @@ const StartWorkout = () => {
             <h3 className="text-danger">No History Of Workout Yet</h3>
           </div>
         ) : (
-          <Row>
+          <Row className="mb-2">
             <div className="text-center mt-2 mb-3">
               <h3 className="text-warning">History Of Workout</h3>
             </div>
@@ -411,7 +458,8 @@ const StartWorkout = () => {
                       </span>
                     </Accordion.Header>
                     <Accordion.Body>
-                      <Table key={planRecordsArray[0].plan_record_id}>
+                      <p className="mb-1 text-success" style={{fontSize:"15px"}}>Click on row to update or delete sets</p>
+                      <Table hover key={planRecordsArray[0].plan_record_id}>
                         <thead>
                           <tr>
                             <th className="text-primary">Move</th>
@@ -420,9 +468,9 @@ const StartWorkout = () => {
                             <th className="text-danger">Weights</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="plan-records-table">
                           {planRecordsArray.map((moveRec, moveIndex) => (
-                            <tr key={moveIndex}>
+                            <tr key={moveIndex} onClick={() => handlePlanRecordRowClick(moveRec)}>
                               <td className="text-light">
                                 {moveRec.move_name}
                               </td>
@@ -435,6 +483,15 @@ const StartWorkout = () => {
                           ))}
                         </tbody>
                       </Table>
+                      <Button
+                        onClick={() =>
+                          handleDeleteWeek(planRecordsArray[0].week)
+                        }
+                        className="px-4"
+                        variant="outline-danger"
+                      >
+                        Delete Week {planRecordsArray[0].week}
+                      </Button>
                     </Accordion.Body>
                   </Accordion.Item>
                 </Accordion>
@@ -442,13 +499,13 @@ const StartWorkout = () => {
             )}
           </Row>
         )}
-        <Button
+        {/* <Button
           variant="outline-warning"
           className=" mt-2"
           onClick={handleUpdateHistory}
         >
           {loadingUpdate ? <img src={rl} alt="Rotation" /> : "Update"}
-        </Button>
+        </Button> */}
         <div className="mt-1 text-danger">{updatePossibleErrs}</div>
         <div className="mt-1" style={SUCCESS_STYLE}>
           {updatePossibleSuccess}
@@ -491,29 +548,31 @@ const StartWorkout = () => {
               <Row className="mt-2">
                 <Col xs>
                   <Form.Group>
-                    <Form.Control
-                      placeholder="Reps"
-                      type="number"
-                      min={1}
-                      step={1}
-                      onChange={(e) => setRepsForm(+e.target.value)}
-                    ></Form.Control>
+                    <Form.Label className="text-primary">Reps:</Form.Label>
+                    <Form.Select onChange={(e) => setReps(+e.target.value)}>
+                      {cn.REPS.map((rep) => (
+                        <option value={rep} key={rep}>
+                          {rep}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
                 <Col xs>
                   <Form.Group>
-                    <Form.Control
-                      type="number"
-                      min={0.1}
-                      step={0.1}
-                      placeholder="Weight (lb)"
-                      onChange={(e) => setWeightsForm(+e.target.value)}
-                    ></Form.Control>
+                    <Form.Label className="text-primary">Weight:</Form.Label>
+                    <Form.Select onChange={(e) => setWeights(+e.target.value)}>
+                      {cn.WEIGHTS.map((weight) => (
+                        <option value={weight} key={weight}>
+                          {weight} lb
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
 
-              <Row className="mt-2">
+              <Row className="mt-3">
                 <Col>
                   <Button
                     className="px-5"
@@ -614,6 +673,14 @@ const StartWorkout = () => {
           </Col>
         </Row>
       </Container>
+
+
+      <ModalUpdatePlanRecord
+        updateRecModalShow={updateRecModalShow}
+        onHide={() => setUpdateRecModalShow(false)}
+        selectedMoveToUpdate={selectedMoveToUpdate}
+        onClose={handleUpdateHistory}
+      />
     </>
   );
 };

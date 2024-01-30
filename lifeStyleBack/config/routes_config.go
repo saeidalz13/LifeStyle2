@@ -35,6 +35,9 @@ type ProjUrls struct {
 	AllDayPlanMoves          string
 	AddDayPlanMoves          string
 	AddPlanRecord            string
+	DeleteWeekPlanRecords    string
+	UpdatePlanRecord         string
+	DeletePlanRecord         string
 
 	// GPT
 	GptApi string
@@ -77,4 +80,7 @@ var URLS = &ProjUrls{
 	AllDayPlanMoves:          "/fitness/all-day-plans/day-plan-moves/:id",
 	AddDayPlanMoves:          "/fitness/all-day-plans/add-moves/:id",
 	AddPlanRecord:            "/fitness/add-plan-record/:id",
+	DeleteWeekPlanRecords:    "/fitness/delete-week-plan-records",
+	UpdatePlanRecord:         "/fitness/update-plan-record",
+	DeletePlanRecord:         "/fitness/delete-plan-record",
 }
