@@ -52,7 +52,8 @@ const StartWorkout = () => {
   const [addedReps, setAddedReps] = useState<number[]>([]);
   const [addedWeights, setAddedWeights] = useState<number[]>([]);
 
-  const [selectedMoveToUpdate, setSelectedMoveToUpdate] = useState<PlanRecord|null>(null);
+  const [selectedMoveToUpdate, setSelectedMoveToUpdate] =
+    useState<PlanRecord | null>();
   const [updateRecModalShow, setUpdateRecModalShow] = useState(false);
 
   const [dayPlanMoves, setDayPlanMoves] = useState<
@@ -95,12 +96,14 @@ const StartWorkout = () => {
     return;
   };
 
-
   const handlePlanRecordRowClick = (moveRec: PlanRecord) => {
-    setSelectedMoveToUpdate(moveRec)
+    // First set to null
+    setSelectedMoveToUpdate(null);
+    // Then set to new value
+    setTimeout(() => setSelectedMoveToUpdate(moveRec), 0);
     setUpdateRecModalShow(true);
     return;
-  }
+  };
 
   const handleDeleteWeek = async (week: number) => {
     try {
@@ -458,7 +461,12 @@ const StartWorkout = () => {
                       </span>
                     </Accordion.Header>
                     <Accordion.Body>
-                      <p className="mb-1 text-success" style={{fontSize:"15px"}}>Click on row to update or delete sets</p>
+                      <p
+                        className="mb-1 text-success"
+                        style={{ fontSize: "15px" }}
+                      >
+                        Click on row to update or delete sets
+                      </p>
                       <Table hover key={planRecordsArray[0].plan_record_id}>
                         <thead>
                           <tr>
@@ -470,7 +478,10 @@ const StartWorkout = () => {
                         </thead>
                         <tbody id="plan-records-table">
                           {planRecordsArray.map((moveRec, moveIndex) => (
-                            <tr key={moveIndex} onClick={() => handlePlanRecordRowClick(moveRec)}>
+                            <tr
+                              key={moveIndex}
+                              onClick={() => handlePlanRecordRowClick(moveRec)}
+                            >
                               <td className="text-light">
                                 {moveRec.move_name}
                               </td>
@@ -674,13 +685,14 @@ const StartWorkout = () => {
         </Row>
       </Container>
 
-
-      <ModalUpdatePlanRecord
-        updateRecModalShow={updateRecModalShow}
-        onHide={() => setUpdateRecModalShow(false)}
-        selectedMoveToUpdate={selectedMoveToUpdate}
-        onClose={handleUpdateHistory}
-      />
+      {selectedMoveToUpdate && (
+        <ModalUpdatePlanRecord
+          updateRecModalShow={updateRecModalShow}
+          onHide={() => setUpdateRecModalShow(false)}
+          selectedMoveToUpdate={selectedMoveToUpdate}
+          onClose={handleUpdateHistory}
+        />
+      )}
     </>
   );
 };

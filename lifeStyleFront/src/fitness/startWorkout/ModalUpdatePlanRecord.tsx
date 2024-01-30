@@ -10,7 +10,7 @@ import { ApiRes } from "../../assets/GeneralInterfaces";
 interface UpdateModalProps {
   updateRecModalShow: boolean;
   onHide: () => void;
-  selectedMoveToUpdate: PlanRecord | null;
+  selectedMoveToUpdate: PlanRecord;
   onClose: () => void;
 }
 
@@ -20,8 +20,8 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
   selectedMoveToUpdate,
   onClose,
 }) => {
-  const [updatedReps, setUpdatedReps] = useState<number>(cn.REPS[0]);
-  const [updatedWeight, setUpdatedWeight] = useState<number>(cn.WEIGHTS[0]);
+  const [updatedReps, setUpdatedReps] = useState<number>(selectedMoveToUpdate.reps);
+  const [updatedWeight, setUpdatedWeight] = useState<number>(selectedMoveToUpdate.weight);
   const [serverRespMsg, setServerRespMsg] = useState<string>("");
 
   const handleUpdatePlanRecord = async () => {
@@ -38,7 +38,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
           body: JSON.stringify({
             reps: updatedReps,
             weight: updatedWeight,
-            plan_record_id: selectedMoveToUpdate?.plan_record_id,
+            plan_record_id: selectedMoveToUpdate.plan_record_id,
           }),
         }
       );
@@ -89,7 +89,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
             "Content-Type": "application/json;charset=UTF-8",
           },
           body: JSON.stringify({
-            plan_record_id: selectedMoveToUpdate?.plan_record_id,
+            plan_record_id: selectedMoveToUpdate.plan_record_id,
           }),
         }
       );
@@ -124,7 +124,6 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
     }
   };
 
-  console.log(selectedMoveToUpdate);
   return (
     <Modal
       show={updateRecModalShow}
@@ -147,7 +146,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
           <Row>
             <Col xs>
               <Form.Label className="text-primary">Reps</Form.Label>
-              <Form.Select onChange={(e) => setUpdatedReps(+e.target.value)}>
+              <Form.Select onChange={(e) => setUpdatedReps(+e.target.value)} defaultValue={updatedReps}>
                 {cn.REPS.map((rep) => (
                   <option value={rep} key={rep}>
                     {rep}
@@ -157,7 +156,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
             </Col>
             <Col xs>
               <Form.Label className="text-primary">Weight:</Form.Label>
-              <Form.Select onChange={(e) => setUpdatedWeight(+e.target.value)}>
+              <Form.Select onChange={(e) => setUpdatedWeight(+e.target.value)} defaultValue={updatedWeight}>
                 {cn.WEIGHTS.map((weight) => (
                   <option value={weight} key={weight}>
                     {weight} lb

@@ -363,7 +363,7 @@ FROM plan_records
 WHERE user_id = $1
     AND day_plan_id = $2
 ORDER BY 
-    plan_records.day_plan_move_id, 
+    plan_records.plan_record_id, 
     plan_records.set_record
 `
 
