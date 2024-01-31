@@ -334,7 +334,56 @@ func (f *FinanceHandlerReqs) DeleteCapitalExpense(ftx *fiber.Ctx) error {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the capital expense"})
 	}
+	return ftx.SendStatus(fiber.StatusNoContent)
+}
 
+func (f *FinanceHandlerReqs) DeleteEatoutExpense(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	qwtx := sqlc.NewQWithTx(f.Db)
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	var deleteArgTx sqlc.DeleteSingleEatoutExpenseParams
+	if err := ftx.BodyParser(&deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+	deleteArgTx.UserID = user.ID
+
+	if err = qwtx.DeleteEatoutExpenseBalance(ctx, &deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the eatout expense"})
+	}
+	return ftx.SendStatus(fiber.StatusNoContent)
+}
+
+func (f *FinanceHandlerReqs) DeleteEntertainmentExpense(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	qwtx := sqlc.NewQWithTx(f.Db)
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	var deleteArgTx sqlc.DeleteSingleEntertainmentExpenseParams
+	if err := ftx.BodyParser(&deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+	deleteArgTx.UserID = user.ID
+
+	if err = qwtx.DeleteEntertainmentExpenseBalance(ctx, &deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the entertainment expense"})
+	}
 	return ftx.SendStatus(fiber.StatusNoContent)
 }
 

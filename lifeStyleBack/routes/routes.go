@@ -52,6 +52,8 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFin
 	app.Delete(cn.URLS.DeleteWeekPlanRecords, m.IsLoggedIn, h.DeleteWeekFromPlanRecords)
 	app.Delete(cn.URLS.DeletePlanRecord, m.IsLoggedIn, h.DeleteSetFromPlanRecord)
 	app.Delete(cn.URLS.DeleteCapitalExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteCapitalExpense)
+	app.Delete(cn.URLS.DeleteEatoutExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteEatoutExpense)
+	app.Delete(cn.URLS.DeleteEntertainmentExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteEntertainmentExpense)
 
 	// Patch
 	app.Patch(cn.URLS.UpdateBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PatchBudget)

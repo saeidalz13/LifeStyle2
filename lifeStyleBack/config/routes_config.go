@@ -25,6 +25,8 @@ type ProjUrls struct {
 	UpdateEatoutExpenses        string
 	UpdateEntertainmentExpenses string
 	DeleteCapitalExpense        string
+	DeleteEatoutExpense         string
+	DeleteEntertainmentExpense  string
 
 	// Fitness
 	FetchSinglePlan          string
@@ -74,6 +76,8 @@ var URLS = &ProjUrls{
 	UpdateEatoutExpenses:        "/finance/update-eatout-expenses",
 	UpdateEntertainmentExpenses: "/finance/update-entertainment-expenses",
 	DeleteCapitalExpense:        "/finance/delete-capital-expenses",
+	DeleteEatoutExpense:         "/finance/delete-eatout-expenses",
+	DeleteEntertainmentExpense:  "/finance/delete-entertainment-expenses",
 
 	// Fitness
 	FetchSinglePlan:          "/fitness/plan/:id",

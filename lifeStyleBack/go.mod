@@ -12,6 +12,7 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/o1egl/paseto v1.0.0
 	github.com/sashabaranov/go-openai v1.17.9
+	github.com/shopspring/decimal v1.3.1
 	golang.org/x/crypto v0.16.0
 	golang.org/x/oauth2 v0.15.0
 )
@@ -33,7 +34,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
