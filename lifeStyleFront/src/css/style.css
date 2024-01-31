@@ -169,6 +169,6 @@ border-color: #00ddff; /* Change the border color when focused */
 background-color: rgb(253, 222, 245);
 }
 
-#plan-records-table:hover {
+.plan-records-table:hover {
     cursor: pointer;
 }

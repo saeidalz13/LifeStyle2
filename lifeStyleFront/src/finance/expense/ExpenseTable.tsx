@@ -8,13 +8,14 @@ import ExpensesRows from "./ExpensesRows";
 interface ExpenseTableProps {
   allExpenses: TAllExpensesArr | null | TNoExpensesData | "waiting";
   expenseType: string;
+  toggleTrigger: () => void;
 }
 
 const ExpenseTable: React.FC<ExpenseTableProps> = ({
   allExpenses,
   expenseType,
+  toggleTrigger
 }) => {
-    
   if (
     allExpenses === "waiting" ||
     allExpenses === null ||
@@ -31,23 +32,21 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
             <th
               scope="col"
               className="table-primary text-center expenses-table-header"
-							style={{backgroundColor:"rgba(1, 21, 28, 0.6)"}}
+              style={{ backgroundColor: "rgba(1, 21, 28, 0.6)" }}
             >
               Expenses
             </th>
             <th
               scope="col"
               className="table-primary text-center expenses-table-header"
-							style={{backgroundColor:"rgba(1, 21, 28, 0.6)"}}
-
+              style={{ backgroundColor: "rgba(1, 21, 28, 0.6)" }}
             >
               Description
             </th>
             <th
               scope="col"
               className="table-primary text-center expenses-table-header"
-							style={{backgroundColor:"rgba(1, 21, 28, 0.6)"}}
-
+              style={{ backgroundColor: "rgba(1, 21, 28, 0.6)" }}
             >
               Time Created
             </th>
@@ -58,6 +57,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
           <ExpensesRows
             expenses={allExpenses.allExpenses}
             expenseType={expenseType}
+            toggleTrigger={toggleTrigger}
           />
         </tbody>
       </table>

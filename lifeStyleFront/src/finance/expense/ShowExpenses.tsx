@@ -1,15 +1,7 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  Row,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
@@ -19,7 +11,6 @@ import {
 } from "../../assets/FinanceInterfaces";
 import ExpenseBadge from "./ExpenseBadge";
 import ExpenseTable from "./ExpenseTable";
-
 
 const ShowExpenses = () => {
   const [keyTab, setKeyTab] = useState("capital");
@@ -46,6 +37,9 @@ const ShowExpenses = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
+  const toggleTrigger = () => {
+    setTrigger((prev) => !prev);
+  };
 
   useEffect(() => {
     if (mount.current) {
@@ -243,53 +237,55 @@ const ShowExpenses = () => {
           </Form>
 
           <Tabs
-        id="controlled-tab-example"
-        activeKey={keyTab}
-        onSelect={(k) => {
-          if (k !== null && k !== undefined) {
-            setKeyTab(k);
-            setExpenseType(k);
-            setCurrentPage(1);
-          }
-        }}
-        className="mt-3 mb-3"
-        fill
-      >
-        <Tab eventKey="capital" title="Capital">
-          <ExpenseBadge
-            expenseType="capital"
-            allExpenses={allExpenses}
-            badgeText={badgeText}
-          />
-          <ExpenseTable
-            expenseType="capital"
-            allExpenses={allExpenses}
-          />
-        </Tab>
-        <Tab eventKey="eatout" title="Eat Out">
-        <ExpenseBadge
-            expenseType="eatout"
-            allExpenses={allExpenses}
-            badgeText={badgeText}
-          />
-          <ExpenseTable
-            expenseType="eatout"
-            allExpenses={allExpenses}
-          />
-        </Tab>
-        <Tab eventKey="entertainment" title="Entertainment">
-        <ExpenseBadge
-            expenseType="entertainment"
-            allExpenses={allExpenses}
-            badgeText={badgeText}
-          />
-          <ExpenseTable
-            expenseType="entertainment"
-            allExpenses={allExpenses}
-          />
-        </Tab>
-      </Tabs>
-
+            id="controlled-tab-example"
+            activeKey={keyTab}
+            onSelect={(k) => {
+              if (k !== null && k !== undefined) {
+                setKeyTab(k);
+                setExpenseType(k);
+                setCurrentPage(1);
+              }
+            }}
+            className="mt-3 mb-3"
+            fill
+          >
+            <Tab eventKey="capital" title="Capital">
+              <ExpenseBadge
+                expenseType="capital"
+                allExpenses={allExpenses}
+                badgeText={badgeText}
+              />
+              <ExpenseTable
+                expenseType="capital"
+                allExpenses={allExpenses}
+                toggleTrigger={toggleTrigger}
+              />
+            </Tab>
+            <Tab eventKey="eatout" title="Eat Out">
+              <ExpenseBadge
+                expenseType="eatout"
+                allExpenses={allExpenses}
+                badgeText={badgeText}
+              />
+              <ExpenseTable
+                expenseType="eatout"
+                allExpenses={allExpenses}
+                toggleTrigger={toggleTrigger}
+              />
+            </Tab>
+            <Tab eventKey="entertainment" title="Entertainment">
+              <ExpenseBadge
+                expenseType="entertainment"
+                allExpenses={allExpenses}
+                badgeText={badgeText}
+              />
+              <ExpenseTable
+                expenseType="entertainment"
+                allExpenses={allExpenses}
+                toggleTrigger={toggleTrigger}
+              />
+            </Tab>
+          </Tabs>
         </div>
       </div>
 

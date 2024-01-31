@@ -30,7 +30,7 @@ export interface Balance {
   created_at: string;
 }
 
-export type TCapitalExpenses = Array<{
+export type TSingleCapital = {
   capital_exp_id: number;
   budget_id: number;
   user_id: number;
@@ -40,9 +40,11 @@ export type TCapitalExpenses = Array<{
     Time: string;
     Valid: boolean;
   };
-}>;
+};
 
-export type TEatoutExpenses = Array<{
+export type TCapitalExpenses = Array<TSingleCapital>;
+
+export type TSingleEatout = {
   eatout_exp_id: number;
   budget_id: number;
   user_id: number;
@@ -52,9 +54,11 @@ export type TEatoutExpenses = Array<{
     Time: string;
     Valid: boolean;
   };
-}>;
+};
 
-export type TEntertainmentExpenses = Array<{
+export type TEatoutExpenses = Array<TSingleEatout>;
+
+export type TSingleEntertaintment = {
   entertainment_exp_id: number;
   budget_id: number;
   user_id: number;
@@ -64,7 +68,9 @@ export type TEntertainmentExpenses = Array<{
     Time: string;
     Valid: boolean;
   };
-}>;
+};
+
+export type TEntertainmentExpenses = Array<TSingleEntertaintment>;
 
 export type Expenses = {
   budget_name: string;
@@ -84,3 +90,17 @@ export type TAllExpensesArr = {
 };
 
 export type TNoExpensesData = "nodata";
+
+export type TExpense = TSingleCapital | TSingleEatout | TSingleEntertaintment;
+
+interface TExpenseTypes {
+  cap: string;
+  eat: string;
+  ent: string;
+}
+
+export const EXPENSE_TYPES = {
+  cap: "capital",
+  eat: "eatout",
+  ent: "entertainment",
+} as TExpenseTypes;

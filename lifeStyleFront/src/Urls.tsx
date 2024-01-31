@@ -49,6 +49,12 @@ class Urls {
     // Expenses
     submitExpenses: "submit-expenses",
     showExpenses: "show-expenses",
+    updateCaptialExpenses: "/finance/update-capital-expenses",
+    updateEatoutExpenses: "/finance/update-eatout-expenses",
+    updateEntertainmentExpenses: "/finance/update-entertainment-expenses",
+    deleteCaptialExpenses: "/finance/delete-capital-expenses",
+    deleteEatoutExpenses: "/finance/delete-eatout-expenses",
+    deleteEntertainmentExpenses: "/finance/delete-entertainment-expenses",
     // showExpensesEach: "show-expenses/:id",
     // submitExpensesEach: "submit-expenses/:id",
 

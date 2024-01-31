@@ -476,7 +476,7 @@ const StartWorkout = () => {
                             <th className="text-danger">Weights</th>
                           </tr>
                         </thead>
-                        <tbody id="plan-records-table">
+                        <tbody className="plan-records-table">
                           {planRecordsArray.map((moveRec, moveIndex) => (
                             <tr
                               key={moveIndex}
