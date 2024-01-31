@@ -11,15 +11,20 @@ type ProjUrls struct {
 	SignOut       string
 	OAuthSignIn   string
 	OAuthCallback string
+	Profile       string
+	DeleteProfile string
 
-	Finance           string
-	ShowBudgets       string
-	EachBudget        string
-	EachExpense       string
-	AllExpensesBudget string
-	EachBalance       string
-	Profile           string
-	DeleteProfile     string
+	// Finance
+	Finance                     string
+	ShowBudgets                 string
+	EachBudget                  string
+	EachExpense                 string
+	AllExpensesBudget           string
+	EachBalance                 string
+	UpdateCapitalExpenses       string
+	UpdateEatoutExpenses        string
+	UpdateEntertainmentExpenses string
+	DeleteCapitalExpense        string
 
 	// Fitness
 	FetchSinglePlan          string
@@ -57,14 +62,18 @@ var URLS = &ProjUrls{
 	DeleteProfile: "/delete-profile",
 
 	// Finance
-	Finance:           "/finance",
-	ShowBudgets:       "/finance/show-all-budgets",
-	PostNewBudget:     "/finance/create-new-budget",
-	EachBudget:        "/finance/show-all-budgets/:id",
-	EachExpense:       "/finance/submit-expenses/:id",
-	AllExpensesBudget: "/finance/show-expenses/:id",
-	EachBalance:       "/finance/balance/:id",
-	UpdateBudget:      "/finance/update-budget/:id",
+	Finance:                     "/finance",
+	ShowBudgets:                 "/finance/show-all-budgets",
+	PostNewBudget:               "/finance/create-new-budget",
+	EachBudget:                  "/finance/show-all-budgets/:id",
+	EachExpense:                 "/finance/submit-expenses/:id",
+	AllExpensesBudget:           "/finance/show-expenses/:id",
+	EachBalance:                 "/finance/balance/:id",
+	UpdateBudget:                "/finance/update-budget/:id",
+	UpdateCapitalExpenses:       "/finance/update-capital-expenses",
+	UpdateEatoutExpenses:        "/finance/update-eatout-expenses",
+	UpdateEntertainmentExpenses: "/finance/update-entertainment-expenses",
+	DeleteCapitalExpense:        "/finance/delete-capital-expenses",
 
 	// Fitness
 	FetchSinglePlan:          "/fitness/plan/:id",

@@ -7,3 +7,4 @@ type UniqueConstraintsStruct struct {
 var UniqueConstraints = &UniqueConstraintsStruct{
 	DayPlanMove: "unique_day_plan_move",
 }
+

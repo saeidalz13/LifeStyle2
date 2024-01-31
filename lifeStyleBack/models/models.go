@@ -1,8 +1,7 @@
 package models
 
-import (
-	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
-)
+import sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+
 
 type User struct {
 	Email    string `json:"email"`
@@ -26,6 +25,26 @@ type IncomingAllExpenses struct {
 	BudgetId     int64  `json:"budget_id"`
 	SearchString string `json:"search_string"`
 }
+
+// type IncomingUpdateExpenses struct {
+// 	Expenses    string `json:"expenses"`
+// 	Description string `json:"description"`
+// }
+
+// type IncomingUpdateCapitalExpenses struct {
+// 	IncomingUpdateExpenses
+// 	CapitalExpID int64 `json:"capital_exp_id"`
+// }
+
+// type IncomingUpdateEatoutExpenses struct {
+// 	IncomingUpdateExpenses
+// 	EatoutExpID int64 `json:"eatout_exp_id"`
+// }
+
+// type IncomingUpdateEntertainmentExpenses struct {
+// 	IncomingUpdateExpenses
+// 	EntertainmentExpID int64 `json:"entertainment_exp_id"`
+// }
 
 type IncomingEditPlan struct {
 	PlanID int64          `json:"plan_id"`
@@ -56,7 +75,6 @@ type IncomingUpdatePlanRecord struct {
 type IncomingDeletePlanRecord struct {
 	PlanRecordID int64 `json:"plan_record_id"`
 }
-
 
 type RespStartWorkoutDayPlanMoves struct {
 	DayPlanMoveID int64  `json:"day_plan_move_id"`

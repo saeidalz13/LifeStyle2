@@ -314,7 +314,7 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 		movesToAdd = append(movesToAdd, *temp)
 	}
 
-	q2 := sqlc.NewDayPlanMoves(database.DB)
+	q2 := sqlc.NewQWithTx(database.DB)
 	dayPlan, err := q2.CreateDayPlanMoves(ctx, sqlc.DayPlanMovesTx{
 		AddDayPlanTx: sqlc.AddDayPlanParams{
 			UserID: user.ID,

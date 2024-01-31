@@ -198,7 +198,7 @@ func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
 
 	operationBudget := sqlc.CreateBudgetBalanceTx(newBudget)
 	operationBudget.UserID = user.ID
-	op := sqlc.NewBudgetBalance(database.DB)
+	op := sqlc.NewQWithTx(database.DB)
 	result, err := op.CreateBudgetBalance(ctx, operationBudget)
 	if err != nil {
 		log.Println(err)
@@ -228,7 +228,7 @@ func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	q2 := sqlc.NewBudgetBalance(database.DB)
+	q2 := sqlc.NewQWithTx(database.DB)
 	updatedBalance, err := q2.AddExpenseUpdateBalance(ctx, sqlc.AddExpenseUpdateBalanceTx{
 		BudgetID:    newExpense.BudgetID,
 		UserID:      user.ID,
@@ -282,6 +282,7 @@ func PostGptApi(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]string{"GPTResp": response.Choices[0].Message.Content})
 }
 
+// DELETE
 func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -310,6 +311,33 @@ func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusAccepted).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Budget was deleted successfully!"})
 }
 
+func (f *FinanceHandlerReqs) DeleteCapitalExpense(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	qwtx := sqlc.NewQWithTx(f.Db)
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var deleteArgTx sqlc.DeleteSingleCapitalExpenseParams
+	if err := ftx.BodyParser(&deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+	deleteArgTx.UserID = user.ID
+
+	if err = qwtx.DeleteCapitalExpenseBalance(ctx, &deleteArgTx); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the capital expense"})
+	}
+
+	return ftx.SendStatus(fiber.StatusNoContent)
+}
+
 /*
 PATCH Section
 */
@@ -334,7 +362,7 @@ func (f *FinanceHandlerReqs) PatchBudget(ftx *fiber.Ctx) error {
 	log.Printf("Incoming: %#v", updateBudgetBalance)
 
 	// Do the transaction
-	q2 := sqlc.NewBudgetBalance(database.DB)
+	q2 := sqlc.NewQWithTx(f.Db)
 	updatedBudget, updatedBalance, err := q2.UpdateBudgetBalance(ctx, updateBudgetBalance)
 	if err != nil {
 		log.Println(err)
@@ -346,4 +374,94 @@ func (f *FinanceHandlerReqs) PatchBudget(ftx *fiber.Ctx) error {
 		"updated_budget":  updatedBudget,
 		"updated_balance": updatedBalance,
 	})
+}
+
+func (f *FinanceHandlerReqs) PatchCapitalExpenses(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var updateCapitalExpensesInfo sqlc.IncomingUpdateCapitalExpenses
+	if err := ftx.BodyParser(&updateCapitalExpensesInfo); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	qwtx := sqlc.NewQWithTx(f.Db)
+	err = qwtx.UpdateExpensesBalanceCapital(ctx, &sqlc.ExpenseBalanceCapital{
+		IncomingUpdateCapitalExpenses: updateCapitalExpensesInfo,
+		UserId:                        user.ID,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to update capital expenses"})
+	}
+
+	return ftx.SendStatus(fiber.StatusOK)
+}
+
+func (f *FinanceHandlerReqs) PatchEatoutExpenses(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var updateEatoutExpensesInfo sqlc.IncomingUpdateEatoutExpenses
+	if err := ftx.BodyParser(&updateEatoutExpensesInfo); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	qwtx := sqlc.NewQWithTx(f.Db)
+	err = qwtx.UpdateExpensesBalanceEatout(ctx, &sqlc.ExpenseBalanceEatout{
+		IncomingUpdateEatoutExpenses: updateEatoutExpensesInfo,
+		UserId:                       user.ID,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to update eatout expenses"})
+	}
+
+	return ftx.SendStatus(fiber.StatusOK)
+}
+
+func (f *FinanceHandlerReqs) PatchEntertainmentExpenses(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	var updateEntertainmentExpensesInfo sqlc.IncomingUpdateEntertainmentExpenses
+	if err := ftx.BodyParser(&updateEntertainmentExpensesInfo); err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	qwtx := sqlc.NewQWithTx(f.Db)
+	err = qwtx.UpdateExpensesBalanceEntertainment(ctx, &sqlc.ExpenseBalanceEntertainment{
+		IncomingUpdateEntertainmentExpenses: updateEntertainmentExpensesInfo,
+		UserId:                              user.ID,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to update entertainment expenses"})
+	}
+
+	return ftx.SendStatus(fiber.StatusOK)
 }
