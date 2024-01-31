@@ -10,7 +10,11 @@ import (
 )
 
 const countCapitalRows = `-- name: CountCapitalRows :one
-SELECT COUNT(*) FROM capital_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT COUNT(*)
+FROM capital_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountCapitalRowsParams struct {
@@ -27,7 +31,11 @@ func (q *Queries) CountCapitalRows(ctx context.Context, arg CountCapitalRowsPara
 }
 
 const countEatoutRows = `-- name: CountEatoutRows :one
-SELECT COUNT(*) FROM eatout_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT COUNT(*)
+FROM eatout_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountEatoutRowsParams struct {
@@ -44,7 +52,11 @@ func (q *Queries) CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams
 }
 
 const countEntertainmentRows = `-- name: CountEntertainmentRows :one
-SELECT COUNT(*) FROM entertainment_expenses WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT COUNT(*)
+FROM entertainment_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 `
 
 type CountEntertainmentRowsParams struct {
@@ -61,11 +73,13 @@ func (q *Queries) CountEntertainmentRows(ctx context.Context, arg CountEntertain
 }
 
 const fetchAllCapitalExpenses = `-- name: FetchAllCapitalExpenses :many
-SELECT capital_exp_id, budget_id, user_id, expenses, description, created_at FROM capital_expenses
-WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT capital_exp_id, budget_id, user_id, expenses, description, created_at
+FROM capital_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $4
-OFFSET $5
+LIMIT $4 OFFSET $5
 `
 
 type FetchAllCapitalExpensesParams struct {
@@ -113,11 +127,13 @@ func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapit
 }
 
 const fetchAllEatoutExpenses = `-- name: FetchAllEatoutExpenses :many
-SELECT eatout_exp_id, budget_id, user_id, expenses, description, created_at FROM eatout_expenses
-WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT eatout_exp_id, budget_id, user_id, expenses, description, created_at
+FROM eatout_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $4
-OFFSET $5
+LIMIT $4 OFFSET $5
 `
 
 type FetchAllEatoutExpensesParams struct {
@@ -165,11 +181,13 @@ func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatout
 }
 
 const fetchAllEntertainmentExpenses = `-- name: FetchAllEntertainmentExpenses :many
-SELECT entertainment_exp_id, budget_id, user_id, expenses, description, created_at FROM entertainment_expenses
-WHERE user_id = $1 AND budget_id = $2 AND LOWER(description) LIKE LOWER($3)
+SELECT entertainment_exp_id, budget_id, user_id, expenses, description, created_at
+FROM entertainment_expenses
+WHERE user_id = $1
+    AND budget_id = $2
+    AND LOWER(description) LIKE LOWER($3)
 ORDER by created_at DESC
-LIMIT $4
-OFFSET $5
+LIMIT $4 OFFSET $5
 `
 
 type FetchAllEntertainmentExpensesParams struct {
@@ -214,4 +232,64 @@ func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAl
 		return nil, err
 	}
 	return items, nil
+}
+
+const fetchSingleCapitalExpense = `-- name: FetchSingleCapitalExpense :one
+SELECT capital_exp_id, budget_id, user_id, expenses, description, created_at
+FROM capital_expenses
+WHERE capital_exp_id = $1
+`
+
+func (q *Queries) FetchSingleCapitalExpense(ctx context.Context, capitalExpID int64) (CapitalExpense, error) {
+	row := q.db.QueryRowContext(ctx, fetchSingleCapitalExpense, capitalExpID)
+	var i CapitalExpense
+	err := row.Scan(
+		&i.CapitalExpID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Expenses,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const fetchSingleEatoutExpense = `-- name: FetchSingleEatoutExpense :one
+SELECT eatout_exp_id, budget_id, user_id, expenses, description, created_at
+FROM eatout_expenses
+WHERE eatout_exp_id = $1
+`
+
+func (q *Queries) FetchSingleEatoutExpense(ctx context.Context, eatoutExpID int64) (EatoutExpense, error) {
+	row := q.db.QueryRowContext(ctx, fetchSingleEatoutExpense, eatoutExpID)
+	var i EatoutExpense
+	err := row.Scan(
+		&i.EatoutExpID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Expenses,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const fetchSingleEntertainmentExpense = `-- name: FetchSingleEntertainmentExpense :one
+SELECT entertainment_exp_id, budget_id, user_id, expenses, description, created_at
+FROM entertainment_expenses
+WHERE entertainment_exp_id = $1
+`
+
+func (q *Queries) FetchSingleEntertainmentExpense(ctx context.Context, entertainmentExpID int64) (EntertainmentExpense, error) {
+	row := q.db.QueryRowContext(ctx, fetchSingleEntertainmentExpense, entertainmentExpID)
+	var i EntertainmentExpense
+	err := row.Scan(
+		&i.EntertainmentExpID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Expenses,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
 }

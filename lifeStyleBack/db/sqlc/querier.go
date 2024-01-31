@@ -29,6 +29,9 @@ type Querier interface {
 	DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnessDayPlanMoveParams) (DayPlanMove, error)
 	DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error)
 	DeletePlanRecord(ctx context.Context, arg DeletePlanRecordParams) error
+	DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSingleCapitalExpenseParams) (CapitalExpense, error)
+	DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingleEatoutExpenseParams) (EatoutExpense, error)
+	DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (EntertainmentExpense, error)
 	DeleteUser(ctx context.Context, email string) error
 	DeleteWeekPlanRecords(ctx context.Context, arg DeleteWeekPlanRecordsParams) error
 	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
@@ -41,6 +44,9 @@ type Querier interface {
 	FetchMoveName(ctx context.Context, moveID int64) (string, error)
 	FetchMoveTypeId(ctx context.Context, moveType string) (MoveType, error)
 	FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsParams) ([]FetchPlanRecordsRow, error)
+	FetchSingleCapitalExpense(ctx context.Context, capitalExpID int64) (CapitalExpense, error)
+	FetchSingleEatoutExpense(ctx context.Context, eatoutExpID int64) (EatoutExpense, error)
+	FetchSingleEntertainmentExpense(ctx context.Context, entertainmentExpID int64) (EntertainmentExpense, error)
 	FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error)
 	JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]Budget, error)
@@ -52,6 +58,12 @@ type Querier interface {
 	SumEntertainmentExpenses(ctx context.Context, arg SumEntertainmentExpensesParams) (string, error)
 	UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
+	UpdateCapitalBalance(ctx context.Context, arg UpdateCapitalBalanceParams) (Balance, error)
+	UpdateCapitalExpenses(ctx context.Context, arg UpdateCapitalExpensesParams) (CapitalExpense, error)
+	UpdateEatoutBalance(ctx context.Context, arg UpdateEatoutBalanceParams) (Balance, error)
+	UpdateEatoutExpenses(ctx context.Context, arg UpdateEatoutExpensesParams) (EatoutExpense, error)
+	UpdateEntertainmentBalance(ctx context.Context, arg UpdateEntertainmentBalanceParams) (Balance, error)
+	UpdateEntertainmentExpenses(ctx context.Context, arg UpdateEntertainmentExpensesParams) (EntertainmentExpense, error)
 	UpdatePlanRecord(ctx context.Context, arg UpdatePlanRecordParams) (PlanRecord, error)
 }
 

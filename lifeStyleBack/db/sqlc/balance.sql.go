@@ -11,11 +11,14 @@ import (
 
 const createBalance = `-- name: CreateBalance :one
 INSERT INTO balance (
-    budget_id, user_id, capital, eatout,
-    entertainment
-)   VALUES (
-$1, $2, $3, $4, $5
-) RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+        budget_id,
+        user_id,
+        capital,
+        eatout,
+        entertainment
+    )
+VALUES ($1, $2, $3, $4, $5)
+RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 
 type CreateBalanceParams struct {
@@ -49,8 +52,10 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 }
 
 const selectBalance = `-- name: SelectBalance :one
-SELECT balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at FROM balance
-WHERE user_id = $1 AND budget_id = $2
+SELECT balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2
 `
 
 type SelectBalanceParams struct {
@@ -75,12 +80,12 @@ func (q *Queries) SelectBalance(ctx context.Context, arg SelectBalanceParams) (B
 }
 
 const updateBalance = `-- name: UpdateBalance :one
-UPDATE balance 
-SET
-    capital = capital + $1,
+UPDATE balance
+SET capital = capital + $1,
     eatout = eatout + $2,
     entertainment = entertainment + $3
-WHERE user_id = $4 AND budget_id = $5
+WHERE user_id = $4
+    AND budget_id = $5
 RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 
@@ -100,6 +105,93 @@ func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (B
 		arg.UserID,
 		arg.BudgetID,
 	)
+	var i Balance
+	err := row.Scan(
+		&i.BalanceID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.Total,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateCapitalBalance = `-- name: UpdateCapitalBalance :one
+UPDATE balance
+SET capital = $1
+WHERE user_id = $2 AND budget_id = $3
+RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+`
+
+type UpdateCapitalBalanceParams struct {
+	Capital  string `json:"capital"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+}
+
+func (q *Queries) UpdateCapitalBalance(ctx context.Context, arg UpdateCapitalBalanceParams) (Balance, error) {
+	row := q.db.QueryRowContext(ctx, updateCapitalBalance, arg.Capital, arg.UserID, arg.BudgetID)
+	var i Balance
+	err := row.Scan(
+		&i.BalanceID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.Total,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateEatoutBalance = `-- name: UpdateEatoutBalance :one
+UPDATE balance
+SET eatout = $1
+WHERE user_id = $2 AND budget_id = $3
+RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+`
+
+type UpdateEatoutBalanceParams struct {
+	Eatout   string `json:"eatout"`
+	UserID   int64  `json:"user_id"`
+	BudgetID int64  `json:"budget_id"`
+}
+
+func (q *Queries) UpdateEatoutBalance(ctx context.Context, arg UpdateEatoutBalanceParams) (Balance, error) {
+	row := q.db.QueryRowContext(ctx, updateEatoutBalance, arg.Eatout, arg.UserID, arg.BudgetID)
+	var i Balance
+	err := row.Scan(
+		&i.BalanceID,
+		&i.BudgetID,
+		&i.UserID,
+		&i.Capital,
+		&i.Eatout,
+		&i.Entertainment,
+		&i.Total,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateEntertainmentBalance = `-- name: UpdateEntertainmentBalance :one
+UPDATE balance
+SET entertainment = $1
+WHERE user_id = $2 AND budget_id = $3
+RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+`
+
+type UpdateEntertainmentBalanceParams struct {
+	Entertainment string `json:"entertainment"`
+	UserID        int64  `json:"user_id"`
+	BudgetID      int64  `json:"budget_id"`
+}
+
+func (q *Queries) UpdateEntertainmentBalance(ctx context.Context, arg UpdateEntertainmentBalanceParams) (Balance, error) {
+	row := q.db.QueryRowContext(ctx, updateEntertainmentBalance, arg.Entertainment, arg.UserID, arg.BudgetID)
 	var i Balance
 	err := row.Scan(
 		&i.BalanceID,

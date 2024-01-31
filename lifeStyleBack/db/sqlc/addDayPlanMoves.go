@@ -2,16 +2,9 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"log"
 )
 
-func NewDayPlanMoves(db *sql.DB) *QWithTx {
-	return &QWithTx{
-		db:      db,
-		Queries: New(db),
-	}
-}
 
 type DayPlanMovesTx struct {
 	AddDayPlanTx      AddDayPlanParams
