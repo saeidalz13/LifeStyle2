@@ -92,7 +92,7 @@ const ShowAllBudgets = () => {
   }
 
   return (
-    <div id="show-all-bugdets-section">
+    <div id="show-all-bugdets-section" className="mb-4">
       <Container className="mt-3 text-center mb-2">
         <Row>
           {budgets && budgets.length > 0

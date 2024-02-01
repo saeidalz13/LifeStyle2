@@ -4,7 +4,7 @@ import Fitness from "./fitness/index/Fitness";
 import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
-import SubmitExpenses from "./finance/expense/SubmitExpenses";
+// import SubmitExpenses from "../../archive/SubmitExpenses";
 import ShowExpenses from "./finance/expense/ShowExpenses";
 import UpdateBudget from "./finance/budget/UpdateBudget";
 import BalanceIndex from "./finance/balance/BalanceIndex";
@@ -75,10 +75,10 @@ const router = createBrowserRouter(
           path={Urls.finance.newUpdateSingleBudget}
           element={<UpdateBudget />}
         />
-        <Route
+        {/* <Route
           path={Urls.finance.newSubmitExpensesEach}
           element={<SubmitExpenses />}
-        />
+        /> */}
 
         <Route
           path={Urls.finance.newShowExpensesEach}

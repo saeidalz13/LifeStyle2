@@ -190,7 +190,7 @@ const EachBudget = () => {
               </Card.Body>
               {budget ? (
                 <Card.Text className="mt-0">
-                  <NavLink
+                  {/* <NavLink
                     to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget?.budget_id}`}
                   >
                     <Button
@@ -200,7 +200,7 @@ const EachBudget = () => {
                     >
                       Submit Expenses
                     </Button>
-                  </NavLink>
+                  </NavLink> */}
                   <NavLink
                     to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget?.budget_id}`}
                   >
@@ -209,7 +209,7 @@ const EachBudget = () => {
                       key={crypto.randomUUID()}
                       className=" mb-3 ms-1 all-budget-choices"
                     >
-                      Show Expenses
+                      Submit/View Expenses
                     </Button>
                   </NavLink>
                 </Card.Text>

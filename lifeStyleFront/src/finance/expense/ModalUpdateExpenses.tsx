@@ -236,7 +236,7 @@ const ModalUpdateExpenses: React.FC<UpdateExpensesProps> = ({
       >
         <Modal.Header closeButton>
           <Modal.Title className="text-info" id="expense-modal-header">
-            Update '{selectedExpenseToUpdate.description}' Details
+            {selectedExpenseToUpdate.description} <br /> {new Date(selectedExpenseToUpdate.created_at.Time).toLocaleString()}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
