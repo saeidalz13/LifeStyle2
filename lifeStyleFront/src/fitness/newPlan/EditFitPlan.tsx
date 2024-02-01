@@ -265,7 +265,7 @@ const EditFitPlan = () => {
   return (
     <>
       <BackFitnessBtn />
-      <Container>
+      <Container className="mb-4">
         <Form onSubmit={handleAddMove} className="mt-4 mx-4 form-fitfin">
           <Row>
             <Col md>

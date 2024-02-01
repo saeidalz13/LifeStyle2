@@ -14,7 +14,7 @@ const Panels = () => {
 
   return (
     <>
-      <Container className="text-center mt-4">
+      <Container className="text-center mt-4 mb-4">
         <Row>
           <Col className="mb-2" lg>
             <div>

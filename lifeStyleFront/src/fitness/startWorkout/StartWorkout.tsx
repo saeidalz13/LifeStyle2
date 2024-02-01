@@ -523,7 +523,7 @@ const StartWorkout = () => {
         </div>
       </div>
 
-      <Container className="text-center mt-4">
+      <Container className="text-center mt-4 mb-4">
         <Row>
           <Col>
             <Form className="mx-4 form-fitfin">

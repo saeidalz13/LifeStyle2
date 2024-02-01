@@ -137,8 +137,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
           className="text-success"
           id="contained-modal-title-vcenter"
         >
-          Update '{selectedMoveToUpdate?.move_name}' Details (Set{" "}
-          {selectedMoveToUpdate?.set_record})
+          {selectedMoveToUpdate?.move_name} (Set {selectedMoveToUpdate?.set_record})
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

@@ -418,7 +418,7 @@ const EachDayPlan = () => {
     groupedData !== "waiting"
   ) {
     return (
-      <>
+      <div className="mb-4">
         <BackFitnessBtn />
         <div className="text-center mt-3">
           <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
@@ -577,7 +577,7 @@ const EachDayPlan = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-      </>
+      </div>
     );
   }
 };

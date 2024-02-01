@@ -137,7 +137,7 @@ const Fitness = () => {
   }, []);
 
   return (
-    <div id="main-fitness-div">
+    <div id="main-fitness-div" className="mb-4">
       <BackHomeBtn />
 
       <div className="mt-3 mx-4 p-4 page-explanations">
@@ -176,7 +176,7 @@ const Fitness = () => {
         </Accordion>
       </div>
 
-      <Container className="text-center mt-3 p-3 ">
+      <Container className="text-center mt-3 p-3">
         <div className="page-explanations">
           <Row>
             <h2 className="text-primary">Ask GPT!</h2>
