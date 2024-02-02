@@ -1,15 +1,7 @@
 import { useParams, NavLink } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  Row,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
@@ -24,7 +16,8 @@ import { Balance } from "../../assets/FinanceInterfaces";
 const ShowExpenses = () => {
   // Submit Expenses
   const { id } = useParams<{ id: string }>();
-  const mounted = useRef(true);
+  const mountedBalance = useRef(true);
+  const mountedExpenses = useRef(true);
   const [balance, setBalance] = useState<Balance | null>(null);
 
   const minMoney = "0.01";
@@ -38,9 +31,39 @@ const ShowExpenses = () => {
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
   const [successRes, setSuccessRes] = useState(false);
 
+  // View Expenses
+  const [keyTab, setKeyTab] = useState("capital");
+  const [trigger, setTrigger] = useState(false);
+  const [badgeText, setBadgeText] = useState<string>("Total");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [allExpenses, setAllExpenses] = useState<
+    TAllExpensesArr | null | TNoExpensesData | "waiting"
+  >("waiting");
+  const [expenseType, setExpenseType] = useState("capital");
+
+  const [totalCapitalRows, setTotalCapitalRows] = useState(0);
+  const [totalEatoutRows, setTotalEatoutRows] = useState(0);
+  const [totalEntertRows, setTotalEntertRows] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
+  const toggleTrigger = () => {
+    mountedBalance.current = true;
+    mountedExpenses.current = true;
+    setTrigger((prev) => !prev);
+  };
+
+  // Submit Expenses
   useEffect(() => {
-    if (mounted.current) {
-      mounted.current = false;
+    if (mountedBalance.current) {
+      mountedBalance.current = false;
 
       const fetchSingleBalance = async () => {
         const result = await fetch(
@@ -75,7 +98,7 @@ const ShowExpenses = () => {
 
       fetchSingleBalance();
     }
-  }, [id, balance]);
+  }, [id, balance, trigger]);
 
   async function handleSubmitExpense(e: FormEvent) {
     e.preventDefault();
@@ -123,6 +146,8 @@ const ShowExpenses = () => {
           }, 5000);
           return;
         } else if (result.status === StatusCodes.Ok) {
+          mountedBalance.current = true;
+          mountedExpenses.current = true;
           handleResetSearch();
           const updatedBalance = (await result.json()) as Balance;
           setBalance(updatedBalance);
@@ -165,35 +190,11 @@ const ShowExpenses = () => {
   }
 
   // View Expenses
-  const [keyTab, setKeyTab] = useState("capital");
-  const [trigger, setTrigger] = useState(false);
-  const [badgeText, setBadgeText] = useState<string>("Total");
-  const searchRef = useRef<HTMLInputElement>(null);
-  const mount = useRef(true);
-  const [allExpenses, setAllExpenses] = useState<
-    TAllExpensesArr | null | TNoExpensesData | "waiting"
-  >("waiting");
-  const [expenseType, setExpenseType] = useState("capital");
-
-  const [totalCapitalRows, setTotalCapitalRows] = useState(0);
-  const [totalEatoutRows, setTotalEatoutRows] = useState(0);
-  const [totalEntertRows, setTotalEntertRows] = useState(0);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const handleNextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
-  };
-
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
-  };
-
-  const toggleTrigger = () => {
-    setTrigger((prev) => !prev);
-  };
 
   useEffect(() => {
-    if (mount.current) {
+    if (mountedExpenses.current) {
+      mountedExpenses.current = false;
+
       const fetchAllExpenses = async (): Promise<
         "nodata" | TAllExpensesArr | null
       > => {
@@ -349,7 +350,7 @@ const ShowExpenses = () => {
       </div>
 
       <Container className="mt-1 mb-4">
-        <Row >
+        <Row>
           <Col>
             <div>
               <h3 className="text-light text-center mt-4 mb-3">
@@ -362,7 +363,7 @@ const ShowExpenses = () => {
               onSubmit={handleSubmitExpense}
               className="mx-1"
             >
-              <Row >
+              <Row>
                 <legend style={{ textAlign: "center", fontSize: "19px" }}>
                   Total Remaining:{" "}
                   <span className="text-success">
