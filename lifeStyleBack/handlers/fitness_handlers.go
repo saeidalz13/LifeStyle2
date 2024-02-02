@@ -472,7 +472,7 @@ func DeletePlan(ftx *fiber.Ctx) error {
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -501,7 +501,7 @@ func DeleteDayPlan(ftx *fiber.Ctx) error {
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -530,7 +530,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	defer cancel()
 	q := sqlc.New(database.DB)
 
-	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})

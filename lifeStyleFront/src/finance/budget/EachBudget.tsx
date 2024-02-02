@@ -138,7 +138,7 @@ const EachBudget = () => {
       </div>
 
       {budget ? <h1 className="mt-3 mb-1">{budget.budget_name}</h1> : ""}
-      <Container className="mt-3">
+      <Container className="mt-3 mb-4">
         <Row className="text-center">
           <Col className="d-flex justify-content-center m-2">
             <Card

@@ -236,7 +236,6 @@ const StartWorkout = () => {
   };
 
   const handleUpdateHistory = async () => {
-    // setLoadingUpdate(true);
     setUpdatePossibleErrs("");
 
     try {

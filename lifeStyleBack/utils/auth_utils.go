@@ -46,6 +46,18 @@ func InitialNecessaryValidationsGetReqs(ftx *fiber.Ctx, ctx context.Context, q *
 	return &user, nil
 }
 
+func InitialNecessaryValidationsDeleteReqs(ftx *fiber.Ctx, ctx context.Context, q *sqlc.Queries) (*sqlc.User, error) {
+	userEmail, err := ExtractEmailFromClaim(ftx)
+	if err != nil {
+		return nil, err
+	}
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func InitialNecessaryValidationsPostReqs(ftx *fiber.Ctx, ctx context.Context, q *sqlc.Queries) (*sqlc.User, error) {
 	if err := ValidateContentType(ftx); err != nil {
 		return nil, err
