@@ -1,11 +1,19 @@
 import { Button, Col, Container, Form, ListGroup, Row } from "react-bootstrap";
-import { AddMovesToDayPlanProps } from "../../assets/FitnessInterfaces";
 import cp from "../ConstantsPlan";
 import { FormEvent, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
 import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import BACKEND_URL from "../../Config";
+
+
+interface AddMovesToDayPlanProps {
+  dayPlanId: number;
+  planId: number;
+  toggleTrigger: () => void;
+  mountedRef: React.MutableRefObject<boolean>;
+}
+
 
 const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
   const MOVESARRAY = cp.MOVESARRAY;
@@ -14,12 +22,13 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
   const [moveNames, setMoveNames] = useState<string[]>([]);
   const [emptyMoveNamesTxt, setEmptyMoveNamesTxt] = useState<string>("");
   const [addMoveErrs, setAddMoveErrs] = useState("");
-
+  
   const handleSubmitNewMoves = async () => {
     setEmptyMoveNamesTxt("");
     setAddMoveErrs("");
     setPossibleErrs("");
     try {
+
       const result = await fetch(
         `${BACKEND_URL}${Urls.fitness.addDayPlanMoves}/${props.planId}`,
         {
@@ -51,6 +60,10 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
       }
 
       if (result.status === StatusCodes.Ok) {
+        if (props.toggleTrigger) {
+          props.toggleTrigger()
+        }
+        props.mountedRef.current = true;
         console.log(data.message);
         setEmptyMoveNamesTxt(data.message);
         setMoveNames([]);

@@ -23,8 +23,10 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
   const [updateRecModalShow, setUpdateRecModalShow] = useState<boolean>(false);
 
   const handleExpenseRowClick = (expense: TExpense) => {
+    // console.log(expense)
     setSelectedExpenseToUpdate(null);
     setTimeout(() => setSelectedExpenseToUpdate(expense), 0);
+    // console.log(selectedExpenseToUpdate)
     setUpdateRecModalShow(true);
     return;
   };

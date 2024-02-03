@@ -5,6 +5,7 @@ import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { ApiRes } from "../../assets/GeneralInterfaces";
 import StatusCodes from "../../StatusCodes";
+
 interface UpdateExpensesProps {
   updateRecModalShow: boolean;
   expenseType: string;

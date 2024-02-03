@@ -21,7 +21,7 @@ import {
   FitnessDayPlan,
   FitnessPlan,
 } from "../../assets/FitnessInterfaces";
-import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
+import { ApiRes } from "../../assets/GeneralInterfaces";
 import BackFitnessBtn from "../../misc/BackFitnessBtn";
 
 const EditFitPlan = () => {
@@ -425,10 +425,8 @@ const EditFitPlan = () => {
         </Row>
       </Container>
 
-
-
-      <div className="text-danger text-center mt-2">{possibleErrs}</div>
-      <div className="mt-2 text-center" style={SUCCESS_STYLE}>
+      <div style={{fontSize:"20px"}} className="text-danger text-center mt-1">{possibleErrs}</div>
+      <div style={{fontSize:"20px", color: "yellowgreen",}} className="mt-1 text-center">
         {success}
       </div>
     </>

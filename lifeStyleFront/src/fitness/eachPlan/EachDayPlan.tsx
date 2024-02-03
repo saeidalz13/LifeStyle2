@@ -10,17 +10,22 @@ import ModalAddPlan from "./ModalAddPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import cp from "../ConstantsPlan";
 import rl from "../../svg/RotatingLoad.svg";
-import { ApiRes } from "../../assets/GeneralInterfaces";
+import ModalClickEachMove from "./ModalClickEachMove";
 
 const EachDayPlan = () => {
-  const [show, setShow] = useState(false);
   const [youTubeSrc, setYouTubeSrc] = useState("");
   const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
   const [clickedDayPlanMoveId, setClickedDayPlanMoveId] = useState<number>(0);
+  const [clickedMove, setClickedMove] = useState<string>("");
+  const [clickedDay, setClickedDay] = useState<number>(0);
+
   const [clickedDayPlanId, setClickedDayPlanId] = useState<number>(0);
   const [modalShow, setModalShow] = useState(false);
+  const [modalClickMoveShow, setModalClickMoveShow] = useState(false);
+
   const { id } = useParams();
   const mounted = useRef(true);
+  const [trigger, setTrigger] = useState(false);
   const [moves, setMoves] = useState<
     DayPlanMoves | "waiting" | "error" | "nodata"
   >("waiting");
@@ -44,47 +49,41 @@ const EachDayPlan = () => {
     setShowDeleteDayPlan(true);
   };
 
-  const handleMoveClicked = (dayPlanMoveId: number, _link: string) => {
+  const [clickMoveTrigger, setClickMoveTrigger] = useState<boolean | null>(
+    null
+  );
+  const handleMoveClicked = (
+    day: number,
+    moveName: string,
+    dayPlanMoveId: number,
+    _link: string
+  ) => {
     setClickedDayPlanMoveId(dayPlanMoveId);
-    console.log(dayPlanMoveId);
     setYouTubeSrc(_link);
-    setShow(true);
+    setClickedMove(moveName);
+    setClickedDay(day);
+    setClickMoveTrigger((prev) => !prev);
   };
 
-  const handleDeleteDayPlanMove = async () => {
-    try {
-      const result = await fetch(
-        `${BACKEND_URL}${Urls.fitness.deleteDayPlanMove}/${clickedDayPlanMoveId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
-        return;
-      }
-
-      // setShow(false);
-      if (result.status === StatusCodes.InternalServerError) {
-        const data = (await result.json()) as ApiRes;
-        console.log(data.message);
-        return;
-      }
-
-      if (result.status === StatusCodes.Ok) {
-        location.reload();
-        return;
-      }
-
-      console.log("Unexpected status code and error!");
-      return;
-    } catch (error) {
-      console.log(error);
-      return;
+  useEffect(() => {
+    if (clickMoveTrigger) {
+      setModalClickMoveShow(true);
+      setClickMoveTrigger((prev) => !prev);
     }
+  }, [clickedDayPlanMoveId, youTubeSrc, clickMoveTrigger]);
+
+  const [addTrigger, setAddTrigger] = useState<boolean | null>(null);
+  const handleAddMoveToDayPlan = (day_plan_id: number) => {
+    setClickedDayPlanId(day_plan_id);
+    setAddTrigger((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (addTrigger) {
+      setModalShow(true);
+      setAddTrigger((prev) => !prev);
+    }
+  }, [clickedDayPlanId, addTrigger]);
 
   const handleDeleteDayPlan = async () => {
     try {
@@ -107,7 +106,9 @@ const EachDayPlan = () => {
       }
 
       if (result.status === StatusCodes.Ok) {
-        location.reload();
+        mounted.current = true;
+        handleCloseDeleteDayPlan();
+        setTrigger((prev) => !prev);
         return;
       }
 
@@ -203,13 +204,7 @@ const EachDayPlan = () => {
 
       updateMoves();
     }
-  }, [id]);
-
-  const handleAddMoveToDayPlan = (day_plan_id: number) => {
-    setModalShow(true);
-    setClickedDayPlanId(day_plan_id);
-    console.log(day_plan_id);
-  };
+  }, [id, trigger]);
 
   if (moves === "waiting") {
     return (
@@ -438,7 +433,7 @@ const EachDayPlan = () => {
           <p className="text-center">
             You can see the list of the day plans you created so far. <br />{" "}
             Click on each one to see a YouTube video of how the move is done
-            properly
+            properly. You can also delete the move from your day plan.
           </p>
         </div>
         <div>
@@ -455,6 +450,8 @@ const EachDayPlan = () => {
                         style={{ fontSize: "18px" }}
                         onClick={() =>
                           handleMoveClicked(
+                            +day,
+                            item.move_name,
                             item.day_plan_move_id,
                             cp.YOUTUBE_LINKS_MOVES[item.move_name]
                           )
@@ -469,6 +466,14 @@ const EachDayPlan = () => {
                         action
                         key={index}
                         style={{ fontSize: "18px" }}
+                        onClick={() =>
+                          handleMoveClicked(
+                            +day,
+                            item.move_name,
+                            item.day_plan_move_id,
+                            ""
+                          )
+                        }
                       >
                         {item.move_name}
                       </ListGroup.Item>
@@ -501,7 +506,7 @@ const EachDayPlan = () => {
                       )
                     }
                   >
-                    Delete Day Plan
+                    Delete Day {day}
                   </Button>
                 </div>
               </div>
@@ -513,36 +518,20 @@ const EachDayPlan = () => {
           onHide={() => setModalShow(false)}
           dayPlanId={clickedDayPlanId}
           planId={moves.day_plan_moves[0].plan_id}
+          toggleTrigger={() => setTrigger((prev) => !prev)}
+          mountedRef={mounted}
         />
 
-        <Modal show={show} fullscreen={true} onHide={() => setShow(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title className="text-primary">Tutorial!</Modal.Title>
-          </Modal.Header>
-          <iframe
-            width="100%"
-            height="100%"
-            src={youTubeSrc}
-            allowFullScreen
-          ></iframe>
-
-          <Modal.Footer>
-            <Button
-              variant="primary"
-              className="px-3"
-              onClick={() => setShow(false)}
-            >
-              Close Window
-            </Button>
-            <Button
-              variant="danger"
-              className="px-3"
-              onClick={handleDeleteDayPlanMove}
-            >
-              Delete Move From Plan
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <ModalClickEachMove
+          show={modalClickMoveShow}
+          onHide={() => setModalClickMoveShow(false)}
+          dayPlanMoveId={clickedDayPlanMoveId}
+          youTubeLink={youTubeSrc}
+          toggleTrigger={() => setTrigger((prev) => !prev)}
+          mountedRef={mounted}
+          moveName={clickedMove}
+          clickedDay={clickedDay}
+        />
 
         <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
           <Modal.Header closeButton>

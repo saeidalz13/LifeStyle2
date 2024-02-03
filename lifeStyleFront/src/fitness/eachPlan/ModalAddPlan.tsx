@@ -1,12 +1,17 @@
 import { Modal, Button } from "react-bootstrap";
-import { ModalAddPlanProps } from "../../assets/FitnessInterfaces";
 import AddMovesToDayPlan from "./AddMovesToDayPlan";
 
-const ModalAddPlan = (props: ModalAddPlanProps) => {
-  const handleCloseBtn = () => {
-    location.reload();
-  };
+type OnHideCallback = () => void;
+export interface ModalAddPlanProps {
+  show: boolean;
+  onHide: OnHideCallback;
+  dayPlanId: number;
+  planId: number;
+  toggleTrigger: () => void;
+  mountedRef: React.MutableRefObject<boolean>;
+}
 
+const ModalAddPlan = (props: ModalAddPlanProps) => {
   return (
     <>
       <Modal
@@ -15,7 +20,6 @@ const ModalAddPlan = (props: ModalAddPlanProps) => {
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered
-        backdrop="static"
       >
         <Modal.Header>
           <Modal.Title
@@ -29,15 +33,17 @@ const ModalAddPlan = (props: ModalAddPlanProps) => {
           <AddMovesToDayPlan
             dayPlanId={props.dayPlanId}
             planId={props.planId}
+            mountedRef={props.mountedRef}
+            toggleTrigger={props.toggleTrigger}
           />
         </Modal.Body>
         <Modal.Footer>
           <Button
             variant="outline-success"
             className="px-5"
-            onClick={() => handleCloseBtn()}
+            onClick={() => props.onHide()}
           >
-            Save Changes & Close
+            Close
           </Button>
         </Modal.Footer>
       </Modal>

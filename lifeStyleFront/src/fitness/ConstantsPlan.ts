@@ -6,7 +6,6 @@ const CHEST_MOVES: Array<string> = [
   "Incline Press DB",
   "Incline Machine Press",
   "Dips",
-
 ];
 
 const LEG_MOVES: Array<string> = [
@@ -15,9 +14,15 @@ const LEG_MOVES: Array<string> = [
   "Leg Press",
   "Leg Press Seated",
   "Hack Squats",
-  "Calves",
   "Hip Thrust",
   "Leg Extension",
+  "Goblet Squats",
+	"Hamstring Curl Machine Lying",
+	"Hamstring Curl Machine Seated",
+	"Calf Raise Seated",
+	"Calf Raise Standing",
+  "Hip Adductor Machine",
+  "Hip Abductor Machine",
 ];
 
 const SHOULDER_MOVES: Array<string> = [
@@ -26,6 +31,7 @@ const SHOULDER_MOVES: Array<string> = [
   "Shoulder Press DB",
   "Lateral Raise DB",
   "Lateral Raise Cable",
+  "Cable External Rotations"
 ];
 
 const BACK_MOVES: Array<string> = [
@@ -36,6 +42,9 @@ const BACK_MOVES: Array<string> = [
   "Row Cable Seated",
   "Row Cable Single",
   "Shrugs DB",
+  "Barbell Row",
+  "Machine Row",
+  "Reverse Cable Fly",
 ];
 
 const BICEPS_MOVES: Array<string> = [

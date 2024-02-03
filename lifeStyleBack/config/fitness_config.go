@@ -16,9 +16,15 @@ var LEG_MOVES = []string{
 	"Leg Press",
 	"Leg Press Seated",
 	"Hack Squats",
-	"Calves",
 	"Hip Thrust",
 	"Leg Extension",
+	"Goblet Squats",
+	"Hamstring Curl Machine Lying",
+	"Hamstring Curl Machine Seated",
+	"Calf Raise Seated",
+	"Calf Raise Standing",
+	"Hip Adductor Machine",
+	"Hip Abductor Machine",
 }
 
 var SHOULDER_MOVES = []string{
@@ -27,6 +33,7 @@ var SHOULDER_MOVES = []string{
 	"Shoulder Press DB",
 	"Lateral Raise DB",
 	"Lateral Raise Cable",
+	"Cable External Rotations",
 }
 
 var BACK_MOVES = []string{
@@ -37,6 +44,9 @@ var BACK_MOVES = []string{
 	"Row Cable Seated",
 	"Row Cable Single",
 	"Shrugs DB",
+	"Barbell Row",
+	"Machine Row",
+	"Reverse Cable Fly",
 }
 
 var BICEPS_MOVES = []string{
