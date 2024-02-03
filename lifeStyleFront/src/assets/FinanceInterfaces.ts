@@ -17,9 +17,6 @@ export interface Budgets {
 }
 
 export interface Balance {
-  balance_id: number;
-  budget_id: number;
-  user_id: number;
   capital: string;
   eatout: string;
   entertainment: string;
@@ -27,7 +24,6 @@ export interface Balance {
     String: string;
     Valid: boolean;
   };
-  created_at: string;
 }
 
 export type TSingleCapital = {

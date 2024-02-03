@@ -68,7 +68,7 @@ func (qw *QWithTx) UpdateExpensesBalanceEntertainment(ctx context.Context, arg *
 			return err
 		}
 
-		oldBalance, err := q.SelectBalance(ctx, SelectBalanceParams{
+		oldEntertainment, err := q.SelectEntertainmentBalance(ctx, SelectEntertainmentBalanceParams{
 			UserID:   arg.UserId,
 			BudgetID: updatedExpense.BudgetID,
 		})
@@ -76,7 +76,7 @@ func (qw *QWithTx) UpdateExpensesBalanceEntertainment(ctx context.Context, arg *
 			return err
 		}
 
-		oldBalanceAmount, err := decimal.NewFromString(oldBalance.Entertainment)
+		oldBalanceAmount, err := decimal.NewFromString(oldEntertainment)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (qw *QWithTx) UpdateExpensesBalanceCapital(ctx context.Context, arg *Expens
 			return err
 		}
 
-		oldBalance, err := q.SelectBalance(ctx, SelectBalanceParams{
+		oldCapital, err := q.SelectCapitalBalance(ctx, SelectCapitalBalanceParams{
 			UserID:   arg.UserId,
 			BudgetID: updatedExpense.BudgetID,
 		})
@@ -135,7 +135,7 @@ func (qw *QWithTx) UpdateExpensesBalanceCapital(ctx context.Context, arg *Expens
 			return err
 		}
 
-		oldBalanceAmount, err := decimal.NewFromString(oldBalance.Capital)
+		oldBalanceAmount, err := decimal.NewFromString(oldCapital)
 		if err != nil {
 			return err
 		}
@@ -186,7 +186,8 @@ func (qw *QWithTx) UpdateExpensesBalanceEatout(ctx context.Context, arg *Expense
 			return err
 		}
 
-		oldBalance, err := q.SelectBalance(ctx, SelectBalanceParams{
+
+		oldEatout, err := q.SelectEatoutBalance(ctx, SelectEatoutBalanceParams{
 			UserID:   arg.UserId,
 			BudgetID: updatedExpense.BudgetID,
 		})
@@ -194,7 +195,7 @@ func (qw *QWithTx) UpdateExpensesBalanceEatout(ctx context.Context, arg *Expense
 			return err
 		}
 
-		oldBalanceAmount, err := decimal.NewFromString(oldBalance.Eatout)
+		oldBalanceAmount, err := decimal.NewFromString(oldEatout)
 		if err != nil {
 			return err
 		}

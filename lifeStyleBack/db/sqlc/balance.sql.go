@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createBalance = `-- name: CreateBalance :one
@@ -52,7 +53,10 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 }
 
 const selectBalance = `-- name: SelectBalance :one
-SELECT balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+SELECT capital,
+    eatout,
+    entertainment,
+    total
 FROM balance
 WHERE user_id = $1
     AND budget_id = $2
@@ -63,20 +67,80 @@ type SelectBalanceParams struct {
 	BudgetID int64 `json:"budget_id"`
 }
 
-func (q *Queries) SelectBalance(ctx context.Context, arg SelectBalanceParams) (Balance, error) {
+type SelectBalanceRow struct {
+	Capital       string         `json:"capital"`
+	Eatout        string         `json:"eatout"`
+	Entertainment string         `json:"entertainment"`
+	Total         sql.NullString `json:"total"`
+}
+
+func (q *Queries) SelectBalance(ctx context.Context, arg SelectBalanceParams) (SelectBalanceRow, error) {
 	row := q.db.QueryRowContext(ctx, selectBalance, arg.UserID, arg.BudgetID)
-	var i Balance
+	var i SelectBalanceRow
 	err := row.Scan(
-		&i.BalanceID,
-		&i.BudgetID,
-		&i.UserID,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
 		&i.Total,
-		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const selectCapitalBalance = `-- name: SelectCapitalBalance :one
+SELECT capital
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2
+`
+
+type SelectCapitalBalanceParams struct {
+	UserID   int64 `json:"user_id"`
+	BudgetID int64 `json:"budget_id"`
+}
+
+func (q *Queries) SelectCapitalBalance(ctx context.Context, arg SelectCapitalBalanceParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, selectCapitalBalance, arg.UserID, arg.BudgetID)
+	var capital string
+	err := row.Scan(&capital)
+	return capital, err
+}
+
+const selectEatoutBalance = `-- name: SelectEatoutBalance :one
+SELECT eatout
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2
+`
+
+type SelectEatoutBalanceParams struct {
+	UserID   int64 `json:"user_id"`
+	BudgetID int64 `json:"budget_id"`
+}
+
+func (q *Queries) SelectEatoutBalance(ctx context.Context, arg SelectEatoutBalanceParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, selectEatoutBalance, arg.UserID, arg.BudgetID)
+	var eatout string
+	err := row.Scan(&eatout)
+	return eatout, err
+}
+
+const selectEntertainmentBalance = `-- name: SelectEntertainmentBalance :one
+SELECT entertainment
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2
+`
+
+type SelectEntertainmentBalanceParams struct {
+	UserID   int64 `json:"user_id"`
+	BudgetID int64 `json:"budget_id"`
+}
+
+func (q *Queries) SelectEntertainmentBalance(ctx context.Context, arg SelectEntertainmentBalanceParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, selectEntertainmentBalance, arg.UserID, arg.BudgetID)
+	var entertainment string
+	err := row.Scan(&entertainment)
+	return entertainment, err
 }
 
 const updateBalance = `-- name: UpdateBalance :one
@@ -122,7 +186,8 @@ func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (B
 const updateCapitalBalance = `-- name: UpdateCapitalBalance :one
 UPDATE balance
 SET capital = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 
@@ -151,7 +216,8 @@ func (q *Queries) UpdateCapitalBalance(ctx context.Context, arg UpdateCapitalBal
 const updateEatoutBalance = `-- name: UpdateEatoutBalance :one
 UPDATE balance
 SET eatout = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 
@@ -180,7 +246,8 @@ func (q *Queries) UpdateEatoutBalance(ctx context.Context, arg UpdateEatoutBalan
 const updateEntertainmentBalance = `-- name: UpdateEntertainmentBalance :one
 UPDATE balance
 SET entertainment = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 

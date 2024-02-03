@@ -10,7 +10,7 @@ import (
 )
 
 const deleteSingleCapitalExpense = `-- name: DeleteSingleCapitalExpense :one
-DELETE from capital_expenses
+DELETE FROM capital_expenses
 WHERE user_id = $1 AND capital_exp_id = $2
 RETURNING capital_exp_id, budget_id, user_id, expenses, description, created_at
 `
@@ -35,7 +35,7 @@ func (q *Queries) DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSing
 }
 
 const deleteSingleEatoutExpense = `-- name: DeleteSingleEatoutExpense :one
-DELETE from eatout_expenses
+DELETE FROM eatout_expenses
 WHERE user_id = $1 AND eatout_exp_id = $2
 RETURNING eatout_exp_id, budget_id, user_id, expenses, description, created_at
 `
@@ -60,7 +60,7 @@ func (q *Queries) DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingl
 }
 
 const deleteSingleEntertainmentExpense = `-- name: DeleteSingleEntertainmentExpense :one
-DELETE from entertainment_expenses
+DELETE FROM entertainment_expenses
 WHERE user_id = $1 AND entertainment_exp_id = $2
 RETURNING entertainment_exp_id, budget_id, user_id, expenses, description, created_at
 `

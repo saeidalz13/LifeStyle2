@@ -9,7 +9,25 @@ INSERT INTO balance (
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 -- name: SelectBalance :one
-SELECT *
+SELECT capital,
+    eatout,
+    entertainment,
+    total
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2;
+-- name: SelectCapitalBalance :one
+SELECT capital
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2;
+-- name: SelectEatoutBalance :one
+SELECT eatout
+FROM balance
+WHERE user_id = $1
+    AND budget_id = $2;
+-- name: SelectEntertainmentBalance :one
+SELECT entertainment
 FROM balance
 WHERE user_id = $1
     AND budget_id = $2;
@@ -24,15 +42,18 @@ RETURNING *;
 -- name: UpdateEntertainmentBalance :one
 UPDATE balance
 SET entertainment = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING *;
 -- name: UpdateCapitalBalance :one
 UPDATE balance
 SET capital = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING *;
 -- name: UpdateEatoutBalance :one
 UPDATE balance
 SET eatout = $1
-WHERE user_id = $2 AND budget_id = $3
+WHERE user_id = $2
+    AND budget_id = $3
 RETURNING *;
