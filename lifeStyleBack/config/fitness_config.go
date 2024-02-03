@@ -67,6 +67,17 @@ var ABS_MOVE = []string{
 	"Reverse Crunch",
 }
 
+var ALL_MOVES = [][]string{
+	CHEST_MOVES,
+	LEG_MOVES,
+	SHOULDER_MOVES,
+	BACK_MOVES,
+	BICEPS_MOVES,
+	TRICEPS_MOVES,
+	ABS_MOVE,
+}
+
+
 type MoveTypes struct {
 	Chest    string
 	Leg      string
@@ -92,3 +103,5 @@ var MOVE_TYPES_SLICE = []string{
 	MOVE_TYPES.Back, MOVE_TYPES.Biceps, MOVE_TYPES.Triceps,
 	MOVE_TYPES.Abs,
 }
+
+

@@ -10,9 +10,10 @@ var DefaultTokenErrors = TokenErrors{
 	Expired: "Token has expired!",
 }
 
-type ErrsFitFinStrct struct {
+type ErrsFitFinStruct struct {
 	DevStage          string
 	PostgresConn      string
+	NoChangeMigration string
 	InvalidMoveType   string
 	MoveInsertion     string
 	TokenVerification string
@@ -26,9 +27,10 @@ type ErrsFitFinStrct struct {
 	CookiePasetoValue string
 }
 
-var ErrsFitFin = &ErrsFitFinStrct{
+var ErrsFitFin = &ErrsFitFinStruct{
 	DevStage:          "Invalid dev stage; choice of dev OR prod",
 	PostgresConn:      "Failed to connect to Postgres database",
+	NoChangeMigration: "no change",
 	InvalidMoveType:   "Invalid move type, server shutdown!",
 	MoveInsertion:     "Could not insert the moves, server shutdown!",
 	TokenVerification: "No cookie was found! verification failed, sending UnAuthorized Status...",
