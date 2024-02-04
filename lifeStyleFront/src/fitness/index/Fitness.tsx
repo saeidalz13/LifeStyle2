@@ -19,6 +19,7 @@ import WS_URL from "../../WsUrl";
 import rl from "../../svg/RotatingLoad.svg";
 import StatusCodes from "../../StatusCodes";
 import BACKEND_URL from "../../Config";
+import { Waiting } from "../../assets/GeneralInterfaces";
 
 const Fitness = () => {
   const mounted = useRef(false);
@@ -34,8 +35,7 @@ const Fitness = () => {
 
   const navigate = useNavigate();
   const plansPerPage = 3;
-  // const plans = useLoaderData() as null | FitnessPlans;
-  const [plans, setPlans] = useState<null | FitnessPlans>(null)
+  const [plans, setPlans] = useState<null | FitnessPlans | Waiting>("waiting");
 
   const [open, setOpen] = useState(false);
   const [openPlans, setOpenPlans] = useState(false);
@@ -50,46 +50,48 @@ const Fitness = () => {
   };
 
   useEffect(() => {
-    if (!mounted.current){
+    if (!mounted.current) {
       mounted.current = true;
 
       const fetchFitnessPlans = async (): Promise<null | FitnessPlans> => {
         try {
-          const result = await fetch(`${BACKEND_URL}${Urls.fitness.getAllPlans}`, {
-            method: "GET",
-            credentials: "include",
-          });
-      
+          const result = await fetch(
+            `${BACKEND_URL}${Urls.fitness.getAllPlans}`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
           if (result.status === StatusCodes.UnAuthorized) {
             location.assign(Urls.login);
             return null;
           }
-      
+
           if (result.status === StatusCodes.Ok) {
             return result.json();
           }
-      
+
           if (result.status === StatusCodes.InternalServerError) {
             return null;
           }
-      
+
           location.assign(Urls.login);
-          return null ;
+          return null;
         } catch (error) {
           location.assign(Urls.login);
-          return null
+          return null;
         }
       };
-      
+
       const executeFetchPlans = async () => {
         const receivedPlans = await fetchFitnessPlans();
-        setPlans(receivedPlans)
-      }
+        setPlans(receivedPlans);
+      };
 
       executeFetchPlans();
     }
-  })
-
+  });
 
   const handleStartWsConn = () => {
     setLoading(true);
@@ -117,7 +119,7 @@ const Fitness = () => {
   const handleEndWsConn = () => {
     setStartOrEndConn("start");
     setResponses([]);
-    setMessage("")
+    setMessage("");
     if (websocket) {
       websocket.close();
     }
@@ -125,7 +127,7 @@ const Fitness = () => {
 
   const sendMessage = () => {
     if (message == "") {
-      return
+      return;
     }
     setResponses([]);
     setMsgLoading(true);
@@ -286,7 +288,6 @@ const Fitness = () => {
         </div>
       </Container>
 
-
       <Container className="text-center mt-4">
         <Row>
           <Col md className="mb-2">
@@ -320,7 +321,17 @@ const Fitness = () => {
       <Collapse in={openPlans}>
         <Container id="show-fitnessplan-container" className="mt-4">
           <Row>
-            {plans?.plans && plans?.plans.length > 0 ? (
+            {plans === "waiting" ? (
+              <div className="mt-5" style={{ textAlign: "center" }}>
+                <img
+                  className="bg-primary rounded p-2"
+                  src={rl}
+                  height="150px"
+                  width="150px"
+                  alt="Rotation"
+                />
+              </div>
+            ) : plans?.plans && plans?.plans.length > 0 ? (
               plans.plans.map((plan, idx) => (
                 <React.Fragment key={plan.plan_id}>
                   {idx > 0 && idx % plansPerPage === 0 && (
