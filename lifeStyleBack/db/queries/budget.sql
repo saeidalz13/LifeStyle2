@@ -33,6 +33,7 @@ FROM budgets
 WHERE budget_id = $1
   AND user_id = $2
 LIMIT 1;
+
 -- name: SelectAllBudgets :many
 SELECT budget_id,
   budget_name,
@@ -47,10 +48,16 @@ FROM budgets
 WHERE user_id = $1
 ORDER by created_at DESC
 LIMIT $2 OFFSET $3;
+
+-- name: CountBudgets :one
+SELECT COUNT(budget_id) FROM budgets
+WHERE user_id = $1;
+
 -- name: DeleteBudget :exec
 DELETE FROM budgets
 WHERE budget_id = $1
   AND user_id = $2;
+  
 -- name: UpdateBudget :one
 UPDATE budgets
 SET savings = savings + $1,

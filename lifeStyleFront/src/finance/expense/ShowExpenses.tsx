@@ -268,6 +268,7 @@ const ShowExpenses = () => {
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchRef.current) {
+      mountedExpenses.current = true;
       setCurrentPage(1);
       setBadgeText(`'${searchRef.current.value}'`);
       setTrigger((prev) => !prev);
@@ -276,6 +277,7 @@ const ShowExpenses = () => {
 
   const handleResetSearch = () => {
     if (searchRef.current) {
+      mountedExpenses.current = true;
       searchRef.current.value = "";
       setCurrentPage(1);
       setBadgeText("Total");
@@ -296,8 +298,15 @@ const ShowExpenses = () => {
           </NavLink>
         </div>
         <div className="mt-5" style={{ textAlign: "center" }}>
-          <img src={rl} height="150px" width="150px" alt="Rotation" />
+          <img
+            className="bg-primary rounded p-2"
+            src={rl}
+            height="150px"
+            width="150px"
+            alt="Rotation"
+          />
         </div>
+        ;
       </>
     );
   }

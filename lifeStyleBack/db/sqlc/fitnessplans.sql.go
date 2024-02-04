@@ -63,7 +63,7 @@ func (q *Queries) AddDayPlanMoves(ctx context.Context, arg AddDayPlanMovesParams
 const addPlan = `-- name: AddPlan :one
 INSERT INTO plans (user_id, plan_name, days)
 VALUES ($1, $2, $3)
-RETURNING plan_id, user_id, plan_name, days, created_at
+RETURNING plan_id
 `
 
 type AddPlanParams struct {
@@ -72,17 +72,11 @@ type AddPlanParams struct {
 	Days     int32  `json:"days"`
 }
 
-func (q *Queries) AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error) {
+func (q *Queries) AddPlan(ctx context.Context, arg AddPlanParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, addPlan, arg.UserID, arg.PlanName, arg.Days)
-	var i Plan
-	err := row.Scan(
-		&i.PlanID,
-		&i.UserID,
-		&i.PlanName,
-		&i.Days,
-		&i.CreatedAt,
-	)
-	return i, err
+	var plan_id int64
+	err := row.Scan(&plan_id)
+	return plan_id, err
 }
 
 const addPlanRecord = `-- name: AddPlanRecord :exec
@@ -133,6 +127,18 @@ func (q *Queries) AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) er
 	return err
 }
 
+const countFitnessPlans = `-- name: CountFitnessPlans :one
+SELECT COUNT(plan_id) FROM plans
+WHERE user_id = $1
+`
+
+func (q *Queries) CountFitnessPlans(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFitnessPlans, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const deleteFitnessDayPlan = `-- name: DeleteFitnessDayPlan :exec
 DELETE FROM day_plans
 WHERE user_id = $1
@@ -174,11 +180,10 @@ func (q *Queries) DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnes
 	return i, err
 }
 
-const deletePlan = `-- name: DeletePlan :one
+const deletePlan = `-- name: DeletePlan :exec
 DELETE FROM plans
 WHERE user_id = $1
     AND plan_id = $2
-RETURNING plan_id, user_id, plan_name, days, created_at
 `
 
 type DeletePlanParams struct {
@@ -186,22 +191,15 @@ type DeletePlanParams struct {
 	PlanID int64 `json:"plan_id"`
 }
 
-func (q *Queries) DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error) {
-	row := q.db.QueryRowContext(ctx, deletePlan, arg.UserID, arg.PlanID)
-	var i Plan
-	err := row.Scan(
-		&i.PlanID,
-		&i.UserID,
-		&i.PlanName,
-		&i.Days,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) DeletePlan(ctx context.Context, arg DeletePlanParams) error {
+	_, err := q.db.ExecContext(ctx, deletePlan, arg.UserID, arg.PlanID)
+	return err
 }
 
 const deletePlanRecord = `-- name: DeletePlanRecord :exec
 DELETE FROM plan_records
-WHERE user_id = $1 AND plan_record_id = $2
+WHERE user_id = $1
+    AND plan_record_id = $2
 `
 
 type DeletePlanRecordParams struct {
@@ -312,27 +310,29 @@ func (q *Queries) FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayP
 }
 
 const fetchFitnessPlans = `-- name: FetchFitnessPlans :many
-SELECT plan_id, user_id, plan_name, days, created_at
+SELECT plan_id,
+    plan_name,
+    days
 FROM plans
 WHERE user_id = $1
 `
 
-func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, error) {
+type FetchFitnessPlansRow struct {
+	PlanID   int64  `json:"plan_id"`
+	PlanName string `json:"plan_name"`
+	Days     int32  `json:"days"`
+}
+
+func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]FetchFitnessPlansRow, error) {
 	rows, err := q.db.QueryContext(ctx, fetchFitnessPlans, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Plan{}
+	items := []FetchFitnessPlansRow{}
 	for rows.Next() {
-		var i Plan
-		if err := rows.Scan(
-			&i.PlanID,
-			&i.UserID,
-			&i.PlanName,
-			&i.Days,
-			&i.CreatedAt,
-		); err != nil {
+		var i FetchFitnessPlansRow
+		if err := rows.Scan(&i.PlanID, &i.PlanName, &i.Days); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -362,8 +362,7 @@ FROM plan_records
     JOIN moves ON plan_records.move_id = moves.move_id
 WHERE user_id = $1
     AND day_plan_id = $2
-ORDER BY 
-    plan_records.plan_record_id, 
+ORDER BY plan_records.plan_record_id,
     plan_records.set_record
 `
 
@@ -422,7 +421,9 @@ func (q *Queries) FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsPara
 }
 
 const fetchSingleFitnessPlan = `-- name: FetchSingleFitnessPlan :one
-SELECT plan_id, user_id, plan_name, days, created_at
+SELECT plan_id,
+    plan_name,
+    days
 FROM plans
 WHERE user_id = $1
     AND plan_id = $2
@@ -433,16 +434,16 @@ type FetchSingleFitnessPlanParams struct {
 	PlanID int64 `json:"plan_id"`
 }
 
-func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error) {
+type FetchSingleFitnessPlanRow struct {
+	PlanID   int64  `json:"plan_id"`
+	PlanName string `json:"plan_name"`
+	Days     int32  `json:"days"`
+}
+
+func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (FetchSingleFitnessPlanRow, error) {
 	row := q.db.QueryRowContext(ctx, fetchSingleFitnessPlan, arg.UserID, arg.PlanID)
-	var i Plan
-	err := row.Scan(
-		&i.PlanID,
-		&i.UserID,
-		&i.PlanName,
-		&i.Days,
-		&i.CreatedAt,
-	)
+	var i FetchSingleFitnessPlanRow
+	err := row.Scan(&i.PlanID, &i.PlanName, &i.Days)
 	return i, err
 }
 

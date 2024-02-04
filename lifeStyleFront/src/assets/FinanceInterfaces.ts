@@ -12,6 +12,7 @@ export interface Budget {
 
 export interface Budgets {
   budgets: Array<Budget>;
+  num_budgets: number;
 }
 
 export interface Balance {

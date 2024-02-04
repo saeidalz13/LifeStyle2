@@ -7,3 +7,4 @@ export interface ApiRes {
     color: "yellowgreen",
   };
   
+export type Waiting = "waiting"

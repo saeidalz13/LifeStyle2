@@ -1,4 +1,4 @@
-import { useLoaderData, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   Container,
   Pagination,
@@ -9,38 +9,100 @@ import {
 } from "react-bootstrap";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import Urls from "../../Urls";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Budgets } from "../../assets/FinanceInterfaces";
+import { Waiting } from "../../assets/GeneralInterfaces";
 import ScrUp from "../../images/ScrollUp.png";
-// import StatusCodes from "../../StatusCodes";
+import BACKEND_URL from "../../Config";
+import StatusCodes from "../../StatusCodes";
+import rl from "../../svg/RotatingLoad.svg";
 
 const ShowAllBudgets = () => {
-  useEffect(() => {
-    const targetElement = document.getElementById("show-all-bugdets-section");
+  const limit = 2;
+  const mounted = useRef(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [numBudgets, setNumBudgets] = useState<number>(0)
+  const [numbers, setNumbers] = useState<null | Array<number>>(null);
+  const [budgets, setBudgets] = useState<Waiting | Budgets | null>("waiting");
 
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
-
-  const result = useLoaderData() as Budgets;
-  // const [budgets, setBudgets] = useState(result.budgets);
-  const budgets = result.budgets;
-
-  const [currPage, setCurrPage] = useState<number>(1);
-  const recPerPage = 2;
-  const lastIdx = recPerPage * currPage;
-  const firstIdx = lastIdx - recPerPage;
-  const records = budgets.slice(firstIdx, lastIdx);
-
-  const nPages = Math.ceil(budgets.length / recPerPage);
-  const numbers = [...Array(nPages + 1).keys()].slice(1);
-
-  const changeCurrPage = (idx: number) => {
-    setCurrPage(idx);
+  const changeCurrentPage = (idx: number) => {
+    mounted.current = false;
+    setCurrentPage(idx);
   };
 
-  if (budgets.length === 0) {
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      const targetElement = document.getElementById("show-all-bugdets-section");
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth" });
+      }
+
+      const fetchAllBudgets = async (): Promise<null | Budgets> => {
+        try {
+          const result = await fetch(
+            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}?limit=${limit}&offset=${(currentPage - 1) * limit}`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login);
+            return null;
+          }
+
+          if (result.status === StatusCodes.InternalServerError) {
+            return null;
+          }
+
+          if (result.status === StatusCodes.Ok) {
+            return result.json();
+          }
+
+          location.assign(Urls.login);
+          return null;
+        } catch (error) {
+          console.log(error);
+          return null;
+        }
+      };
+
+      const executeFetch = async () => {
+        const receivedBudgets = await fetchAllBudgets();
+        if (receivedBudgets) {
+          setBudgets(receivedBudgets);
+          setNumBudgets(receivedBudgets.num_budgets)
+
+          const nums = [];
+          const upperBound = receivedBudgets.num_budgets / limit
+          for (let i = 1; i<= upperBound; i++) {
+            nums.push(i)
+          }
+          setNumbers(nums)
+        }
+      };
+
+      executeFetch();
+    }
+  }, [budgets, currentPage, numBudgets]);
+
+  if (budgets === "waiting") {
+    <div className="mt-5" style={{ textAlign: "center" }}>
+      <img
+        className="bg-primary rounded p-2"
+        src={rl}
+        height="150px"
+        width="150px"
+        alt="Rotation"
+      />
+    </div>;
+    return;
+  }
+
+  if (!budgets) {
     return (
       <div id="show-all-bugdets-section">
         <h1 style={{ color: "rgba(255,204,204, 0.8)" }}>No Budgets To Show!</h1>{" "}
@@ -50,13 +112,14 @@ const ShowAllBudgets = () => {
       </div>
     );
   }
-
+  
   return (
     <div id="show-all-bugdets-section" className="mb-4">
       <Container className="mt-3 text-center mb-2">
         <Row>
-          {budgets && budgets.length > 0
-            ? records.map((budget, idx) => (
+          {budgets.budgets.length > 0
+            ? // ? records.map((budget, idx) => (
+              budgets.budgets.map((budget, idx) => (
                 <Col key={idx} lg>
                   <ListGroup
                     style={{
@@ -110,24 +173,23 @@ const ShowAllBudgets = () => {
           <Col xs={12} className="d-flex justify-content-center">
             <Pagination>
               {/* <Pagination.Prev onClick={changePrevPage} /> */}
-              {numbers.map((n, idx) => (
+              {numbers ? numbers.map((n, idx) => (
                 <Pagination.Item
-                  className={`${currPage === n ? "active" : ""}`}
+                  className={`${currentPage === n ? "active" : ""}`}
                   key={idx}
-                  onClick={() => changeCurrPage(n)}
+                  onClick={() => changeCurrentPage(n)}
                 >
                   {n}
                 </Pagination.Item>
-              ))}
+              )): ""}
               {/* <Pagination.Next onClick={changeNextPage} /> */}
             </Pagination>
           </Col>
         </Row>
       </Container>
-
       <div className="text-center mt-3">
         <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
-          <img src={ScrUp} height={30}/>
+          <img src={ScrUp} height={30} />
         </Button>
       </div>
     </div>

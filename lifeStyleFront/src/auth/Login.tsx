@@ -124,7 +124,7 @@ const Login = () => {
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
-                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
+                  {loading ? <img  src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
             </form>

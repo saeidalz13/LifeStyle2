@@ -484,7 +484,7 @@ func DeletePlan(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	deletedPlan, err := q.DeletePlan(ctx, sqlc.DeletePlanParams{
+	err = q.DeletePlan(ctx, sqlc.DeletePlanParams{
 		UserID: user.ID,
 		PlanID: int64(planId),
 	})
@@ -493,7 +493,7 @@ func DeletePlan(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	return ftx.Status(fiber.StatusOK).JSON(deletedPlan)
+	return ftx.SendStatus(fiber.StatusOK)
 }
 
 func DeleteDayPlan(ftx *fiber.Ctx) error {

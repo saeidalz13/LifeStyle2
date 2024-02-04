@@ -55,10 +55,16 @@ const BalanceIndex = () => {
             </Button>
           </NavLink>
         </div>
-
         <div className="mt-5" style={{ textAlign: "center" }}>
-          <img src={rl} height="150px" width="150px" alt="Rotation" />
+          <img
+            className="bg-primary rounded p-2"
+            src={rl}
+            height="150px"
+            width="150px"
+            alt="Rotation"
+          />
         </div>
+        ;
       </>
     );
   }

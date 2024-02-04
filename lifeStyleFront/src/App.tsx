@@ -26,7 +26,6 @@ import { fetchUserInfo } from "./loaders/fetchUserProfile";
 import EachBudget from "./finance/budget/EachBudget";
 
 import EditFitPlan from "./fitness/newPlan/EditFitPlan";
-import { fetchFitnessPlans } from "./loaders/FetchFitnessPlans";
 import EachDayPlan from "./fitness/eachPlan/EachDayPlan";
 import StartWorkout from "./fitness/startWorkout/StartWorkout";
 
@@ -86,11 +85,7 @@ const router = createBrowserRouter(
         />
 
         {/* Fitness */}
-        <Route
-          path={Urls.fitness.index}
-          element={<Fitness />}
-          loader={fetchFitnessPlans}
-        ></Route>
+        <Route path={Urls.fitness.index} element={<Fitness />}></Route>
         <Route path={Urls.fitness.editPlan} element={<EditFitPlan />} />
         <Route path={Urls.fitness.goDayPlanMove} element={<EachDayPlan />} />
         <Route path={Urls.fitness.startWorkoutApp} element={<StartWorkout />} />

@@ -375,8 +375,15 @@ const StartWorkout = () => {
     return (
       <>
         <div className="mt-5" style={{ textAlign: "center" }}>
-          <img src={rl} height="150px" width="150px" alt="Rotation" />
+          <img
+            className="bg-primary rounded p-2"
+            src={rl}
+            height="150px"
+            width="150px"
+            alt="Rotation"
+          />
         </div>
+        ;
       </>
     );
   }
@@ -439,7 +446,13 @@ const StartWorkout = () => {
       >
         {planRecords === "waiting" ? (
           <div className="mt-5" style={{ textAlign: "center" }}>
-            <img src={rl} height="50px" width="50px" alt="Rotation" />
+            <img
+              className="bg-primary rounded p-2"
+              src={rl}
+              height="150px"
+              width="150px"
+              alt="Rotation"
+            />
           </div>
         ) : planRecords.plan_records.length === 0 ? (
           <div className="text-center mt-3">

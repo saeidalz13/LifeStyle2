@@ -1,13 +1,10 @@
 export interface FitnessPlan {
   plan_id: number;
-  user_id: number;
   plan_name: string;
   days: number;
-  created_at: {
-    Time: string;
-    Valid: boolean;
-  };
 }
+
+export type AddedPlanId = number
 
 export type FitnessPlans = { plans: Array<FitnessPlan> };
 

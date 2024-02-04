@@ -31,16 +31,29 @@ func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	// Later that I set the pagination in frontend
-	// offset := (pageNumber - 1) * pageSize
-	budgets, err := q.SelectAllBudgets(ctx, sqlc.SelectAllBudgetsParams{UserID: user.ID, Offset: 0, Limit: 15})
+	limitQry := ftx.Query("limit", "2")
+	offsetQry := ftx.Query("offset", "0")
+	convertedInts, err := utils.ConvertStringToInt64([]string{limitQry, offsetQry})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
+	}
+	limit, offset := int32(convertedInts[0]), int32(convertedInts[1])
+
+	budgets, err := q.SelectAllBudgets(ctx, sqlc.SelectAllBudgetsParams{UserID: user.ID, Offset: offset, Limit: limit})
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Could not find the budgets!"})
 	}
 
+	numBudgets, err := q.CountBudgets(ctx, user.ID)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Could not find the number of budgets!"})
+	}
+
 	log.Println("Budgets were found. Sending to front end...")
-	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"budgets": budgets})
+	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"budgets": budgets, "num_budgets": numBudgets})
 }
 
 func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
@@ -128,7 +141,7 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 	log.Println("Search term for postgres:", searchString)
 
 	limitQry := ftx.Query("limit", "10")
-	offsetQry := ftx.Query("offset", "1")
+	offsetQry := ftx.Query("offset", "0")
 	convertedInts, err := utils.ConvertStringToInt64([]string{limitQry, offsetQry})
 	if err != nil {
 		log.Println(err)

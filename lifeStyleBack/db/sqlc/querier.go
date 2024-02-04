@@ -16,22 +16,24 @@ type Querier interface {
 	AddEntertainmentExpense(ctx context.Context, arg AddEntertainmentExpenseParams) error
 	AddMoveType(ctx context.Context, moveType string) error
 	AddMoves(ctx context.Context, arg AddMovesParams) error
-	AddPlan(ctx context.Context, arg AddPlanParams) (Plan, error)
+	AddPlan(ctx context.Context, arg AddPlanParams) (int64, error)
 	AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) error
+	CountBudgets(ctx context.Context, userID int64) (int64, error)
 	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
 	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
 	CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error)
+	CountFitnessPlans(ctx context.Context, userID int64) (int64, error)
 	CreateBalance(ctx context.Context, arg CreateBalanceParams) (Balance, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
 	DeleteFitnessDayPlan(ctx context.Context, arg DeleteFitnessDayPlanParams) error
 	DeleteFitnessDayPlanMove(ctx context.Context, arg DeleteFitnessDayPlanMoveParams) (DayPlanMove, error)
-	DeletePlan(ctx context.Context, arg DeletePlanParams) (Plan, error)
+	DeletePlan(ctx context.Context, arg DeletePlanParams) error
 	DeletePlanRecord(ctx context.Context, arg DeletePlanRecordParams) error
-	DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSingleCapitalExpenseParams) (CapitalExpense, error)
-	DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingleEatoutExpenseParams) (EatoutExpense, error)
-	DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (EntertainmentExpense, error)
+	DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSingleCapitalExpenseParams) (DeleteSingleCapitalExpenseRow, error)
+	DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingleEatoutExpenseParams) (DeleteSingleEatoutExpenseRow, error)
+	DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (DeleteSingleEntertainmentExpenseRow, error)
 	DeleteUser(ctx context.Context, email string) error
 	DeleteWeekPlanRecords(ctx context.Context, arg DeleteWeekPlanRecordsParams) error
 	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
@@ -39,7 +41,7 @@ type Querier interface {
 	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error)
 	FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitnessDayPlanMovesParams) ([]DayPlanMove, error)
 	FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayPlansParams) ([]DayPlan, error)
-	FetchFitnessPlans(ctx context.Context, userID int64) ([]Plan, error)
+	FetchFitnessPlans(ctx context.Context, userID int64) ([]FetchFitnessPlansRow, error)
 	FetchMoveId(ctx context.Context, moveName string) (Move, error)
 	FetchMoveName(ctx context.Context, moveID int64) (string, error)
 	FetchMoveTypeId(ctx context.Context, moveType string) (MoveType, error)
@@ -47,7 +49,7 @@ type Querier interface {
 	FetchSingleCapitalExpense(ctx context.Context, capitalExpID int64) (CapitalExpense, error)
 	FetchSingleEatoutExpense(ctx context.Context, eatoutExpID int64) (EatoutExpense, error)
 	FetchSingleEntertainmentExpense(ctx context.Context, entertainmentExpID int64) (EntertainmentExpense, error)
-	FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (Plan, error)
+	FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFitnessPlanParams) (FetchSingleFitnessPlanRow, error)
 	JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error)
 	SelectAllBudgets(ctx context.Context, arg SelectAllBudgetsParams) ([]SelectAllBudgetsRow, error)
 	SelectBalance(ctx context.Context, arg SelectBalanceParams) (SelectBalanceRow, error)

@@ -11,6 +11,18 @@ import (
 	"time"
 )
 
+const countBudgets = `-- name: CountBudgets :one
+SELECT COUNT(budget_id) FROM budgets
+WHERE user_id = $1
+`
+
+func (q *Queries) CountBudgets(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countBudgets, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createBudget = `-- name: CreateBudget :one
 INSERT INTO budgets (
     budget_name,

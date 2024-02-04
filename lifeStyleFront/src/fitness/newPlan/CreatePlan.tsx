@@ -3,13 +3,14 @@ import { Button, Form, Col, Row, Container, Alert } from "react-bootstrap";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
-import { FitnessPlan } from "../../assets/FitnessInterfaces";
+import { AddedPlanId } from "../../assets/FitnessInterfaces";
 import { useNavigate } from "react-router-dom";
 
 const CreatePlan = () => {
+  const daysSelect = [1, 2, 3, 4, 5, 6];
   const [validationText, setValidationText] = useState<string>("");
   const [errText, setErrText] = useState<string>("");
-  const [days, setDays] = useState("3");
+  const [days, setDays] = useState("1");
   const [planName, setPlanName] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
   const navigate = useNavigate();
@@ -35,19 +36,17 @@ const CreatePlan = () => {
         return;
       }
 
-      // const data = await result.json();
-
       if (result.status === StatusCodes.Ok) {
-        const data = (await result.json()) as FitnessPlan;
+        const createdPlanId = (await result.json()) as AddedPlanId;
         setValidationText("Fitness plan added!");
         setTimeout(() => {
           setValidationText("");
-        }, 5000);
+        }, 1000);
 
         setAlertMsg("Plan created, redirecting to edit...");
         setTimeout(() => {
-          navigate(`edit-plan/${data.plan_id}`);
-        }, 1000);
+          navigate(`edit-plan/${createdPlanId}`);
+        }, 200);
         return;
       }
 
@@ -93,9 +92,11 @@ const CreatePlan = () => {
 
                 <Form.Label>How many days?</Form.Label>
                 <Form.Select onChange={(e) => setDays(e.target.value)}>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
+                  {daysSelect.map((d) => (
+                    <option value={d} key={d}>
+                      {d}
+                    </option>
+                  ))}
                 </Form.Select>
                 <div className="text-center">
                   <Button type="submit" variant="success" className="mt-3 px-4">

@@ -27,6 +27,5 @@ export const FetchAllBudgets = async () => {
     console.log(error);
     location.assign(Urls.login);
     return {};
-    // throw new Error("Network response was not ok.");
   }
 };

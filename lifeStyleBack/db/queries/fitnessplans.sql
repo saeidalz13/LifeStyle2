@@ -1,25 +1,37 @@
 -- name: AddPlan :one
 INSERT INTO plans (user_id, plan_name, days)
 VALUES ($1, $2, $3)
-RETURNING *;
+RETURNING plan_id;
+
 -- name: FetchFitnessPlans :many
-SELECT *
+SELECT plan_id,
+    plan_name,
+    days
 FROM plans
 WHERE user_id = $1;
+
+-- name: CountFitnessPlans :one
+SELECT COUNT(plan_id) FROM plans
+WHERE user_id = $1;
+
 -- name: FetchSingleFitnessPlan :one
-SELECT *
+SELECT plan_id,
+    plan_name,
+    days
 FROM plans
 WHERE user_id = $1
     AND plan_id = $2;
--- name: DeletePlan :one
+    
+-- name: DeletePlan :exec
 DELETE FROM plans
 WHERE user_id = $1
-    AND plan_id = $2
-RETURNING *;
+    AND plan_id = $2;
+
 -- name: AddDayPlan :one
 INSERT INTO day_plans (user_id, plan_id, day)
 VALUES ($1, $2, $3)
 RETURNING *;
+
 -- name: FetchFitnessDayPlans :many
 SELECT *
 FROM day_plans
@@ -98,8 +110,7 @@ FROM plan_records
     JOIN moves ON plan_records.move_id = moves.move_id
 WHERE user_id = $1
     AND day_plan_id = $2
-ORDER BY 
-    plan_records.plan_record_id, 
+ORDER BY plan_records.plan_record_id,
     plan_records.set_record;
 -- name: UpdatePlanRecord :one
 UPDATE plan_records
@@ -110,7 +121,8 @@ WHERE user_id = $3
 RETURNING *;
 -- name: DeletePlanRecord :exec
 DELETE FROM plan_records
-WHERE user_id = $1 AND plan_record_id = $2;
+WHERE user_id = $1
+    AND plan_record_id = $2;
 -- name: DeleteWeekPlanRecords :exec
 DELETE FROM plan_records
 WHERE user_id = $1

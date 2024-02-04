@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
 import {
   Container,
@@ -9,7 +9,7 @@ import {
   ListGroup,
   Accordion,
 } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CreatePlan from "../newPlan/CreatePlan";
 import { FitnessPlans } from "../../assets/FitnessInterfaces";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
@@ -17,8 +17,11 @@ import React from "react";
 import Urls from "../../Urls";
 import WS_URL from "../../WsUrl";
 import rl from "../../svg/RotatingLoad.svg";
+import StatusCodes from "../../StatusCodes";
+import BACKEND_URL from "../../Config";
 
 const Fitness = () => {
+  const mounted = useRef(false);
   const [startOrEndConn, setStartOrEndConn] = useState<"start" | "end">(
     "start"
   );
@@ -28,6 +31,65 @@ const Fitness = () => {
   const [responses, setResponses] = useState<string[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+  const plansPerPage = 3;
+  // const plans = useLoaderData() as null | FitnessPlans;
+  const [plans, setPlans] = useState<null | FitnessPlans>(null)
+
+  const [open, setOpen] = useState(false);
+  const [openPlans, setOpenPlans] = useState(false);
+
+  const accBodyStyle = {
+    color: "rgba(189, 255, 254, 0.75)",
+    backgroundColor: "rgba(30, 30, 30, 0.7)",
+  };
+
+  const accHeaderStyle = {
+    fontSize: "19px",
+  };
+
+  useEffect(() => {
+    if (!mounted.current){
+      mounted.current = true;
+
+      const fetchFitnessPlans = async (): Promise<null | FitnessPlans> => {
+        try {
+          const result = await fetch(`${BACKEND_URL}${Urls.fitness.getAllPlans}`, {
+            method: "GET",
+            credentials: "include",
+          });
+      
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login);
+            return null;
+          }
+      
+          if (result.status === StatusCodes.Ok) {
+            return result.json();
+          }
+      
+          if (result.status === StatusCodes.InternalServerError) {
+            return null;
+          }
+      
+          location.assign(Urls.login);
+          return null ;
+        } catch (error) {
+          location.assign(Urls.login);
+          return null
+        }
+      };
+      
+      const executeFetchPlans = async () => {
+        const receivedPlans = await fetchFitnessPlans();
+        setPlans(receivedPlans)
+      }
+
+      executeFetchPlans();
+    }
+  })
+
 
   const handleStartWsConn = () => {
     setLoading(true);
@@ -74,22 +136,6 @@ const Fitness = () => {
     if (websocket && message) {
       websocket.send(message);
     }
-  };
-
-  const navigate = useNavigate();
-  const plansPerPage = 3;
-  const plans = useLoaderData() as null | FitnessPlans;
-
-  const [open, setOpen] = useState(false);
-  const [openPlans, setOpenPlans] = useState(false);
-
-  const accBodyStyle = {
-    color: "rgba(189, 255, 254, 0.75)",
-    backgroundColor: "rgba(30, 30, 30, 0.7)",
-  };
-
-  const accHeaderStyle = {
-    fontSize: "19px",
   };
 
   const handleClickCreate = () => {

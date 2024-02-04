@@ -12,7 +12,7 @@ import (
 const deleteSingleCapitalExpense = `-- name: DeleteSingleCapitalExpense :one
 DELETE FROM capital_expenses
 WHERE user_id = $1 AND capital_exp_id = $2
-RETURNING capital_exp_id, budget_id, user_id, expenses, description, created_at
+RETURNING budget_id, expenses
 `
 
 type DeleteSingleCapitalExpenseParams struct {
@@ -20,24 +20,22 @@ type DeleteSingleCapitalExpenseParams struct {
 	CapitalExpID int64 `json:"capital_exp_id"`
 }
 
-func (q *Queries) DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSingleCapitalExpenseParams) (CapitalExpense, error) {
+type DeleteSingleCapitalExpenseRow struct {
+	BudgetID int64  `json:"budget_id"`
+	Expenses string `json:"expenses"`
+}
+
+func (q *Queries) DeleteSingleCapitalExpense(ctx context.Context, arg DeleteSingleCapitalExpenseParams) (DeleteSingleCapitalExpenseRow, error) {
 	row := q.db.QueryRowContext(ctx, deleteSingleCapitalExpense, arg.UserID, arg.CapitalExpID)
-	var i CapitalExpense
-	err := row.Scan(
-		&i.CapitalExpID,
-		&i.BudgetID,
-		&i.UserID,
-		&i.Expenses,
-		&i.Description,
-		&i.CreatedAt,
-	)
+	var i DeleteSingleCapitalExpenseRow
+	err := row.Scan(&i.BudgetID, &i.Expenses)
 	return i, err
 }
 
 const deleteSingleEatoutExpense = `-- name: DeleteSingleEatoutExpense :one
 DELETE FROM eatout_expenses
 WHERE user_id = $1 AND eatout_exp_id = $2
-RETURNING eatout_exp_id, budget_id, user_id, expenses, description, created_at
+RETURNING budget_id, expenses
 `
 
 type DeleteSingleEatoutExpenseParams struct {
@@ -45,24 +43,22 @@ type DeleteSingleEatoutExpenseParams struct {
 	EatoutExpID int64 `json:"eatout_exp_id"`
 }
 
-func (q *Queries) DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingleEatoutExpenseParams) (EatoutExpense, error) {
+type DeleteSingleEatoutExpenseRow struct {
+	BudgetID int64  `json:"budget_id"`
+	Expenses string `json:"expenses"`
+}
+
+func (q *Queries) DeleteSingleEatoutExpense(ctx context.Context, arg DeleteSingleEatoutExpenseParams) (DeleteSingleEatoutExpenseRow, error) {
 	row := q.db.QueryRowContext(ctx, deleteSingleEatoutExpense, arg.UserID, arg.EatoutExpID)
-	var i EatoutExpense
-	err := row.Scan(
-		&i.EatoutExpID,
-		&i.BudgetID,
-		&i.UserID,
-		&i.Expenses,
-		&i.Description,
-		&i.CreatedAt,
-	)
+	var i DeleteSingleEatoutExpenseRow
+	err := row.Scan(&i.BudgetID, &i.Expenses)
 	return i, err
 }
 
 const deleteSingleEntertainmentExpense = `-- name: DeleteSingleEntertainmentExpense :one
 DELETE FROM entertainment_expenses
 WHERE user_id = $1 AND entertainment_exp_id = $2
-RETURNING entertainment_exp_id, budget_id, user_id, expenses, description, created_at
+RETURNING budget_id, expenses
 `
 
 type DeleteSingleEntertainmentExpenseParams struct {
@@ -70,16 +66,14 @@ type DeleteSingleEntertainmentExpenseParams struct {
 	EntertainmentExpID int64 `json:"entertainment_exp_id"`
 }
 
-func (q *Queries) DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (EntertainmentExpense, error) {
+type DeleteSingleEntertainmentExpenseRow struct {
+	BudgetID int64  `json:"budget_id"`
+	Expenses string `json:"expenses"`
+}
+
+func (q *Queries) DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (DeleteSingleEntertainmentExpenseRow, error) {
 	row := q.db.QueryRowContext(ctx, deleteSingleEntertainmentExpense, arg.UserID, arg.EntertainmentExpID)
-	var i EntertainmentExpense
-	err := row.Scan(
-		&i.EntertainmentExpID,
-		&i.BudgetID,
-		&i.UserID,
-		&i.Expenses,
-		&i.Description,
-		&i.CreatedAt,
-	)
+	var i DeleteSingleEntertainmentExpenseRow
+	err := row.Scan(&i.BudgetID, &i.Expenses)
 	return i, err
 }
