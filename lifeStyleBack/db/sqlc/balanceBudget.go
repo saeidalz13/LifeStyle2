@@ -75,8 +75,8 @@ type UpdateBudgetBalanceTx struct {
 	UserID        int64  `json:"user_id"`
 }
 
-func (qw *QWithTx) UpdateBudgetBalance(ctx context.Context, arg UpdateBudgetBalanceTx) (Budget, Balance, error) {
-	var updatedBudget Budget
+func (qw *QWithTx) UpdateBudgetBalance(ctx context.Context, arg UpdateBudgetBalanceTx) (UpdateBudgetRow, Balance, error) {
+	var updatedBudget UpdateBudgetRow
 	var updateBalance Balance
 
 	err := qw.execTx(ctx, func(q *Queries) error {

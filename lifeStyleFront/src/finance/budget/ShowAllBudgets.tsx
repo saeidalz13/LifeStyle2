@@ -40,46 +40,6 @@ const ShowAllBudgets = () => {
     setCurrPage(idx);
   };
 
-  // const changeNextPage = () => {
-  //   if (currPage !== budgets.length) {
-  //     setCurrPage(currPage + 1);
-  //   }
-  // };
-
-  // const changePrevPage = () => {
-  //   if (currPage !== 1) {
-  //     setCurrPage(currPage - 1);
-  //   }
-  // };
-
-  // async function handleDeleteBudget(budget_id: number) {
-  //   const result = await fetch(
-  //     `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${budget_id}`,
-  //     {
-  //       method: "DELETE",
-  //       credentials: "include",
-  //     }
-  //   );
-  //   const deletionValidation = await result.json();
-
-  //   if (result.status === StatusCodes.InternalServerError) {
-  //     console.error(deletionValidation.message);
-  //     return;
-  //   } else if (result.status === StatusCodes.Accepted) {
-  //     console.log(`${budget_id} was deleted successfully!`);
-  //     setBudgets((prevBudgets) =>
-  //       prevBudgets.filter((budget) => budget.budget_id !== budget_id)
-  //     );
-  //     return;
-  //   } else if (result.status === StatusCodes.UnAuthorized) {
-  //     location.href = Urls.login;
-  //     console.log("Unexpected error happened!");
-  //     return;
-  //   } else {
-  //     location.href = Urls.login;
-  //   }
-  // }
-
   if (budgets.length === 0) {
     return (
       <div id="show-all-bugdets-section">

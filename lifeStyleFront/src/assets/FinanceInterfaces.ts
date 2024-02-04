@@ -1,15 +1,13 @@
 export interface Budget {
   budget_id: number;
-  user_id: number;
   budget_name: string;
   start_date: string;
   end_date: string;
-  capital: number;
-  eatout: number;
-  entertainment: number;
-  income: number;
-  savings: number;
-  created_at: string;
+  capital: string;
+  eatout: string;
+  entertainment: string;
+  savings: string;
+  income: string;
 }
 
 export interface Budgets {

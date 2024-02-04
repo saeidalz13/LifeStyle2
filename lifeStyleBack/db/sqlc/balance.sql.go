@@ -188,7 +188,10 @@ UPDATE balance
 SET capital = $1
 WHERE user_id = $2
     AND budget_id = $3
-RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+RETURNING capital,
+    eatout,
+    entertainment,
+    total
 `
 
 type UpdateCapitalBalanceParams struct {
@@ -197,28 +200,30 @@ type UpdateCapitalBalanceParams struct {
 	BudgetID int64  `json:"budget_id"`
 }
 
-func (q *Queries) UpdateCapitalBalance(ctx context.Context, arg UpdateCapitalBalanceParams) (Balance, error) {
+type UpdateCapitalBalanceRow struct {
+	Capital       string         `json:"capital"`
+	Eatout        string         `json:"eatout"`
+	Entertainment string         `json:"entertainment"`
+	Total         sql.NullString `json:"total"`
+}
+
+func (q *Queries) UpdateCapitalBalance(ctx context.Context, arg UpdateCapitalBalanceParams) (UpdateCapitalBalanceRow, error) {
 	row := q.db.QueryRowContext(ctx, updateCapitalBalance, arg.Capital, arg.UserID, arg.BudgetID)
-	var i Balance
+	var i UpdateCapitalBalanceRow
 	err := row.Scan(
-		&i.BalanceID,
-		&i.BudgetID,
-		&i.UserID,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
 		&i.Total,
-		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const updateEatoutBalance = `-- name: UpdateEatoutBalance :one
+const updateEatoutBalance = `-- name: UpdateEatoutBalance :exec
 UPDATE balance
 SET eatout = $1
 WHERE user_id = $2
     AND budget_id = $3
-RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
 `
 
 type UpdateEatoutBalanceParams struct {
@@ -227,20 +232,9 @@ type UpdateEatoutBalanceParams struct {
 	BudgetID int64  `json:"budget_id"`
 }
 
-func (q *Queries) UpdateEatoutBalance(ctx context.Context, arg UpdateEatoutBalanceParams) (Balance, error) {
-	row := q.db.QueryRowContext(ctx, updateEatoutBalance, arg.Eatout, arg.UserID, arg.BudgetID)
-	var i Balance
-	err := row.Scan(
-		&i.BalanceID,
-		&i.BudgetID,
-		&i.UserID,
-		&i.Capital,
-		&i.Eatout,
-		&i.Entertainment,
-		&i.Total,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) UpdateEatoutBalance(ctx context.Context, arg UpdateEatoutBalanceParams) error {
+	_, err := q.db.ExecContext(ctx, updateEatoutBalance, arg.Eatout, arg.UserID, arg.BudgetID)
+	return err
 }
 
 const updateEntertainmentBalance = `-- name: UpdateEntertainmentBalance :one
@@ -248,7 +242,10 @@ UPDATE balance
 SET entertainment = $1
 WHERE user_id = $2
     AND budget_id = $3
-RETURNING balance_id, budget_id, user_id, capital, eatout, entertainment, total, created_at
+RETURNING capital,
+    eatout,
+    entertainment,
+    total
 `
 
 type UpdateEntertainmentBalanceParams struct {
@@ -257,18 +254,21 @@ type UpdateEntertainmentBalanceParams struct {
 	BudgetID      int64  `json:"budget_id"`
 }
 
-func (q *Queries) UpdateEntertainmentBalance(ctx context.Context, arg UpdateEntertainmentBalanceParams) (Balance, error) {
+type UpdateEntertainmentBalanceRow struct {
+	Capital       string         `json:"capital"`
+	Eatout        string         `json:"eatout"`
+	Entertainment string         `json:"entertainment"`
+	Total         sql.NullString `json:"total"`
+}
+
+func (q *Queries) UpdateEntertainmentBalance(ctx context.Context, arg UpdateEntertainmentBalanceParams) (UpdateEntertainmentBalanceRow, error) {
 	row := q.db.QueryRowContext(ctx, updateEntertainmentBalance, arg.Entertainment, arg.UserID, arg.BudgetID)
-	var i Balance
+	var i UpdateEntertainmentBalanceRow
 	err := row.Scan(
-		&i.BalanceID,
-		&i.BudgetID,
-		&i.UserID,
 		&i.Capital,
 		&i.Eatout,
 		&i.Entertainment,
 		&i.Total,
-		&i.CreatedAt,
 	)
 	return i, err
 }

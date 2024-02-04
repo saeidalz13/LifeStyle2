@@ -44,16 +44,21 @@ UPDATE balance
 SET entertainment = $1
 WHERE user_id = $2
     AND budget_id = $3
-RETURNING *;
+RETURNING capital,
+    eatout,
+    entertainment,
+    total;
 -- name: UpdateCapitalBalance :one
 UPDATE balance
 SET capital = $1
 WHERE user_id = $2
     AND budget_id = $3
-RETURNING *;
--- name: UpdateEatoutBalance :one
+RETURNING capital,
+    eatout,
+    entertainment,
+    total;
+-- name: UpdateEatoutBalance :exec
 UPDATE balance
 SET eatout = $1
 WHERE user_id = $2
-    AND budget_id = $3
-RETURNING *;
+    AND budget_id = $3;

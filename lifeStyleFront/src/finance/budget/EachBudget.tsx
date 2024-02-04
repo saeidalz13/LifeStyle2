@@ -43,7 +43,7 @@ const EachBudget = () => {
           );
 
           if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login)
+            location.assign(Urls.login);
             return null;
           }
 
@@ -70,7 +70,7 @@ const EachBudget = () => {
           );
 
           if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login)
+            location.assign(Urls.login);
             return null;
           }
 
@@ -102,28 +102,35 @@ const EachBudget = () => {
   }, [id, budget, balance]);
 
   async function handleDeleteBudget() {
-    const result = await fetch(
-      `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-    const deletionValidation = await result.json();
+    try {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
-    if (result.status === StatusCodes.InternalServerError) {
-      console.error(deletionValidation.message);
+      if (result.status === StatusCodes.InternalServerError) {
+        const deletionValidation = await result.json();
+        console.error(deletionValidation.message);
+        return;
+      }
+
+      if (result.status === StatusCodes.UnAuthorized) {
+        location.assign(Urls.login);
+        return;
+      }
+
+      if (result.status === StatusCodes.NoContent) {
+        location.assign(`${Urls.finance.index}/${Urls.finance.showBudgets}`);
+        return;
+      }
+
+      alert("Unexpected Error! Please Try Again Later");
+    } catch (error) {
+      console.log(error);
       return;
-    } else if (result.status === StatusCodes.Accepted) {
-      console.log(`${id} was deleted successfully!`);
-      location.assign(`${Urls.finance.index}/${Urls.finance.showBudgets}`);
-      return;
-    } else if (result.status === StatusCodes.UnAuthorized) {
-      location.href = Urls.login;
-      console.log("Unexpected error happened!");
-      return;
-    } else {
-      location.href = Urls.login;
     }
   }
 
@@ -202,7 +209,7 @@ const EachBudget = () => {
                     </Button>
                   </NavLink> */}
                   <NavLink
-                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget?.budget_id}`}
+                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budget_id}`}
                   >
                     <Button
                       variant="outline-primary"

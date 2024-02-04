@@ -202,16 +202,14 @@ func (qw *QWithTx) UpdateExpensesBalanceEatout(ctx context.Context, arg *Expense
 		expenseDifference := newExpenseAmount.Sub(oldExpenseAmount)
 		newBalance := oldBalanceAmount.Sub(expenseDifference)
 
-		updatedBalance, err := q.UpdateEatoutBalance(ctx, UpdateEatoutBalanceParams{
+		if err = q.UpdateEatoutBalance(ctx, UpdateEatoutBalanceParams{
 			Eatout:   newBalance.String(),
 			UserID:   arg.UserId,
 			BudgetID: updatedExpense.BudgetID,
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 
-		log.Println(updatedBalance)
 		return nil
 	})
 	if err != nil {

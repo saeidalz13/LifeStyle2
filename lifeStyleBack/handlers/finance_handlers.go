@@ -288,7 +288,7 @@ func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	defer cancel()
 	q := sqlc.New(f.Db)
 
-	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -297,6 +297,7 @@ func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	// Extract Budget ID
 	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
 	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
@@ -304,11 +305,13 @@ func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 		BudgetID: int64(budgetId),
 		UserID:   user.ID,
 	}); err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the budget!"})
 	}
 
 	log.Printf("Budget ID: %v -> Deleted", budgetId)
-	return ftx.Status(fiber.StatusAccepted).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Budget was deleted successfully!"})
+	return ftx.SendStatus(fiber.StatusNoContent)
+	// return ftx.Status(fiber.StatusAccepted).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Budget was deleted successfully!"})
 }
 
 func (f *FinanceHandlerReqs) DeleteCapitalExpense(ftx *fiber.Ctx) error {
