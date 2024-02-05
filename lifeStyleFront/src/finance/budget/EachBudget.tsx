@@ -14,6 +14,7 @@ import {
   Table,
 } from "react-bootstrap";
 import { Budget, Balance } from "../../assets/FinanceInterfaces";
+import BackBudgets from "../../misc/BackBudgets";
 
 const EachBudget = () => {
   const mounted = useRef(true);
@@ -35,7 +36,7 @@ const EachBudget = () => {
       const fetchDataBudget = async (): Promise<Budget | null> => {
         try {
           const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
+            `${BACKEND_URL}${Urls.finance.showBudgets}/${id}`,
             {
               method: "GET",
               credentials: "include",
@@ -104,7 +105,7 @@ const EachBudget = () => {
   async function handleDeleteBudget() {
     try {
       const result = await fetch(
-        `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
+        `${BACKEND_URL}$${Urls.finance.showBudgets}/${id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -123,7 +124,7 @@ const EachBudget = () => {
       }
 
       if (result.status === StatusCodes.NoContent) {
-        location.assign(`${Urls.finance.index}/${Urls.finance.showBudgets}`);
+        location.assign(`${Urls.finance.showBudgets}`);
         return;
       }
 
@@ -136,13 +137,14 @@ const EachBudget = () => {
 
   return (
     <>
-      <div className="text-center mt-3">
+    <BackBudgets />
+      {/* <div className="text-center mt-3">
         <NavLink to={`/finance/show-all-budgets`}>
           <Button variant="outline-secondary" className="all-budget-choices">
             Back To Budgets
           </Button>
         </NavLink>
-      </div>
+      </div> */}
 
       {budget ? <h1 className="mt-3 mb-1">{budget.budget_name}</h1> : ""}
       <Container className="mt-3 mb-4">
@@ -287,7 +289,7 @@ const EachBudget = () => {
                     Delete Budget
                   </Button>
                   <NavLink
-                    to={`${Urls.finance.index}/${Urls.finance.showBudgets}/update/${budget?.budget_id}`}
+                    to={`${Urls.finance.showBudgets}/update/${budget?.budget_id}`}
                   >
                     <Button
                       variant="outline-success"

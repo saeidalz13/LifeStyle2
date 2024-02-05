@@ -22,6 +22,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "../archive/SubmitExpenses.tsx"],
+  "include": ["src", "../archive/SubmitExpenses.tsx", "../archive/ShowBudgetsLoader.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

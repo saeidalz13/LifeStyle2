@@ -3,7 +3,7 @@ import Urls from "../Urls";
 
 export const fetchSingleFinance = async () => {
   try {
-    const result = await fetch(`${Urls.finance.index}/${Urls.finance.showBudgets}`, {
+    const result = await fetch(`${Urls.finance.showBudgets}`, {
       method: "GET",
       credentials: "include",
     });

@@ -1,4 +1,8 @@
-import { useRouteLoaderData, NavLink, Outlet } from "react-router-dom";
+import {
+  useRouteLoaderData,
+  NavLink,
+  //  Outlet
+} from "react-router-dom";
 import Urls from "../../Urls";
 import AllBudgSvg from "../../svg/AllBudgets.svg";
 import NewBudgSvg from "../../svg/NewBudget.svg";
@@ -10,7 +14,6 @@ const Panels = () => {
   if (!isAuth) {
     location.assign(Urls.login);
   }
-  
 
   return (
     <>
@@ -18,7 +21,7 @@ const Panels = () => {
         <Row>
           <Col className="mb-2" lg>
             <div>
-              <NavLink to={`${Urls.finance.index}/${Urls.finance.newBudget}`}>
+              <NavLink to={`${Urls.finance.newBudget}`}>
                 <Button variant="outline-warning" className="all-budgets-btn">
                   New Budget
                   <br />
@@ -34,7 +37,7 @@ const Panels = () => {
           </Col>
           <Col lg>
             <div>
-              <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
+              <NavLink to={`${Urls.finance.showBudgets}`}>
                 <Button variant="outline-success" className="all-budgets-btn">
                   All Budgets
                   <br />
@@ -51,7 +54,7 @@ const Panels = () => {
         </Row>
       </Container>
 
-      <Outlet />
+      {/* <Outlet /> */}
     </>
   );
 };

@@ -44,7 +44,7 @@ const EachBudget = () => {
       const fetchDataBudget = async (): Promise<Budget | null> => {
         try {
           const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`,
+            `${BACKEND_URL}${Urls.finance.showBudgets}/${id}`,
             {
               method: "GET",
               credentials: "include",
@@ -272,7 +272,7 @@ const EachBudget = () => {
           <Col>
             <Container className="text-center mt-4 mb-3">
               <NavLink
-                to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+                to={`${Urls.finance.showBudgets}/${id}`}
               >
                 <Button
                   variant="outline-secondary"

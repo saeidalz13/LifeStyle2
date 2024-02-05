@@ -38,8 +38,8 @@ class Urls {
     updateBudget: "update-budget",
 
     // Frontend
-    newBudget: "create-new-budget",
-    showBudgets: "show-all-budgets",
+    newBudget: "/finance/create-new-budget",
+    showBudgets: "/finance/show-all-budgets",
     showSingleBudget: "show-all-budgets/:id",
     updateSingleBudget: "show-all-budgets/update/:id",
 
@@ -62,7 +62,7 @@ class Urls {
     newShowExpensesEach: "/finance/show-expenses/:id",
     // Balance
     balance: "balance",
-    eachBalance: "balance/:id",
+    // eachBalance: "balance/:id",
   };
 
   invalid = "*";

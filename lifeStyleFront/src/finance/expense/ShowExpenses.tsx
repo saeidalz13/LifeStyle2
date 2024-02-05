@@ -290,7 +290,7 @@ const ShowExpenses = () => {
       <>
         <div className="text-center mt-4 mb-3">
           <NavLink
-            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+            to={`${Urls.finance.showBudgets}/${id}`}
           >
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
@@ -316,7 +316,7 @@ const ShowExpenses = () => {
       <>
         <div className="text-center mt-4 mb-3">
           <NavLink
-            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+            to={`${Urls.finance.showBudgets}/${id}`}
           >
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
@@ -333,7 +333,7 @@ const ShowExpenses = () => {
       <>
         <div className="text-center mt-4 mb-3">
           <NavLink
-            to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}
+            to={`${Urls.finance.showBudgets}/${id}`}
           >
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
@@ -351,7 +351,7 @@ const ShowExpenses = () => {
   return (
     <>
       <div className="text-center mt-2">
-        <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${id}`}>
+        <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
           <Button variant="outline-secondary" className="all-budget-choices">
             Back To Budget '{allExpenses.allExpenses.budget_name}'
           </Button>

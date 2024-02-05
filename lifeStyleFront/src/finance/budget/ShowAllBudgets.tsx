@@ -12,16 +12,17 @@ import Urls from "../../Urls";
 import { useEffect, useRef, useState } from "react";
 import { Budgets } from "../../assets/FinanceInterfaces";
 import { Waiting } from "../../assets/GeneralInterfaces";
-import ScrUp from "../../images/ScrollUp.png";
+// import ScrUp from "../../images/ScrollUp.png";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
+import BackFinance from "../../misc/BackFinance";
 
 const ShowAllBudgets = () => {
   const limit = 2;
   const mounted = useRef(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [numBudgets, setNumBudgets] = useState<number>(0)
+  const [numBudgets, setNumBudgets] = useState<number>(0);
   const [numbers, setNumbers] = useState<null | Array<number>>(null);
   const [budgets, setBudgets] = useState<Waiting | Budgets | null>("waiting");
 
@@ -33,16 +34,13 @@ const ShowAllBudgets = () => {
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
-      const targetElement = document.getElementById("show-all-bugdets-section");
-
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" });
-      }
 
       const fetchAllBudgets = async (): Promise<null | Budgets> => {
         try {
           const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.showBudgets}?limit=${limit}&offset=${(currentPage - 1) * limit}`,
+            `${BACKEND_URL}${Urls.finance.showBudgets}?limit=${limit}&offset=${
+              (currentPage - 1) * limit
+            }`,
             {
               method: "GET",
               credentials: "include",
@@ -74,14 +72,14 @@ const ShowAllBudgets = () => {
         const receivedBudgets = await fetchAllBudgets();
         if (receivedBudgets) {
           setBudgets(receivedBudgets);
-          setNumBudgets(receivedBudgets.num_budgets)
+          setNumBudgets(receivedBudgets.num_budgets);
 
           const nums = [];
-          const upperBound = receivedBudgets.num_budgets / limit
-          for (let i = 1; i<= upperBound; i++) {
-            nums.push(i)
+          const upperBound = receivedBudgets.num_budgets / limit;
+          for (let i = 1; i <= upperBound; i++) {
+            nums.push(i);
           }
-          setNumbers(nums)
+          setNumbers(nums);
         }
       };
 
@@ -91,6 +89,8 @@ const ShowAllBudgets = () => {
 
   if (budgets === "waiting") {
     <div className="mt-5" style={{ textAlign: "center" }}>
+      <BackFinance />
+
       <img
         className="bg-primary rounded p-2"
         src={rl}
@@ -105,16 +105,20 @@ const ShowAllBudgets = () => {
   if (!budgets) {
     return (
       <div id="show-all-bugdets-section">
-        <h1 style={{ color: "rgba(255,204,204, 0.8)" }}>No Budgets To Show!</h1>{" "}
+        <BackFinance />
+        <h1 style={{ color: "rgba(255,204,204, 0.8)" }}>
+          No Budgets To Show!
+        </h1>{" "}
         <div className="text-center">
           <img src={sadFace} />
         </div>
       </div>
     );
   }
-  
+
   return (
     <div id="show-all-bugdets-section" className="mb-4">
+      <BackFinance />
       <Container className="mt-3 text-center mb-2">
         <Row>
           {budgets.budgets.length > 0
@@ -153,7 +157,7 @@ const ShowAllBudgets = () => {
                     </ListGroup.Item>
                     <div className="mt-2 mb-1">
                       <NavLink
-                        to={`${Urls.finance.index}/${Urls.finance.showBudgets}/${budget.budget_id}`}
+                        to={`${Urls.finance.showBudgets}/${budget.budget_id}`}
                       >
                         <Button
                           key={crypto.randomUUID()}
@@ -173,25 +177,27 @@ const ShowAllBudgets = () => {
           <Col xs={12} className="d-flex justify-content-center">
             <Pagination>
               {/* <Pagination.Prev onClick={changePrevPage} /> */}
-              {numbers ? numbers.map((n, idx) => (
-                <Pagination.Item
-                  className={`${currentPage === n ? "active" : ""}`}
-                  key={idx}
-                  onClick={() => changeCurrentPage(n)}
-                >
-                  {n}
-                </Pagination.Item>
-              )): ""}
+              {numbers
+                ? numbers.map((n, idx) => (
+                    <Pagination.Item
+                      className={`${currentPage === n ? "active" : ""}`}
+                      key={idx}
+                      onClick={() => changeCurrentPage(n)}
+                    >
+                      {n}
+                    </Pagination.Item>
+                  ))
+                : ""}
               {/* <Pagination.Next onClick={changeNextPage} /> */}
             </Pagination>
           </Col>
         </Row>
       </Container>
-      <div className="text-center mt-3">
+      {/* <div className="text-center mt-3">
         <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
           <img src={ScrUp} height={30} />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

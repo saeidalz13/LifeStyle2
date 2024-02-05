@@ -24,6 +24,7 @@ const NavbarComp = () => {
   return (
     <>
       <Navbar
+        id="main-navbar"
         expand="lg"
         data-bs-theme="dark"
         style={{
@@ -39,17 +40,33 @@ const NavbarComp = () => {
           <Navbar.Collapse>
             {isAuth ? (
               <Nav className="ms-auto">
-                <Nav.Link className="text-primary" href={Urls.profile}>Profile</Nav.Link>
-                <Nav.Link className="text-success" href={Urls.finance.index}>Finance</Nav.Link>
-                <Nav.Link className="text-info" href={Urls.fitness.index}>Fitness</Nav.Link>
-                <Nav.Link className="text-warning" href={Urls.about}>About</Nav.Link>
-                <Nav.Link className="text-danger" onClick={handleSignOut}>Sign Out</Nav.Link>
+                <Nav.Link className="text-primary" href={Urls.profile}>
+                  Profile
+                </Nav.Link>
+                <Nav.Link className="text-success" href={Urls.finance.index}>
+                  Finance
+                </Nav.Link>
+                <Nav.Link className="text-info" href={Urls.fitness.index}>
+                  Fitness
+                </Nav.Link>
+                <Nav.Link className="text-warning" href={Urls.about}>
+                  About
+                </Nav.Link>
+                <Nav.Link className="text-danger" onClick={handleSignOut}>
+                  Sign Out
+                </Nav.Link>
               </Nav>
             ) : (
               <Nav className="ms-auto">
-                <Nav.Link className="text-success" href={Urls.login}>Log In</Nav.Link>
-                <Nav.Link className="text-info" href={Urls.signup}>Sign Up</Nav.Link>
-                <Nav.Link className="text-primary" href={Urls.about}>About</Nav.Link>
+                <Nav.Link className="text-success" href={Urls.login}>
+                  Log In
+                </Nav.Link>
+                <Nav.Link className="text-info" href={Urls.signup}>
+                  Sign Up
+                </Nav.Link>
+                <Nav.Link className="text-primary" href={Urls.about}>
+                  About
+                </Nav.Link>
               </Nav>
             )}
           </Navbar.Collapse>

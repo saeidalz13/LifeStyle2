@@ -7,6 +7,7 @@ import Urls from "../../Urls";
 import { useRouteLoaderData, NavLink } from "react-router-dom";
 import { Badge, Button } from "react-bootstrap";
 import ScrUp from "../../images/ScrollUp.png";
+import BackFinance from "../../misc/BackFinance";
 
 const NewBudget = () => {
   const isAuth = useRouteLoaderData("navbar") as boolean;
@@ -125,15 +126,17 @@ const NewBudget = () => {
   }
 
   useEffect(() => {
-    const targetElement = document.getElementById('create-budget-container');
+    const targetElement = document.getElementById("main-navbar");
 
     if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth'});
+      targetElement.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
   return (
     <div id="create-budget-container">
+      <BackFinance />
+
       <div className="container">
         <div className="row mt-3 mb-2">
           <div className="col">
@@ -147,26 +150,22 @@ const NewBudget = () => {
               period including but not limited to{" "}
               <u>rent, bills and transportation.</u>
               <hr />
-
               <Badge bg="dark" className="border border-warning me-2 py-2">
                 Eat Out
               </Badge>
               Includes all the money you want to spend on food outside
               <hr />
-
               <Badge bg="dark" className="border border-info me-2 py-2">
                 Entertainment
               </Badge>
               All the money you want to spend for fun. Could be going for a
               movie, escape rooms or whatever that you do for fun!
               <hr />
-
               <Badge bg="dark" className="border border-success me-2 py-2">
                 Savings
               </Badge>
               The money you want to save for the budgeting period
               <hr />
-
               <p>
                 Here are some useful links to help you budget you finances more
                 effecively!
@@ -321,7 +320,7 @@ const NewBudget = () => {
               )}
             </form>
           </div>
-          <NavLink to={`${Urls.finance.index}/${Urls.finance.showBudgets}`}>
+          <NavLink to={`${Urls.finance.showBudgets}`}>
             <div className="text-center mt-2">
               <Button className=" px-5" variant="outline-primary">
                 Show All Budgets
@@ -330,10 +329,10 @@ const NewBudget = () => {
           </NavLink>
 
           <div className="text-center mt-3">
-        <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
-          <img src={ScrUp} height={30}/>
-        </Button>
-      </div>
+            <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
+              <img src={ScrUp} height={30} />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

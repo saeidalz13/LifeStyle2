@@ -7,7 +7,7 @@ const BackHomeBtn = () => {
   return (
     <div className="text-center mt-2">
       <NavLink to={Urls.home}>
-        <Button variant="info" className="px-5 py-2 all-budget-choices">&#127968; Home</Button>
+        <Button style={{color:"rgb(249, 215, 215)"}} variant="dark" className="px-5 py-2">&#127968; Home</Button>
       </NavLink>
     </div>
   );
