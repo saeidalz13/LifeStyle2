@@ -529,6 +529,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
+	qwtx := sqlc.NewQWithTx(database.DB)
 
 	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
@@ -543,33 +544,8 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the day plan Move ID"})
 	}
 
-	deletedDayPlanMove, err := q.DeleteFitnessDayPlanMove(ctx, sqlc.DeleteFitnessDayPlanMoveParams{
-		UserID:        user.ID,
-		DayPlanMoveID: int64(dayPlanMoveId),
-	})
-	if err != nil {
-		log.Println("FetchFitnessDayPlanMoves failure:", err)
+	if err := qwtx.DeleteDayPlanRecord(ctx, user.ID, int64(dayPlanMoveId)); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete the day plan move"})
-	}
-
-	dayPlanMoves, err := q.FetchFitnessDayPlanMoves(ctx, sqlc.FetchFitnessDayPlanMovesParams{
-		UserID:    user.ID,
-		DayPlanID: deletedDayPlanMove.DayPlanID,
-	})
-	if err != nil {
-		log.Println("FetchFitnessDayPlanMoves failure:", err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to check database if day plan has any day plan moves"})
-	}
-
-	log.Printf("%#v", dayPlanMoves)
-	if len(dayPlanMoves) == 0 {
-		if err := q.DeleteFitnessDayPlan(ctx, sqlc.DeleteFitnessDayPlanParams{
-			UserID:    user.ID,
-			DayPlanID: deletedDayPlanMove.DayPlanID,
-		}); err != nil {
-			log.Println(err)
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to delete day plan because of no more day plan moves"})
-		}
 	}
 	return ftx.SendStatus(fiber.StatusOK)
 }

@@ -22,6 +22,7 @@ type Querier interface {
 	CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error)
 	CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error)
 	CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error)
+	CountFitnessDayPlanMoves(ctx context.Context, arg CountFitnessDayPlanMovesParams) (int64, error)
 	CountFitnessPlans(ctx context.Context, userID int64) (int64, error)
 	CreateBalance(ctx context.Context, arg CreateBalanceParams) (Balance, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)

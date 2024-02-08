@@ -127,6 +127,25 @@ func (q *Queries) AddPlanRecord(ctx context.Context, arg AddPlanRecordParams) er
 	return err
 }
 
+const countFitnessDayPlanMoves = `-- name: CountFitnessDayPlanMoves :one
+SELECT COUNT(day_plan_move_id)
+FROM day_plan_moves
+WHERE user_id = $1
+    AND day_plan_id = $2
+`
+
+type CountFitnessDayPlanMovesParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+func (q *Queries) CountFitnessDayPlanMoves(ctx context.Context, arg CountFitnessDayPlanMovesParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFitnessDayPlanMoves, arg.UserID, arg.DayPlanID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countFitnessPlans = `-- name: CountFitnessPlans :one
 SELECT COUNT(plan_id) FROM plans
 WHERE user_id = $1
