@@ -8,6 +8,10 @@ var CHEST_MOVES = []string{
 	"Incline Press DB",
 	"Incline Machine Press",
 	"Dips",
+	"Fly Machine",
+	"Fly Cable Upper",
+	"Fly Cable Lower",
+	"Fly Cable Middle",
 }
 
 var LEG_MOVES = []string{
@@ -47,6 +51,7 @@ var BACK_MOVES = []string{
 	"Barbell Row",
 	"Machine Row",
 	"Reverse Cable Fly",
+	"Face Pull",
 }
 
 var BICEPS_MOVES = []string{
@@ -77,7 +82,6 @@ var ALL_MOVES = [][]string{
 	ABS_MOVE,
 }
 
-
 type MoveTypes struct {
 	Chest    string
 	Leg      string
@@ -103,5 +107,3 @@ var MOVE_TYPES_SLICE = []string{
 	MOVE_TYPES.Back, MOVE_TYPES.Biceps, MOVE_TYPES.Triceps,
 	MOVE_TYPES.Abs,
 }
-
-

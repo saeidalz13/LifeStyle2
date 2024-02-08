@@ -6,6 +6,10 @@ const CHEST_MOVES: Array<string> = [
   "Incline Press DB",
   "Incline Machine Press",
   "Dips",
+  "Fly Machine",
+  "Fly Cable Upper",
+  "Fly Cable Lower",
+  "Fly Cable Middle",
 ];
 
 const LEG_MOVES: Array<string> = [
@@ -17,10 +21,10 @@ const LEG_MOVES: Array<string> = [
   "Hip Thrust",
   "Leg Extension",
   "Goblet Squats",
-	"Hamstring Curl Machine Lying",
-	"Hamstring Curl Machine Seated",
-	"Calf Raise Seated",
-	"Calf Raise Standing",
+  "Hamstring Curl Machine Lying",
+  "Hamstring Curl Machine Seated",
+  "Calf Raise Seated",
+  "Calf Raise Standing",
   "Hip Adductor Machine",
   "Hip Abductor Machine",
 ];
@@ -31,7 +35,7 @@ const SHOULDER_MOVES: Array<string> = [
   "Shoulder Press DB",
   "Lateral Raise DB",
   "Lateral Raise Cable",
-  "Cable External Rotations"
+  "Cable External Rotations",
 ];
 
 const BACK_MOVES: Array<string> = [
@@ -45,6 +49,7 @@ const BACK_MOVES: Array<string> = [
   "Barbell Row",
   "Machine Row",
   "Reverse Cable Fly",
+  "Face Pull",
 ];
 
 const BICEPS_MOVES: Array<string> = [
@@ -54,9 +59,16 @@ const BICEPS_MOVES: Array<string> = [
   "Biceps Hammer Curl",
 ];
 
-const TRICEPS_MOVES: Array<string> = ["Triceps Extenstion DB", "Triceps Pushdown Cable"];
+const TRICEPS_MOVES: Array<string> = [
+  "Triceps Extenstion DB",
+  "Triceps Pushdown Cable",
+];
 
-const ABS_MOVES: Array<string> = ["Hanging Leg Raise", "Russian Twist", "Reverse Crunch"];
+const ABS_MOVES: Array<string> = [
+  "Hanging Leg Raise",
+  "Russian Twist",
+  "Reverse Crunch",
+];
 
 let MOVESARRAY: Array<string> = [
   ...CHEST_MOVES,
@@ -155,13 +167,13 @@ for (let i = 1; i <= 20; i++) {
 }
 
 const WEIGHTS: Array<number> = [];
-for (let i = 5;  i <= 200; i+=5) {
-  WEIGHTS.push(i)
+for (let i = 5; i <= 200; i += 5) {
+  WEIGHTS.push(i);
 }
 
 const REPS: Array<number> = [];
 for (let i = 1; i <= 30; i++) {
-  REPS.push(i)
+  REPS.push(i);
 }
 
 export default {
@@ -170,5 +182,5 @@ export default {
   YOUTUBE_LINKS_MOVES,
   WEEKS,
   WEIGHTS,
-  REPS
+  REPS,
 };
