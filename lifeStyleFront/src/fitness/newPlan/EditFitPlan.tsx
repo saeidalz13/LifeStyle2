@@ -285,7 +285,7 @@ const EditFitPlan = () => {
             </Col>
             <Col className="mb-1" md>
               <Form.Group controlId="move">
-                <Form.Label>Move:</Form.Label>
+                <Form.Label>Exercise:</Form.Label>
                 <Form.Select
                   value={move}
                   onChange={(e) => setMove(e.target.value)}
@@ -305,7 +305,7 @@ const EditFitPlan = () => {
                 variant="outline-warning"
                 className="px-4 all-budget-choices"
               >
-                Add Move
+                Add Exercise
               </Button>
             </Col>
             <Form.Text className="text-danger">{addMoveErrs}</Form.Text>
@@ -313,42 +313,42 @@ const EditFitPlan = () => {
         </Form>
 
         <div className="text-center mt-2">
-        {percentageDayPlans >= 100 ? (
-          <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
-            <Button
-              variant="outline-light"
-              className="px-5 border border-danger"
-            >
-              Go To Plan Details
-              <Spinner
-                as="span"
-                animation="grow"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-                variant="danger"
-                className="ms-1"
-              />
-            </Button>
-          </NavLink>
-        ) : (
-          <>
-            <Button
-              variant="outline-success"
-              className="px-4 all-budget-choices"
-              onClick={handleSubmitDayPlan}
-            >
-              Submit Day {day} Moves
-            </Button>
-            <br />
+          {percentageDayPlans >= 100 ? (
             <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
-              <Button className="mt-2 py-1" variant="outline-secondary">
-                Plan Details So Far
+              <Button
+                variant="outline-light"
+                className="px-5 border border-danger"
+              >
+                Go To Plan Details
+                <Spinner
+                  as="span"
+                  animation="grow"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  variant="danger"
+                  className="ms-1"
+                />
               </Button>
             </NavLink>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Button
+                variant="outline-success"
+                className="px-4 all-budget-choices"
+                onClick={handleSubmitDayPlan}
+              >
+                Submit Day {day} Moves
+              </Button>
+              <br />
+              <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
+                <Button className="mt-2 py-1" variant="outline-secondary">
+                  Plan Details So Far
+                </Button>
+              </NavLink>
+            </>
+          )}
+        </div>
 
         <div>
           {percentageDayPlans >= 100 ? (
@@ -425,8 +425,16 @@ const EditFitPlan = () => {
         </Row>
       </Container>
 
-      <div style={{fontSize:"20px"}} className="text-danger text-center mt-1">{possibleErrs}</div>
-      <div style={{fontSize:"20px", color: "yellowgreen",}} className="mt-1 text-center">
+      <div
+        style={{ fontSize: "20px" }}
+        className="text-danger text-center mt-1"
+      >
+        {possibleErrs}
+      </div>
+      <div
+        style={{ fontSize: "20px", color: "yellowgreen" }}
+        className="mt-1 text-center"
+      >
         {success}
       </div>
     </>

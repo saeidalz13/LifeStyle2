@@ -6,14 +6,12 @@ import Urls from "../../Urls";
 import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import BACKEND_URL from "../../Config";
 
-
 interface AddMovesToDayPlanProps {
   dayPlanId: number;
   planId: number;
   toggleTrigger: () => void;
   mountedRef: React.MutableRefObject<boolean>;
 }
-
 
 const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
   const MOVESARRAY = cp.MOVESARRAY;
@@ -22,13 +20,12 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
   const [moveNames, setMoveNames] = useState<string[]>([]);
   const [emptyMoveNamesTxt, setEmptyMoveNamesTxt] = useState<string>("");
   const [addMoveErrs, setAddMoveErrs] = useState("");
-  
+
   const handleSubmitNewMoves = async () => {
     setEmptyMoveNamesTxt("");
     setAddMoveErrs("");
     setPossibleErrs("");
     try {
-
       const result = await fetch(
         `${BACKEND_URL}${Urls.fitness.addDayPlanMoves}/${props.planId}`,
         {
@@ -61,7 +58,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
 
       if (result.status === StatusCodes.Ok) {
         if (props.toggleTrigger) {
-          props.toggleTrigger()
+          props.toggleTrigger();
         }
         props.mountedRef.current = true;
         console.log(data.message);
@@ -121,7 +118,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
             variant="outline-warning"
             className="px-3 all-budget-choices"
           >
-            Add Move
+            Add Exercise
           </Button>
           <br />
           <Form.Text className="text-danger">{addMoveErrs}</Form.Text>
@@ -134,7 +131,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
             className="text-primary text-center"
             style={{ fontSize: "18px" }}
           >
-            Click On "Add Move" To Create Submit List
+            Click On "Add Exercise" To Create Submit List
           </div>
         ) : (
           <>

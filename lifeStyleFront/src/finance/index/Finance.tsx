@@ -81,7 +81,7 @@ const Finance = () => {
   };
 
   useEffect(() => {
-    const targetElement = document.getElementById("main-finance-div");
+    const targetElement = document.getElementById("main-navbar");
 
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: "smooth" });

@@ -26,7 +26,7 @@ const ModalAddPlan = (props: ModalAddPlanProps) => {
             className="text-primary"
             id="contained-modal-title-vcenter"
           >
-            Add Moves to Day Plan
+            Add Exercises to Day Plan
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>

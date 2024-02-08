@@ -25,7 +25,7 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
   toggleTrigger,
   mountedRef,
   moveName,
-  clickedDay
+  clickedDay,
 }) => {
   const [showVideo, setShowVideo] = useState(false);
 
@@ -54,7 +54,7 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
       if (result.status === StatusCodes.Ok) {
         mountedRef.current = true;
         if (onHide) {
-          onHide()
+          onHide();
         }
         if (toggleTrigger) {
           toggleTrigger();
@@ -103,16 +103,12 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
               variant="danger"
               onClick={handleDeleteDayPlanMove}
             >
-              Delete Move
+              Delete Exercise
             </Button>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="outline-primary"
-            className="px-3"
-            onClick={onHide}
-          >
+          <Button variant="outline-primary" className="px-3" onClick={onHide}>
             Close Window
           </Button>
         </Modal.Footer>

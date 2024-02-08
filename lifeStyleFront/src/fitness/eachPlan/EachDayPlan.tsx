@@ -500,7 +500,7 @@ const EachDayPlan = () => {
                     onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
                     variant="outline-warning"
                   >
-                    Add Moves
+                    Add Exercise
                   </Button>
                   <br />
                   <Button

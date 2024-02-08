@@ -428,7 +428,7 @@ const StartWorkout = () => {
         <NavLink
           to={`${Urls.fitness.getAllDayPlans}/${dayPlanMoves.moves[0].plan_id}`}
         >
-          <Button variant="secondary">Back to Day Plan</Button>
+          <Button className="text-light" variant="outline-secondary">Back to Day Plan</Button>
         </NavLink>
       </div>
 
