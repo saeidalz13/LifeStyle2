@@ -42,7 +42,7 @@ const Signup = () => {
     setLoading(true);
 
     if (passwordRef.current?.value) {
-      if (passwordRef.current?.value.length <= 8) {
+      if (passwordRef.current?.value.length < 8) {
         setLoading(false);
         setErrMsg("Password must be at least 8 characters");
         setTimeout(() => {
