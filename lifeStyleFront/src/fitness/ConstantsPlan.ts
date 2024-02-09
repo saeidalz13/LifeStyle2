@@ -68,6 +68,7 @@ const ABS_MOVES: Array<string> = [
   "Hanging Leg Raise",
   "Russian Twist",
   "Reverse Crunch",
+  "Cable Crunch",
 ];
 
 let MOVESARRAY: Array<string> = [
@@ -167,7 +168,7 @@ for (let i = 1; i <= 20; i++) {
 }
 
 const WEIGHTS: Array<number> = [];
-for (let i = 5; i <= 200; i += 5) {
+for (let i = 0; i <= 200; i += 5) {
   WEIGHTS.push(i);
 }
 

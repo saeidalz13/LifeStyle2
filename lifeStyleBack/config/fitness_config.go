@@ -70,6 +70,7 @@ var ABS_MOVE = []string{
 	"Hanging Leg Raise",
 	"Russian Twist",
 	"Reverse Crunch",
+	"Cable Crunch",
 }
 
 var ALL_MOVES = [][]string{

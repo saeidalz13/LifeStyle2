@@ -25,8 +25,6 @@ import cn from "../ConstantsPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import ModalUpdatePlanRecord from "./ModalUpdatePlanRecord";
 
-// TODO: After submitting the record, check what records exist and show the user what's left to do!
-
 interface GroupedPlanRecords {
   [key: number]: PlanRecord[];
 }
@@ -69,12 +67,11 @@ const StartWorkout = () => {
     setPossibleErrs("");
     setLoading(false);
 
-    if (reps !== 0 && weights !== 0) {
+    if (reps !== 0) {
       setAddedReps((prevReps) => [...prevReps, +reps]);
       setAddedWeights((prevWeights) => [...prevWeights, weights]);
       return;
     }
-
     setAddSetErrs("Enter non-zero value both reps and weights!");
     setTimeout(() => {
       setAddSetErrs("");
@@ -428,7 +425,9 @@ const StartWorkout = () => {
         <NavLink
           to={`${Urls.fitness.getAllDayPlans}/${dayPlanMoves.moves[0].plan_id}`}
         >
-          <Button className="text-light" variant="outline-secondary">Back to Day Plan</Button>
+          <Button className="text-light" variant="outline-secondary">
+            Back to Day Plan
+          </Button>
         </NavLink>
       </div>
 
@@ -587,7 +586,7 @@ const StartWorkout = () => {
                     <Form.Select onChange={(e) => setWeights(+e.target.value)}>
                       {cn.WEIGHTS.map((weight) => (
                         <option value={weight} key={weight}>
-                          {weight} lb
+                          {weight === 0 ? "No Weight" : weight}
                         </option>
                       ))}
                     </Form.Select>
