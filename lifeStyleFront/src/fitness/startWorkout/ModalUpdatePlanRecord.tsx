@@ -158,7 +158,7 @@ const ModalUpdatePlanRecord: React.FC<UpdateModalProps> = ({
               <Form.Select onChange={(e) => setUpdatedWeight(+e.target.value)} defaultValue={updatedWeight}>
                 {cn.WEIGHTS.map((weight) => (
                   <option value={weight} key={weight}>
-                    {weight} lb
+                    {weight === 0 ? "No Weight" : weight}
                   </option>
                 ))}
               </Form.Select>
