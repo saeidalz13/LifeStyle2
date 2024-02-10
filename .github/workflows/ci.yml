@@ -40,4 +40,4 @@ jobs:
       run: cd lifeStyleBack
 
     - name: Test
-      run: go test -v -cover ./lifeStyleBack/handlers
+      run: go test -v -cover ./handlers
