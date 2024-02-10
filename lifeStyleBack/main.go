@@ -47,9 +47,10 @@ func main() {
 }
 
 func getEnvVars() (*cn.DotEnvVars, error) {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-		return nil, err
+	if os.Getenv("DEV_STAGE") != cn.DefaultDevStages.Production {
+		if err := godotenv.Load(".env"); err != nil {
+			log.Fatalf("No .env file found")
+		}
 	}
 
 	return &cn.DotEnvVars{
