@@ -58,7 +58,6 @@ func getEnvVars() (*cn.DotEnvVars, error) {
 		Port:        os.Getenv("PORT"),
 		PasetoKey:   os.Getenv("PASETO_KEY"),
 		DbUrl:       os.Getenv("DATABASE_URL"),
-		DbTestUrl:   os.Getenv("DB_TEST_URL"),
 		DevStage:    os.Getenv("DEV_STAGE"),
 		GClientId:   os.Getenv("GOOGLE_CLIENT_ID"),
 		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
