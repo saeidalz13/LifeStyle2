@@ -3,7 +3,6 @@ package token
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/aead/chacha20poly1305"
@@ -56,13 +55,4 @@ func NewPasetoMaker(symmKey string) (Maker, error) {
 		symmKey: []byte(symmKey),
 	}
 	return maker, nil
-}
-
-func init() {
-	tempPaseto, err := NewPasetoMaker(cn.EnvVars.PasetoKey)
-	if err != nil {
-		log.Fatalln("Failed to extract Paseto Key!")
-	}
-
-	PasetoMakerGlobal = tempPaseto
 }

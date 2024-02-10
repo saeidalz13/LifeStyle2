@@ -209,7 +209,7 @@ func (a *AuthHandlerReqs) DeleteUser(ftx *fiber.Ctx) error {
 
 func GetGoogleSignIn(ftx *fiber.Ctx) error {
 	randString := cn.GenerateRandomString(20)
-	url := cn.GoogleOAuthConfig.AuthCodeURL(randString)
+	url := cn.OAuthConfigFitFin.AuthCodeURL(randString)
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"googleUrl": url})
 }
 
@@ -219,7 +219,7 @@ func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
 	code := ftx.Query("code")
-	gToken, err := cn.GoogleOAuthConfig.Exchange(context.Background(), code)
+	gToken, err := cn.OAuthConfigFitFin.Exchange(context.Background(), code)
 	if err != nil {
 		ftx.Redirect(cn.EnvVars.FrontEndUrl)
 	}
