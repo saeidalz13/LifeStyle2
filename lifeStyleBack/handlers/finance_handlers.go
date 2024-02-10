@@ -8,12 +8,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
+	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 	"github.com/sashabaranov/go-openai"
-
-	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
-	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
 type FinanceHandlerReqs struct {
@@ -211,7 +209,7 @@ func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
 
 	operationBudget := sqlc.CreateBudgetBalanceTx(newBudget)
 	operationBudget.UserID = user.ID
-	op := sqlc.NewQWithTx(database.DB)
+	op := sqlc.NewQWithTx(f.Db)
 	result, err := op.CreateBudgetBalance(ctx, operationBudget)
 	if err != nil {
 		log.Println(err)
@@ -241,7 +239,7 @@ func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	q2 := sqlc.NewQWithTx(database.DB)
+	q2 := sqlc.NewQWithTx(f.Db)
 	updatedBalance, err := q2.AddExpenseUpdateBalance(ctx, sqlc.AddExpenseUpdateBalanceTx{
 		BudgetID:    newExpense.BudgetID,
 		UserID:      user.ID,

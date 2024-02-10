@@ -15,15 +15,13 @@ import (
 )
 
 func TestAuth(t *testing.T) {
-	dbTest := utils.SetUp()
-	TestHandlerReqs := &AuthHandlerReqs{cn.GeneralHandlerReqs{Db: dbTest}}
 	newUser := &sqlc.CreateUserParams{}
 	test := &cn.Test{}
 	test.Route = cn.URLS.SignUp
 
 	// Setting up app for Fiber Post requests
 	app := fiber.New()
-	app.Post(cn.URLS.SignUp, TestHandlerReqs.PostSignUp)
+	app.Post(cn.URLS.SignUp, TestAuthHandlerReqs.PostSignUp)
 
 	// Sign up //
 	// Test 1
@@ -93,7 +91,7 @@ func TestAuth(t *testing.T) {
 
 	// Login //
 	// Test 5
-	app.Post(cn.URLS.Login, TestHandlerReqs.PostLogin)
+	app.Post(cn.URLS.Login, TestAuthHandlerReqs.PostLogin)
 
 	test.Route = cn.URLS.Login
 	test.Description = "should login with existing email and correct password"
@@ -148,7 +146,7 @@ func TestAuth(t *testing.T) {
 
 	// Get Home //
 	// Test 8
-	app.Get(cn.URLS.Home, TestHandlerReqs.GetHome)
+	app.Get(cn.URLS.Home, TestAuthHandlerReqs.GetHome)
 
 	localPasetoMaker := token.PasetoMakerGlobal
 	test.Route = cn.URLS.Home
@@ -180,7 +178,7 @@ func TestAuth(t *testing.T) {
 
 	// Get Profile //
 	// Test 10
-	app.Get(cn.URLS.Profile, TestHandlerReqs.GetProfile)
+	app.Get(cn.URLS.Profile, TestAuthHandlerReqs.GetProfile)
 
 	test.Route = cn.URLS.Profile
 	test.Description = "should fetch profile with valid token of existent email"
@@ -213,7 +211,7 @@ func TestAuth(t *testing.T) {
 
 	// Delete User/profile //
 	// Test 11
-	app.Delete(cn.URLS.DeleteProfile, TestHandlerReqs.DeleteUser)
+	app.Delete(cn.URLS.DeleteProfile, TestAuthHandlerReqs.DeleteUser)
 
 	test.Route = cn.URLS.DeleteProfile
 	test.Description = "should not delete user with invalid token/non-existent email"

@@ -1,11 +1,25 @@
 package config
 
-
-
 type Test struct {
 	Description        string
 	Route              string
 	ExpectedStatusCode int
+}
+
+type RequestMethodsStruct struct {
+	Post   string
+	Get    string
+	Delete string
+	Patch  string
+	Put    string
+}
+
+var RequestMethods = &RequestMethodsStruct{
+	Post:   "POST",
+	Get:    "GET",
+	Delete: "DELETE",
+	Patch:  "PATCH",
+	Put:    "PUT",
 }
 
 const (
@@ -14,4 +28,3 @@ const (
 	EXISTENT_AND_VALID_PASSWORD   = "SomePassword13"
 	NON_EXISTENT_EMAIL_IN_TEST_DB = "emaildoesnotexist@gmail.com"
 )
-
