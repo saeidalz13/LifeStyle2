@@ -20,7 +20,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: lifestyledb_test
+          POSTGRES_DB: lfdb
         ports:
           - 5432:5432
         options: >-
@@ -37,6 +37,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.21.5'
-
+    
     - name: Test
       run: cd lifeStyleBack && go test -v -cover ./handlers
