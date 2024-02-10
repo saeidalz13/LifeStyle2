@@ -192,6 +192,14 @@ func TestFinance(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Get Single Budget //
+	// Test 6
+	test = &cn.Test{
+		Description:        "should get single budget",
+		ExpectedStatusCode: fiber.StatusOK,
+		Route:              cn.URLS.ShowBudgets,
+	}
+
 	// Delete the user
 	// Test -1 (Last test)
 	test = &cn.Test{
