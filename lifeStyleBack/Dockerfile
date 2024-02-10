@@ -13,7 +13,7 @@ WORKDIR /app
 
 COPY --from=builder /app/lifestyle /app
 COPY --from=builder /app/db /app
-COPY .env /app
+# COPY .env /app
 
 EXPOSE 1300
 CMD [ "./lifestyle" ]
