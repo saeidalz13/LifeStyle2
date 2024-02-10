@@ -63,7 +63,7 @@ func init() {
 	if RUN_ENV == DefaultDevStages.Test {
 		EnvVars = &DotEnvVars{
 			PasetoKey: "some_random_key_that_has_32chars",
-			DbUrl:     "postgresql://root:testpassword@localhost:2000/lfdb?sslmode=disable",
+			DbUrl:     "postgresql://root:testpassword@localhost:5432/lfdb?sslmode=disable",
 			DevStage:  DefaultDevStages.Test,
 		}
 		return
