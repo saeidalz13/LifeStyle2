@@ -40,3 +40,6 @@ jobs:
     
     - name: Test
       run: cd lifeStyleBack && go test -v -cover ./handlers
+
+    - name: Deploy if tests run
+      run: cd lifeStyleBack && fly deploy 
