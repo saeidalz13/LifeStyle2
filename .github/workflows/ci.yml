@@ -24,4 +24,4 @@ jobs:
         go-version: '1.21.5'
 
     - name: Test
-      run: go test -v -cover ./handlers
+      run: go test -v -cover ./lifeStyleBack/handlers
