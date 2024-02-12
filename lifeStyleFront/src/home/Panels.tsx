@@ -5,12 +5,12 @@ import fitSVG from "../svg/FitnessHomePanel.svg";
 import { Container, Row, Col, Button } from "react-bootstrap";
 
 const Panels = (props: Authorized) => {
-  const heightWidthSVGs = "110px";
+  const heightWidthSVGs = 90;
   return (
     <Container className="mt-2">
-      <Row className="m-1">
+      <Row>
         <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "greenyellow" }} className="mb-3">
+          <h2 style={{ color: "greenyellow" }} className="mb-2">
             Finance
           </h2>
 
@@ -42,9 +42,9 @@ const Panels = (props: Authorized) => {
           </p>
         </Col>
       </Row>
-      <Row className="m-1">
+      <Row>
         <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "hotpink" }} className="mb-3">
+          <h2 style={{ color: "hotpink" }} className="mb-2">
             Fitness
           </h2>
           {props.isAuth ? (

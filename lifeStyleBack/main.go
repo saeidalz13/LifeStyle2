@@ -69,9 +69,9 @@ func getEnvVars() (*cn.DotEnvVars, error) {
 func prepareReqVars() {
 	envVars, err := getEnvVars()
 	if err != nil {
-		log.Println("Failed to retrieve data from dotenv file")
-		panic(err.Error())
+		log.Fatalln("Failed to retrieve data from dotenv file", err)
 	}
+	
 	googleOAuthConfig := &oauth2.Config{
 		RedirectURL:  envVars.GRedirUrl,
 		ClientID:     envVars.GClientId,

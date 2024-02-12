@@ -176,7 +176,7 @@ const Fitness = () => {
   };
 
   useEffect(() => {
-    const targetElement = document.getElementById("main-fitness-div");
+    const targetElement = document.getElementById("main-navbar");
 
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: "smooth" });
@@ -188,54 +188,58 @@ const Fitness = () => {
     <div id="main-fitness-div" className="mb-4">
       <BackHomeBtn />
 
-      <div className="mt-3 mx-4 p-4 page-explanations">
-        <h3 className="mb-3 text-center text-primary">
-          Welcome to the fitness section!
-        </h3>
-        <p className="text-center">
-          In this section, you can define custom fitness plans and manage your
-          fitness. Here's the steps how to start your finance management
-          journey:
-        </p>
+      <Container className="mt-3">
+        <Row className="align-items-center">
+          <Col className="mb-2" lg>
+            <div className="p-4 page-explanations">
+              <h3 className="mb-3 text-center text-primary">
+                Welcome to the fitness section!
+              </h3>
+              <p className="text-center">
+                In this section, you can define custom fitness plans and manage
+                your fitness. Here's the steps how to start your finance
+                management journey:
+              </p>
 
-        <Accordion className="mx-2 mb-2">
-          <Accordion.Item eventKey="0" className="acc-button">
-            <Accordion.Header>
-              {" "}
-              <span style={accHeaderStyle}>Create New Plan</span>
-            </Accordion.Header>
-            <Accordion.Body style={accBodyStyle}>
-              Create a fitness plan to record your weekly progress at the gym.
-              Click on "Create Plan", then select a name and days of the week
-              you wanna hit the gym!
-            </Accordion.Body>
-          </Accordion.Item>
-          <Accordion.Item eventKey="1" className="acc-button">
-            <Accordion.Header>
-              {" "}
-              <span style={accHeaderStyle}>Navigate Through Plans</span>{" "}
-            </Accordion.Header>
-            <Accordion.Body style={accBodyStyle}>
-              If you have already created a plan/plans, you can click on "Show
-              Plans" to see the details and the possible actions. You can delete
-              and view the details of your plan!
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
-      </div>
-
-      <Container className="text-center mt-3 p-3">
-        <div className="page-explanations">
-          <Row>
-            <h2 className="text-primary">Ask GPT!</h2>
-            <div
-              style={{ fontSize: "18px" }}
-              className="text-light text-center mb-3"
-            >
-              Note: Your response will have maximum of 1000 characters for
-              financial reasons!
+              <Accordion className="mx-2 mb-2">
+                <Accordion.Item eventKey="0" className="acc-button">
+                  <Accordion.Header>
+                    {" "}
+                    <span style={accHeaderStyle}>Create New Plan</span>
+                  </Accordion.Header>
+                  <Accordion.Body style={accBodyStyle}>
+                    Create a fitness plan to record your weekly progress at the
+                    gym. Click on "Create Plan", then select a name and days of
+                    the week you wanna hit the gym!
+                  </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1" className="acc-button">
+                  <Accordion.Header>
+                    {" "}
+                    <span style={accHeaderStyle}>
+                      Navigate Through Plans
+                    </span>{" "}
+                  </Accordion.Header>
+                  <Accordion.Body style={accBodyStyle}>
+                    If you have already created a plan/plans, you can click on
+                    "Show Plans" to see the details and the possible actions.
+                    You can delete and view the details of your plan!
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
             </div>
-            <Col className="m-1" lg>
+          </Col>
+
+          <Col lg>
+            <div className="text-center page-explanations p-3">
+              <h2 className="text-primary">Ask GPT!</h2>
+              <div
+                style={{ fontSize: "18px" }}
+                className="text-light text-center mb-2"
+              >
+                Note: Your response will have maximum of 1000 characters for
+                financial reasons!
+              </div>
               <h4 className="mb-3 text-info">Question:</h4>
               {startOrEndConn === "start" ? (
                 <Button onClick={handleStartWsConn} variant="success">
@@ -267,26 +271,25 @@ const Fitness = () => {
                   </Button>
                 </div>
               )}
-            </Col>
-            <Col className="m-1" lg>
               <div>
-                <h4 className="text-warning">Response:</h4>
+                <h4 className="text-warning mt-2">Response:</h4>
                 <span>
                   {responses.length > 0 ? (
                     responses.map((response, index) => (
                       <span key={index}>{response} </span>
                     ))
                   ) : (
-                    <span className="text-secondary">
+                    <span className="text-secondary" style={{ fontSize: 16 }}>
                       Your response will be streamed here...
                     </span>
                   )}
                 </span>
               </div>
-            </Col>
-          </Row>
-        </div>
+            </div>
+          </Col>
+        </Row>
       </Container>
+      <hr className="mx-5" />
 
       <Container className="text-center mt-4">
         <Row>
