@@ -12,7 +12,6 @@ import Urls from "../../Urls";
 import { useEffect, useRef, useState } from "react";
 import { Budgets } from "../../assets/FinanceInterfaces";
 import { Waiting } from "../../assets/GeneralInterfaces";
-// import ScrUp from "../../images/ScrollUp.png";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
@@ -88,18 +87,19 @@ const ShowAllBudgets = () => {
   }, [budgets, currentPage, numBudgets]);
 
   if (budgets === "waiting") {
-    <div className="mt-5" style={{ textAlign: "center" }}>
-      <BackFinance />
+    return (
+      <div className="mt-5" style={{ textAlign: "center" }}>
+        <BackFinance />
 
-      <img
-        className="bg-primary rounded p-2"
-        src={rl}
-        height="150px"
-        width="150px"
-        alt="Rotation"
-      />
-    </div>;
-    return;
+        <img
+          className="bg-primary rounded p-2"
+          src={rl}
+          height="150px"
+          width="150px"
+          alt="Rotation"
+        />
+      </div>
+    );
   }
 
   if (!budgets) {
@@ -176,7 +176,6 @@ const ShowAllBudgets = () => {
         <Row className="mt-2">
           <Col xs={12} className="d-flex justify-content-center">
             <Pagination>
-              {/* <Pagination.Prev onClick={changePrevPage} /> */}
               {numbers
                 ? numbers.map((n, idx) => (
                     <Pagination.Item
@@ -188,7 +187,6 @@ const ShowAllBudgets = () => {
                     </Pagination.Item>
                   ))
                 : ""}
-              {/* <Pagination.Next onClick={changeNextPage} /> */}
             </Pagination>
           </Col>
         </Row>
