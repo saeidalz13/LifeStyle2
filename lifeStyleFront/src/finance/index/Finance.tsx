@@ -59,7 +59,7 @@ const Finance = () => {
   const handleEndWsConn = () => {
     setStartOrEndConn("start");
     setResponses([]);
-    setMessage("")
+    setMessage("");
     if (websocket) {
       websocket.close();
     }
@@ -67,7 +67,7 @@ const Finance = () => {
 
   const sendMessage = () => {
     if (message == "") {
-      return
+      return;
     }
     setResponses([]);
     setMsgLoading(true);
@@ -92,56 +92,62 @@ const Finance = () => {
   return (
     <div id="main-finance-div">
       <BackHomeBtn />
-
-      <div className="mt-3 mx-4 p-4 page-explanations">
-        <div className="text-center mb-4">
-          <h3 className="mb-3 text-primary">Welcome to the finance section!</h3>
-          <p>
-            In this section, you can define custom budgets and manage your
-            finances. Here's the steps how to start your finance management
-            journey:
-          </p>
-        </div>
-        <Accordion className="mx-2 mb-2">
-          <Accordion.Item eventKey="0" className="acc-button">
-            <Accordion.Header>
-              {" "}
-              <span style={accHeaderStyle}>Create New Budget</span>
-            </Accordion.Header>
-            <Accordion.Body style={accBodyStyle}>
-              Create a budget to record your weekly/monthly budgeting plan using
-              the "New Budget" panel. You need to consider a time period and
-              then specify your income and savings, and then capital, eating out
-              and entertainment budgets.
-            </Accordion.Body>
-          </Accordion.Item>
-          <Accordion.Item eventKey="1" className="acc-button">
-            <Accordion.Header>
-              {" "}
-              <span style={accHeaderStyle}>Navigate Through Budgets</span>{" "}
-            </Accordion.Header>
-            <Accordion.Body style={accBodyStyle}>
-              If you have already created a budget/budgets, you can click on
-              "All Budgets" to see the details and the possible actions. You can
-              delete and edit your budget, submit new expenses, and check your
-              balance for your specific budget.
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
-      </div>
-
-      <Container className="text-center mt-3 p-3 ">
-        <div className="page-explanations">
-          <Row>
-            <h2 className="text-primary">Ask GPT!</h2>
-            <div
-              style={{ fontSize: "18px" }}
-              className="text-light text-center mb-3"
-            >
-              Note: Your response will have maximum of 1000 characters for
-              financial reasons!
+      <Container className="mt-3">
+        <Row className="align-items-center">
+          <Col className="mb-2" lg>
+            <div className=" mx-1 p-4 page-explanations">
+              <div className="text-center mb-4">
+                <h3 className="mb-3 text-primary">
+                  Welcome to the finance section!
+                </h3>
+                <p>
+                  In this section, you can define custom budgets and manage your
+                  finances. Here's the steps how to start your finance
+                  management journey:
+                </p>
+              </div>
+              <Accordion className="mx-2 mb-2">
+                <Accordion.Item eventKey="0" className="acc-button">
+                  <Accordion.Header>
+                    {" "}
+                    <span style={accHeaderStyle}>Create New Budget</span>
+                  </Accordion.Header>
+                  <Accordion.Body style={accBodyStyle}>
+                    Create a budget to record your weekly/monthly budgeting plan
+                    using the "New Budget" panel. You need to consider a time
+                    period and then specify your income and savings, and then
+                    capital, eating out and entertainment budgets.
+                  </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1" className="acc-button">
+                  <Accordion.Header>
+                    {" "}
+                    <span style={accHeaderStyle}>
+                      Navigate Through Budgets
+                    </span>{" "}
+                  </Accordion.Header>
+                  <Accordion.Body style={accBodyStyle}>
+                    If you have already created a budget/budgets, you can click
+                    on "All Budgets" to see the details and the possible
+                    actions. You can delete and edit your budget, submit new
+                    expenses, and check your balance for your specific budget.
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
             </div>
-            <Col className="m-1" lg>
+          </Col>
+
+          <Col lg>
+            <div className="text-center page-explanations p-3">
+              <h2 className="text-primary">Ask GPT!</h2>
+              <div
+                style={{ fontSize: "18px" }}
+                className="text-light text-center mb-3"
+              >
+                Note: Your response will have maximum of 1000 characters for
+                financial reasons!
+              </div>
+
               <h4 className="mb-3 text-info">Question:</h4>
               {startOrEndConn === "start" ? (
                 <Button onClick={handleStartWsConn} variant="success">
@@ -173,26 +179,26 @@ const Finance = () => {
                   </Button>
                 </div>
               )}
-            </Col>
-            <Col className="m-1" lg>
+
               <div>
-                <h4 className="text-warning">Response:</h4>
+                <h4 className="text-warning mt-3 mb-1">Response:</h4>
                 <span>
                   {responses.length > 0 ? (
                     responses.map((response, index) => (
                       <span key={index}>{response} </span>
                     ))
                   ) : (
-                    <span className="text-secondary">
+                    <span className="text-secondary" style={{ fontSize: 16 }}>
                       Your response will be streamed here...
                     </span>
                   )}
                 </span>
               </div>
-            </Col>
-          </Row>
-        </div>
+            </div>
+          </Col>
+        </Row>
       </Container>
+      <hr className="mx-5" />
 
       <Panels />
     </div>
