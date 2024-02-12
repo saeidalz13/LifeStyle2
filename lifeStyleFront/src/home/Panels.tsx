@@ -7,10 +7,12 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 const Panels = (props: Authorized) => {
   const heightWidthSVGs = "110px";
   return (
-    <Container className="mt-4">
+    <Container className="mt-2">
       <Row className="m-1">
         <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "greenyellow" }} className="mb-3">Finance</h2>
+          <h2 style={{ color: "greenyellow" }} className="mb-3">
+            Finance
+          </h2>
 
           {props.isAuth ? (
             <NavLink to={Urls.finance.index}>
@@ -42,7 +44,9 @@ const Panels = (props: Authorized) => {
       </Row>
       <Row className="m-1">
         <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "hotpink" }} className="mb-3">Fitness</h2>
+          <h2 style={{ color: "hotpink" }} className="mb-3">
+            Fitness
+          </h2>
           {props.isAuth ? (
             <NavLink to={Urls.fitness.index}>
               <button className="btn btn-success home-panels py-3">

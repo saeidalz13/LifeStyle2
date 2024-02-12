@@ -4,10 +4,8 @@ import Fitness from "./fitness/index/Fitness";
 import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import NewBudget from "./finance/budget/NewBudget";
-// import SubmitExpenses from "../../archive/SubmitExpenses";
 import ShowExpenses from "./finance/expense/ShowExpenses";
 import UpdateBudget from "./finance/budget/UpdateBudget";
-// import BalanceIndex from "./finance/balance/BalanceIndex";
 import {
   createBrowserRouter,
   Route,
@@ -18,7 +16,6 @@ import Urls from "./Urls";
 import NavbarComp from "./layout/Navbar";
 import Invalid from "./Invalid";
 import { isAuthenticated } from "./loaders/NavbarLoader";
-// import { FetchAllBudgets } from "./loaders/ShowBudgetsLoader";
 import ShowAllBudgets from "./finance/budget/ShowAllBudgets";
 import About from "./misc/About";
 import UserProfile from "./misc/UserProfile";
@@ -48,19 +45,6 @@ const router = createBrowserRouter(
         <Route path={Urls.finance.newBudget} element={<NewBudget />} />
         <Route path={Urls.finance.showBudgets} element={<ShowAllBudgets />} />
 
-        {/* <Route path={Urls.finance.eachBalance} element={<BalanceIndex />} /> */}
-        {/* <Route
-            path={Urls.finance.updateSingleBudget}
-            element={<UpdateBudget />}
-          /> */}
-        {/* <Route
-            path={Urls.finance.submitExpensesEach}
-            element={<SubmitExpenses />}
-          /> */}
-        {/* <Route
-            path={Urls.finance.showExpensesEach}
-            element={<ShowExpenses />}
-          /> */}
         <Route
           path={Urls.finance.newShowSingleBudget}
           element={<EachBudget />}
@@ -69,10 +53,6 @@ const router = createBrowserRouter(
           path={Urls.finance.newUpdateSingleBudget}
           element={<UpdateBudget />}
         />
-        {/* <Route
-          path={Urls.finance.newSubmitExpensesEach}
-          element={<SubmitExpenses />}
-        /> */}
 
         <Route
           path={Urls.finance.newShowExpensesEach}
