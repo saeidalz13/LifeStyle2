@@ -42,6 +42,7 @@ const Home = () => {
                       onClick={() => setOpenFinance(!openFinance)}
                       variant="outline-success"
                       style={{ color: "#E0FFFF" }}
+                      active={openFinance ? true : false}
                     >
                       Finance Explanation
                     </Button>
@@ -64,6 +65,7 @@ const Home = () => {
                   <div className="text-center mt-1">
                     <Button
                       onClick={() => setOpenFitness(!openFitness)}
+                      active={openFitness ? true : false}
                       variant="outline-danger"
                       style={{ color: "#FFE4E1" }}
                     >
@@ -89,7 +91,7 @@ const Home = () => {
             ) : (
               <div
                 role="alert"
-                className="mt-0 mx-5 py-4 alert alert-dark text-center rounded"
+                className="mt-0 mx-3 py-4 alert alert-dark text-center border border-danger rounded"
               >
                 <span style={{ fontSize: "20px", color: "orange" }}>
                   Features are locked if you're not logged in
