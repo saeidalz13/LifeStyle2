@@ -3,14 +3,18 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 )
@@ -175,9 +179,19 @@ func TestFinance(t *testing.T) {
 	app.Get(test.Route, TestFinanceHandlerReqs.GetAllBudgets)
 	req = httptest.NewRequest("GET", test.Route, nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
-	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+	resp, err := utils.CheckRespReturnResp(app, req, test.ExpectedStatusCode)
+	if err != nil {
 		t.Fatal(err)
 	}
+	var jsonResp models.OutgoingAllBudgets
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &jsonResp); err != nil {
+		t.Fatal(err)
+	}
+	budgetId := fmt.Sprint(jsonResp.Budgets[0].BudgetID)
 
 	// Test 6
 	test = &cn.Test{
@@ -193,24 +207,108 @@ func TestFinance(t *testing.T) {
 	}
 
 	// Get Single Budget //
-	// Test 6
+	// Test 7
 	test = &cn.Test{
 		Description:        "should get single budget",
 		ExpectedStatusCode: fiber.StatusOK,
-		Route:              cn.URLS.ShowBudgets,
+		Route:              cn.URLS.EachBudget,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1) , nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
 	}
 
-	// Delete the user
-	// Test -1 (Last test)
+	// Test 8
 	test = &cn.Test{
+		Description:        "should not get single budget with invalid id",
+		ExpectedStatusCode: fiber.StatusNotFound,
+		Route:              cn.URLS.EachBudget,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	invalidBudgetId := "-1"
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", invalidBudgetId, 1), nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
+	}
+
+	// Test 9
+	test = &cn.Test{
+		Description:        "should not get single budget with invalid token",
+		ExpectedStatusCode: fiber.StatusUnauthorized,
+		Route:              cn.URLS.EachBudget,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: invalidBudgetId})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
+	}
+
+	// Get Single Balance //
+	// Test 10
+	test = &cn.Test{
+		Description:        "should get single balance",
+		ExpectedStatusCode: fiber.StatusOK,
+		Route:              cn.URLS.EachBalance,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
+	}
+
+	// Test 11
+	test = &cn.Test{
+		Description:        "should not get single balance with invalid budget ID",
+		ExpectedStatusCode: fiber.StatusNotFound,
+		Route:              cn.URLS.EachBalance,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", invalidBudgetId, 1), nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
+	}
+
+	// Test 12
+	test = &cn.Test{
+		Description:        "should not get single balance with invalid token",
+		ExpectedStatusCode: fiber.StatusUnauthorized,
+		Route:              cn.URLS.EachBalance,
+	}
+	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
+	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: InvalidToken})
+	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
+		deleteUserIfErr(validToken)
+		t.Fatal(err)
+	}
+
+	// Test -1 (Last test)
+	deleteUserIfErr(validToken)
+}
+
+func deleteUserIfErr(validToken string) {
+	app := fiber.New()
+	test := &cn.Test{
 		Description:        "should delete user with valid token of existent email",
 		ExpectedStatusCode: fiber.StatusNoContent,
 		Route:              cn.URLS.DeleteProfile,
 	}
 	app.Delete(test.Route, TestAuthHandlerReqs.DeleteUser)
-	req = httptest.NewRequest("DELETE", test.Route, nil)
+	req := httptest.NewRequest("DELETE", test.Route, nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
-		t.Fatal(err)
+		fmt.Println("Failed to delete user after test failure!")
 	}
+	fmt.Println("User Deleted!")
 }

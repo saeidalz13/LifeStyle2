@@ -2,7 +2,6 @@ package models
 
 import sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 
-
 type User struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -15,6 +14,11 @@ type JsonRes struct {
 type IncomingPlan struct {
 	PlanName string `json:"plan_name"`
 	Days     int32  `json:"days"`
+}
+
+type OutgoingAllBudgets struct {
+	Budgets    []sqlc.SelectAllBudgetsRow `json:"budgets"`
+	NumBudgets int64 `json:"num_budgets"`
 }
 
 type IncomingMove struct {

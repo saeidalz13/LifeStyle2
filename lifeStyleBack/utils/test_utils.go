@@ -14,9 +14,20 @@ func CheckResp(app *fiber.App, req *http.Request, expectedStatusCode int) error 
 		return err
 	}
 	if resp.StatusCode != expectedStatusCode {
-		return fmt.Errorf("Expected status %d, but got %d", fiber.StatusUnauthorized, resp.StatusCode)
+		return fmt.Errorf("Expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
 	}
 	return nil
+}
+
+func CheckRespReturnResp(app *fiber.App, req *http.Request, expectedStatusCode int) (*http.Response, error) {
+	resp, err := app.Test(req, cn.TEST_REQUEST_TIMEOUT_MS)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != expectedStatusCode {
+		return nil, fmt.Errorf("Expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
+	}
+	return resp, nil
 }
 
 func TestFails(app *fiber.App, req *http.Request) bool {
@@ -29,4 +40,3 @@ func TestFails(app *fiber.App, req *http.Request) bool {
 	}
 	return false
 }
-

@@ -10,6 +10,14 @@ var DefaultTokenErrors = TokenErrors{
 	Expired: "Token has expired!",
 }
 
+type SqlErrorsStruct struct {
+	NoRows string
+}
+
+var SqlErrs = &SqlErrorsStruct{
+	NoRows: "sql: no rows in result set",
+}
+
 type ErrsFitFinStruct struct {
 	DevStage          string
 	PostgresConn      string

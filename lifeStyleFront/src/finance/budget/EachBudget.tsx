@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import { Budget, Balance } from "../../assets/FinanceInterfaces";
 import BackBudgets from "../../misc/BackBudgets";
+import { ApiRes } from "../../assets/GeneralInterfaces";
 
 const EachBudget = () => {
   const mounted = useRef(true);
@@ -48,12 +49,25 @@ const EachBudget = () => {
             return null;
           }
 
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          } else {
-            console.log("Failed to fetch the budget data");
+          if (result.status === StatusCodes.NotFound) {
+            const data = (await result.json()) as ApiRes;
+            console.log(data.message);
             return null;
           }
+
+          if (result.status === StatusCodes.InternalServerError) {
+            alert(
+              "Something went wrong on server side! Please try again later"
+            );
+            return null;
+          }
+
+          if (result.status === StatusCodes.Ok) {
+            return await result.json();
+          }
+
+          console.log("Failed to fetch the budget data");
+          return null;
         } catch (error) {
           console.log(error);
           return null;
@@ -75,12 +89,20 @@ const EachBudget = () => {
             return null;
           }
 
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          } else {
-            console.log("Failed to fetch the balance data");
+          if (result.status === StatusCodes.NotFound) {
             return null;
           }
+
+          if (result.status === StatusCodes.InternalServerError) {
+            return null;
+          }
+
+          if (result.status === StatusCodes.Ok) {
+            return await result.json();
+          }
+
+          console.log("Failed to fetch the balance data");
+          return null;
         } catch (error) {
           console.log(error);
           return null;
@@ -137,7 +159,7 @@ const EachBudget = () => {
 
   return (
     <>
-    <BackBudgets />
+      <BackBudgets />
       {/* <div className="text-center mt-3">
         <NavLink to={`/finance/show-all-budgets`}>
           <Button variant="outline-secondary" className="all-budget-choices">

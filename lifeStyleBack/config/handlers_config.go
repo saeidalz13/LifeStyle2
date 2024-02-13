@@ -31,9 +31,7 @@ type ResTypesStruct struct {
 	Err     string
 }
 
-type SqlErrorsStruct struct {
-	ErrNoRows string
-}
+
 
 type OAuthResp struct {
 	Email         string `json:"email"`
@@ -42,9 +40,7 @@ type OAuthResp struct {
 	VerifiedEmail bool   `json:"verified_email"`
 }
 
-var SqlErrors = &SqlErrorsStruct{
-	ErrNoRows: "sql: no rows in result set",
-}
+
 
 var ResTypes = &ResTypesStruct{
 	Success: "success",

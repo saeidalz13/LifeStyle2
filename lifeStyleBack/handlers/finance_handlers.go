@@ -49,9 +49,14 @@ func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Could not find the number of budgets!"})
 	}
+	allBudgets := &models.OutgoingAllBudgets{
+		Budgets:    budgets,
+		NumBudgets: numBudgets,
+	}
 
 	log.Println("Budgets were found. Sending to front end...")
-	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"budgets": budgets, "num_budgets": numBudgets})
+	return ftx.Status(fiber.StatusOK).JSON(allBudgets)
+
 }
 
 func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
@@ -77,7 +82,10 @@ func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
 	}
 	budget, err := q.SelectSingleBudget(ctx, singleBudget)
 	if err != nil {
-		log.Println(err)
+		if err.Error() == cn.SqlErrs.NoRows {
+			return ftx.Status(fiber.StatusNotFound).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: err.Error()})
+		}
+		log.Println("Error fetching single budget", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch budget from database"})
 	}
 
@@ -103,8 +111,8 @@ func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
 
 	balance, err := q.SelectBalance(ctx, sqlc.SelectBalanceParams{UserID: user.ID, BudgetID: int64(budgetId)})
 	if err != nil {
-		if err.Error() == cn.SqlErrors.ErrNoRows {
-			return ftx.Status(fiber.StatusNoContent).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the budget ID"})
+		if err.Error() == cn.SqlErrs.NoRows {
+			return ftx.Status(fiber.StatusNotFound).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "No balance is available with this budget ID"})
 		}
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the balance!"})
 	}
