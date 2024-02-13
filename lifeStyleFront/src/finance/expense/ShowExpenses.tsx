@@ -46,11 +46,13 @@ const ShowExpenses = () => {
   const [totalEntertRows, setTotalEntertRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleNextPage = () => {
+  const handleNextPage = () => { 
+    mountedExpenses.current = true;
     setCurrentPage((prevPage) => prevPage + 1);
   };
 
   const handlePrevPage = () => {
+    mountedExpenses.current = true;
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
