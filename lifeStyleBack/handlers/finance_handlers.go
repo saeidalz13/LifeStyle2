@@ -143,7 +143,9 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 	if budgetID == -1 {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
-	searchString = "%" + strings.TrimSpace(searchString) + "%"
+	// Normalize the search term 
+	utils.NormalizeInput(&searchString)
+	searchString = "%" + searchString + "%"
 	log.Println("Search term for postgres:", searchString)
 
 	limitQry := ftx.Query("limit", "10")
@@ -163,9 +165,9 @@ func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
 
 	var wg sync.WaitGroup
 	wg.Add(6)
-	var capitalExpenses []sqlc.CapitalExpense
-	var eatoutExpenses []sqlc.EatoutExpense
-	var entertainmentExpenses []sqlc.EntertainmentExpense
+	var capitalExpenses []sqlc.FetchAllCapitalExpensesRow
+	var eatoutExpenses []sqlc.FetchAllEatoutExpensesRow
+	var entertainmentExpenses []sqlc.FetchAllEntertainmentExpensesRow
 	var capitalRowsCount, eatoutRowscount, entertRowscount int64 = -1, -1, -1
 	var totalCapital, totalEatout, totalEnter string = "NA", "NA", "NA"
 
@@ -246,6 +248,9 @@ func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
 	if err := ftx.BodyParser(&newExpense); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
+
+	// Trim and lower case description
+	utils.NormalizeInput(&newExpense.ExpenseDesc)
 
 	q2 := sqlc.NewQWithTx(f.Db)
 	updatedBalance, err := q2.AddExpenseUpdateBalance(ctx, sqlc.AddExpenseUpdateBalanceTx{
