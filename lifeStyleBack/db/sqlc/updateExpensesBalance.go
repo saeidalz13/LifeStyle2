@@ -3,9 +3,14 @@ package db
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
+
+func normalizeInput(input *string) {
+	*input = strings.ToLower(strings.TrimSpace(*input))
+}
 
 type IncomingUpdateExpenses struct {
 	Expenses    string `json:"expenses"`
@@ -57,6 +62,7 @@ func (qw *QWithTx) UpdateExpensesBalanceEntertainment(ctx context.Context, arg *
 			return err
 		}
 
+		normalizeInput(&arg.Description)
 		updatedExpense, err := q.UpdateEntertainmentExpenses(ctx, UpdateEntertainmentExpensesParams{
 			Expenses:           arg.Expenses,
 			Description:        arg.Description,
@@ -116,6 +122,7 @@ func (qw *QWithTx) UpdateExpensesBalanceCapital(ctx context.Context, arg *Expens
 			return err
 		}
 
+		normalizeInput(&arg.Description)
 		updatedExpense, err := q.UpdateCapitalExpenses(ctx, UpdateCapitalExpensesParams{
 			Expenses:     arg.Expenses,
 			Description:  arg.Description,
@@ -175,6 +182,7 @@ func (qw *QWithTx) UpdateExpensesBalanceEatout(ctx context.Context, arg *Expense
 			return err
 		}
 
+		normalizeInput(&arg.Description)
 		updatedExpense, err := q.UpdateEatoutExpenses(ctx, UpdateEatoutExpensesParams{
 			Expenses:    arg.Expenses,
 			Description: arg.Description,
@@ -185,7 +193,6 @@ func (qw *QWithTx) UpdateExpensesBalanceEatout(ctx context.Context, arg *Expense
 		if err != nil {
 			return err
 		}
-
 
 		oldEatout, err := q.SelectEatoutBalance(ctx, SelectEatoutBalanceParams{
 			UserID:   arg.UserId,

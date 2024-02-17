@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const countCapitalRows = `-- name: CountCapitalRows :one
@@ -14,17 +15,17 @@ SELECT COUNT(*)
 FROM capital_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND description LIKE $3
 `
 
 type CountCapitalRowsParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
 }
 
 func (q *Queries) CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countCapitalRows, arg.UserID, arg.BudgetID, arg.Lower)
+	row := q.db.QueryRowContext(ctx, countCapitalRows, arg.UserID, arg.BudgetID, arg.Description)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -35,17 +36,17 @@ SELECT COUNT(*)
 FROM eatout_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND description LIKE $3
 `
 
 type CountEatoutRowsParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
 }
 
 func (q *Queries) CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEatoutRows, arg.UserID, arg.BudgetID, arg.Lower)
+	row := q.db.QueryRowContext(ctx, countEatoutRows, arg.UserID, arg.BudgetID, arg.Description)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -56,45 +57,52 @@ SELECT COUNT(*)
 FROM entertainment_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND description LIKE $3
 `
 
 type CountEntertainmentRowsParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
 }
 
 func (q *Queries) CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEntertainmentRows, arg.UserID, arg.BudgetID, arg.Lower)
+	row := q.db.QueryRowContext(ctx, countEntertainmentRows, arg.UserID, arg.BudgetID, arg.Description)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const fetchAllCapitalExpenses = `-- name: FetchAllCapitalExpenses :many
-SELECT capital_exp_id, budget_id, user_id, expenses, description, created_at
+SELECT capital_exp_id, expenses, description, created_at
 FROM capital_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND description LIKE $3
 ORDER by created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllCapitalExpensesParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+	Limit       int32  `json:"limit"`
+	Offset      int32  `json:"offset"`
 }
 
-func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error) {
+type FetchAllCapitalExpensesRow struct {
+	CapitalExpID int64        `json:"capital_exp_id"`
+	Expenses     string       `json:"expenses"`
+	Description  string       `json:"description"`
+	CreatedAt    sql.NullTime `json:"created_at"`
+}
+
+func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]FetchAllCapitalExpensesRow, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllCapitalExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Lower,
+		arg.Description,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -102,13 +110,11 @@ func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapit
 		return nil, err
 	}
 	defer rows.Close()
-	items := []CapitalExpense{}
+	items := []FetchAllCapitalExpensesRow{}
 	for rows.Next() {
-		var i CapitalExpense
+		var i FetchAllCapitalExpensesRow
 		if err := rows.Scan(
 			&i.CapitalExpID,
-			&i.BudgetID,
-			&i.UserID,
 			&i.Expenses,
 			&i.Description,
 			&i.CreatedAt,
@@ -127,28 +133,38 @@ func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapit
 }
 
 const fetchAllEatoutExpenses = `-- name: FetchAllEatoutExpenses :many
-SELECT eatout_exp_id, budget_id, user_id, expenses, description, created_at
+SELECT eatout_exp_id, expenses, description, created_at
 FROM eatout_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND (
+        $3 = '%%' OR
+        description LIKE $3
+    )
 ORDER by created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllEatoutExpensesParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	UserID   int64       `json:"user_id"`
+	BudgetID int64       `json:"budget_id"`
+	Column3  interface{} `json:"column_3"`
+	Limit    int32       `json:"limit"`
+	Offset   int32       `json:"offset"`
 }
 
-func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error) {
+type FetchAllEatoutExpensesRow struct {
+	EatoutExpID int64        `json:"eatout_exp_id"`
+	Expenses    string       `json:"expenses"`
+	Description string       `json:"description"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+}
+
+func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]FetchAllEatoutExpensesRow, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllEatoutExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Lower,
+		arg.Column3,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -156,13 +172,11 @@ func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatout
 		return nil, err
 	}
 	defer rows.Close()
-	items := []EatoutExpense{}
+	items := []FetchAllEatoutExpensesRow{}
 	for rows.Next() {
-		var i EatoutExpense
+		var i FetchAllEatoutExpensesRow
 		if err := rows.Scan(
 			&i.EatoutExpID,
-			&i.BudgetID,
-			&i.UserID,
 			&i.Expenses,
 			&i.Description,
 			&i.CreatedAt,
@@ -181,28 +195,35 @@ func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatout
 }
 
 const fetchAllEntertainmentExpenses = `-- name: FetchAllEntertainmentExpenses :many
-SELECT entertainment_exp_id, budget_id, user_id, expenses, description, created_at
+SELECT entertainment_exp_id, expenses, description, created_at
 FROM entertainment_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND LOWER(description) LIKE LOWER($3)
+    AND description LIKE $3
 ORDER by created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllEntertainmentExpensesParams struct {
-	UserID   int64  `json:"user_id"`
-	BudgetID int64  `json:"budget_id"`
-	Lower    string `json:"lower"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+	Limit       int32  `json:"limit"`
+	Offset      int32  `json:"offset"`
 }
 
-func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error) {
+type FetchAllEntertainmentExpensesRow struct {
+	EntertainmentExpID int64        `json:"entertainment_exp_id"`
+	Expenses           string       `json:"expenses"`
+	Description        string       `json:"description"`
+	CreatedAt          sql.NullTime `json:"created_at"`
+}
+
+func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]FetchAllEntertainmentExpensesRow, error) {
 	rows, err := q.db.QueryContext(ctx, fetchAllEntertainmentExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Lower,
+		arg.Description,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -210,13 +231,11 @@ func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAl
 		return nil, err
 	}
 	defer rows.Close()
-	items := []EntertainmentExpense{}
+	items := []FetchAllEntertainmentExpensesRow{}
 	for rows.Next() {
-		var i EntertainmentExpense
+		var i FetchAllEntertainmentExpensesRow
 		if err := rows.Scan(
 			&i.EntertainmentExpID,
-			&i.BudgetID,
-			&i.UserID,
 			&i.Expenses,
 			&i.Description,
 			&i.CreatedAt,

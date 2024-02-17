@@ -37,9 +37,9 @@ type Querier interface {
 	DeleteSingleEntertainmentExpense(ctx context.Context, arg DeleteSingleEntertainmentExpenseParams) (DeleteSingleEntertainmentExpenseRow, error)
 	DeleteUser(ctx context.Context, email string) error
 	DeleteWeekPlanRecords(ctx context.Context, arg DeleteWeekPlanRecordsParams) error
-	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]CapitalExpense, error)
-	FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]EatoutExpense, error)
-	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]EntertainmentExpense, error)
+	FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapitalExpensesParams) ([]FetchAllCapitalExpensesRow, error)
+	FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatoutExpensesParams) ([]FetchAllEatoutExpensesRow, error)
+	FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAllEntertainmentExpensesParams) ([]FetchAllEntertainmentExpensesRow, error)
 	FetchFitnessDayPlanMoves(ctx context.Context, arg FetchFitnessDayPlanMovesParams) ([]DayPlanMove, error)
 	FetchFitnessDayPlans(ctx context.Context, arg FetchFitnessDayPlansParams) ([]DayPlan, error)
 	FetchFitnessPlans(ctx context.Context, userID int64) ([]FetchFitnessPlansRow, error)
