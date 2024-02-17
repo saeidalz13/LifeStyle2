@@ -27,8 +27,8 @@ export interface Balance {
 
 export type TSingleCapital = {
   capital_exp_id: number;
-  budget_id: number;
-  user_id: number;
+  // budget_id: number;
+  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
@@ -41,8 +41,8 @@ export type TCapitalExpenses = Array<TSingleCapital>;
 
 export type TSingleEatout = {
   eatout_exp_id: number;
-  budget_id: number;
-  user_id: number;
+  // budget_id: number;
+  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
@@ -55,8 +55,8 @@ export type TEatoutExpenses = Array<TSingleEatout>;
 
 export type TSingleEntertaintment = {
   entertainment_exp_id: number;
-  budget_id: number;
-  user_id: number;
+  // budget_id: number;
+  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
