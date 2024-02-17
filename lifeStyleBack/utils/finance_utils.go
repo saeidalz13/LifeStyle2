@@ -16,18 +16,18 @@ func ConcurrentCapExpenses(
 	budgetID int64,
 	limit int32,
 	offset int32,
-	capitalExpenses *[]sqlc.CapitalExpense,
+	capitalExpenses *[]sqlc.FetchAllCapitalExpensesRow,
 	capitalRowsCount *int64,
 	searchString string,
 ) {
 	defer wg.Done()
 	var err error
 	*capitalExpenses, err = q.FetchAllCapitalExpenses(ctx, sqlc.FetchAllCapitalExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Limit:    limit,
-		Offset:   offset,
-		Lower:    searchString,
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Limit:       limit,
+		Offset:      offset,
+		Column3: searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -35,15 +35,14 @@ func ConcurrentCapExpenses(
 	}
 
 	*capitalRowsCount, err = q.CountCapitalRows(ctx, sqlc.CountCapitalRowsParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Column3: searchString,
 	})
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	return
 }
 
 func ConcurrentEatExpenses(
@@ -54,7 +53,7 @@ func ConcurrentEatExpenses(
 	budgetID int64,
 	limit int32,
 	offset int32,
-	eatoutExpenses *[]sqlc.EatoutExpense,
+	eatoutExpenses *[]sqlc.FetchAllEatoutExpensesRow,
 	eatoutRowscount *int64,
 	searchString string,
 ) {
@@ -65,22 +64,21 @@ func ConcurrentEatExpenses(
 		BudgetID: budgetID,
 		Limit:    limit,
 		Offset:   offset,
-		Lower:    searchString,
+		Column3:  searchString,
 	})
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	*eatoutRowscount, err = q.CountEatoutRows(ctx, sqlc.CountEatoutRowsParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Column3: searchString,
 	})
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	return
 }
 
 func ConcurrentEnterExpenses(
@@ -91,18 +89,18 @@ func ConcurrentEnterExpenses(
 	budgetID int64,
 	limit int32,
 	offset int32,
-	entertainmentExpenses *[]sqlc.EntertainmentExpense,
+	entertainmentExpenses *[]sqlc.FetchAllEntertainmentExpensesRow,
 	entertRowscount *int64,
 	searchString string,
 ) {
 	defer wg.Done()
 	var err error
 	*entertainmentExpenses, err = q.FetchAllEntertainmentExpenses(ctx, sqlc.FetchAllEntertainmentExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Limit:    limit,
-		Offset:   offset,
-		Lower:    searchString,
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Limit:       limit,
+		Offset:      offset,
+		Column3: searchString,
 	})
 	if err != nil {
 		log.Println(err)
@@ -110,15 +108,14 @@ func ConcurrentEnterExpenses(
 	}
 
 	*entertRowscount, err = q.CountEntertainmentRows(ctx, sqlc.CountEntertainmentRowsParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Column3: searchString,
 	})
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	return
 }
 
 func ConcurrentTotalCapital(
@@ -141,7 +138,6 @@ func ConcurrentTotalCapital(
 		log.Println(err)
 		return
 	}
-	return
 }
 
 func ConcurrentTotalEatout(
@@ -165,7 +161,6 @@ func ConcurrentTotalEatout(
 		log.Println(err)
 		return
 	}
-	return
 }
 
 func ConcurrentTotalEnter(
@@ -189,5 +184,4 @@ func ConcurrentTotalEnter(
 		log.Println(err)
 		return
 	}
-	return
 }
