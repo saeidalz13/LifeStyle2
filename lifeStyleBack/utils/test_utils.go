@@ -14,7 +14,7 @@ func CheckResp(app *fiber.App, req *http.Request, expectedStatusCode int) error 
 		return err
 	}
 	if resp.StatusCode != expectedStatusCode {
-		return fmt.Errorf("Expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
+		return fmt.Errorf("expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
 	}
 	return nil
 }
@@ -25,7 +25,7 @@ func CheckRespReturnResp(app *fiber.App, req *http.Request, expectedStatusCode i
 		return nil, err
 	}
 	if resp.StatusCode != expectedStatusCode {
-		return nil, fmt.Errorf("Expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
+		return nil, fmt.Errorf("expected status %d, but got %d", expectedStatusCode, resp.StatusCode)
 	}
 	return resp, nil
 }
