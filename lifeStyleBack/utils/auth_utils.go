@@ -79,14 +79,14 @@ func ValidateEmail(email string) error {
 		return err
 	}
 	if !regex.MatchString(email) {
-		return fmt.Errorf("User-provided email does NOT have proper email format")
+		return fmt.Errorf("user-provided email does NOT have proper email format")
 	}
 	return nil
 }
 
 func ValidatePassword(password string) error {
 	if len(password) < cn.PASSWORD_MIN_LEN {
-		return fmt.Errorf("Password must be a minimum of %d characters", cn.PASSWORD_MIN_LEN)
+		return fmt.Errorf("password must be a minimum of %d characters", cn.PASSWORD_MIN_LEN)
 	}
 
 	uppercaseRegex, err := regexp.Compile(`[A-Z]`)
@@ -100,7 +100,7 @@ func ValidatePassword(password string) error {
 	}
 
 	if !uppercaseRegex.MatchString(password) || !digitRegex.MatchString(password) {
-		return fmt.Errorf("Password must contain at least one uppercase letter and one digit")
+		return fmt.Errorf("password must contain at least one uppercase letter and one digit")
 	}
 
 	return nil
