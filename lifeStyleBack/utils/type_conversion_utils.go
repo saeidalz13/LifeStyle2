@@ -4,9 +4,9 @@ import (
 	"strconv"
 )
 
-func ConvertStringToInt64(strArr []string) ([]int64, error) {
+func ConvertStringToInt64(strs ...string) ([]int64, error) {
 	var convertedInts []int64
-	for _, str := range strArr {
+	for _, str := range strs {
 		eachInt, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, err
@@ -15,6 +15,7 @@ func ConvertStringToInt64(strArr []string) ([]int64, error) {
 	}
 	return convertedInts, nil
 }
+
 
 // func ConvertToDate(rawStartDate string, rawEndDate string) (time.Time, time.Time, error) {
 // 	startDate, err := time.Parse("2006-01-02", rawStartDate)

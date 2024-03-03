@@ -29,11 +29,6 @@ type IncomingMove struct {
 	Move string `json:"move"`
 }
 
-type IncomingAllExpenses struct {
-	BudgetId     int64  `json:"budget_id"`
-	SearchString string `json:"search_string"`
-}
-
 type IncomingEditPlan struct {
 	PlanID int64          `json:"plan_id"`
 	Day    int32          `json:"day"`
@@ -90,16 +85,31 @@ type ExpenseReq struct {
 }
 
 type AllExpensesRes struct {
-	BudgetName             string                                  `json:"budget_name"`
-	CapitalExpenses        []sqlc.FetchAllCapitalExpensesRow       `json:"capitalExpenses"`
-	EatoutExpenses         []sqlc.FetchAllEatoutExpensesRow        `json:"eatoutExpenses"`
-	EntertainmentExpenses  []sqlc.FetchAllEntertainmentExpensesRow `json:"entertainmentExpenses"`
-	CapitalRowsCount       int64                                   `json:"capital_rows_count"`
-	EatoutRowsCount        int64                                   `json:"eatout_rows_count"`
-	EntertainmentRowsCount int64                                   `json:"entertainment_rows_count"`
-	TotalCapital           string                                  `json:"total_capital"`
-	TotalEatout            string                                  `json:"total_eatout"`
-	TotalEnter             string                                  `json:"total_entertainment"`
+	// BudgetName                 string                                  `json:"budget_name"`
+	CapitalExpenses            []sqlc.FetchAllCapitalExpensesRow       `json:"capitalExpenses"`
+	CapitalTotalRowCount       sqlc.FetchTotalRowCountCapitalRow       `json:"total_row_count_capital"`
+	EatoutExpenses             []sqlc.FetchAllEatoutExpensesRow        `json:"eatoutExpenses"`
+	EatoutTotalRowCount        sqlc.FetchTotalRowCountEatoutRow        `json:"total_row_count_eatout"`
+	EntertainmentExpenses      []sqlc.FetchAllEntertainmentExpensesRow `json:"entertainmentExpenses"`
+	EntertainmentTotalRowCount sqlc.FetchTotalRowCountEntertainmentRow `json:"total_row_count_entertainment"`
+}
+
+type CapitalExpensesResponse struct {
+	ExpenseType          string                            `json:"expense_type"`
+	CapitalExpenses      []sqlc.FetchAllCapitalExpensesRow `json:"capital_expenses"`
+	CapitalTotalRowCount sqlc.FetchTotalRowCountCapitalRow `json:"total_row_count_capital"`
+}
+
+type EatoutExpensesResponse struct {
+	ExpenseType         string                           `json:"expense_type"`
+	EatoutExpenses      []sqlc.FetchAllEatoutExpensesRow `json:"eatout_expenses"`
+	EatoutTotalRowCount sqlc.FetchTotalRowCountEatoutRow `json:"total_row_count_eatout"`
+}
+
+type EntertainmentExpensesResponse struct {
+	ExpenseType                string                                  `json:"expense_type"`
+	EntertainmentExpenses      []sqlc.FetchAllEntertainmentExpensesRow `json:"entertainment_expenses"`
+	EntertainmentTotalRowCount sqlc.FetchTotalRowCountEntertainmentRow `json:"total_row_count_entertainment"`
 }
 
 type FetchedCapitalExpenses struct {

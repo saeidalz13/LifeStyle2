@@ -10,100 +10,26 @@ import (
 	"database/sql"
 )
 
-const countCapitalRows = `-- name: CountCapitalRows :one
-SELECT COUNT(*)
-FROM capital_expenses
-WHERE user_id = $1
-    AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
-`
-
-type CountCapitalRowsParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-}
-
-func (q *Queries) CountCapitalRows(ctx context.Context, arg CountCapitalRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countCapitalRows, arg.UserID, arg.BudgetID, arg.Column3)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countEatoutRows = `-- name: CountEatoutRows :one
-SELECT COUNT(*)
-FROM eatout_expenses
-WHERE user_id = $1
-    AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
-`
-
-type CountEatoutRowsParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-}
-
-func (q *Queries) CountEatoutRows(ctx context.Context, arg CountEatoutRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEatoutRows, arg.UserID, arg.BudgetID, arg.Column3)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countEntertainmentRows = `-- name: CountEntertainmentRows :one
-SELECT COUNT(*)
-FROM entertainment_expenses
-WHERE user_id = $1
-    AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
-`
-
-type CountEntertainmentRowsParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-}
-
-func (q *Queries) CountEntertainmentRows(ctx context.Context, arg CountEntertainmentRowsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEntertainmentRows, arg.UserID, arg.BudgetID, arg.Column3)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const fetchAllCapitalExpenses = `-- name: FetchAllCapitalExpenses :many
-SELECT capital_exp_id,
+SELECT 
+    capital_exp_id,
     expenses,
     description,
     created_at
 FROM capital_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
-ORDER by created_at DESC
+    AND description LIKE $3
+ORDER BY created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllCapitalExpensesParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-	Limit    int32       `json:"limit"`
-	Offset   int32       `json:"offset"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+	Limit       int32  `json:"limit"`
+	Offset      int32  `json:"offset"`
 }
 
 type FetchAllCapitalExpensesRow struct {
@@ -117,7 +43,7 @@ func (q *Queries) FetchAllCapitalExpenses(ctx context.Context, arg FetchAllCapit
 	rows, err := q.db.QueryContext(ctx, fetchAllCapitalExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Column3,
+		arg.Description,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -155,20 +81,17 @@ SELECT eatout_exp_id,
 FROM eatout_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
+    AND description LIKE $3
 ORDER by created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllEatoutExpensesParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-	Limit    int32       `json:"limit"`
-	Offset   int32       `json:"offset"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+	Limit       int32  `json:"limit"`
+	Offset      int32  `json:"offset"`
 }
 
 type FetchAllEatoutExpensesRow struct {
@@ -182,7 +105,7 @@ func (q *Queries) FetchAllEatoutExpenses(ctx context.Context, arg FetchAllEatout
 	rows, err := q.db.QueryContext(ctx, fetchAllEatoutExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Column3,
+		arg.Description,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -220,20 +143,17 @@ SELECT entertainment_exp_id,
 FROM entertainment_expenses
 WHERE user_id = $1
     AND budget_id = $2
-    AND (
-        $3 = '%%'
-        OR description LIKE $3
-    )
+    AND description LIKE $3
 ORDER by created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type FetchAllEntertainmentExpensesParams struct {
-	UserID   int64       `json:"user_id"`
-	BudgetID int64       `json:"budget_id"`
-	Column3  interface{} `json:"column_3"`
-	Limit    int32       `json:"limit"`
-	Offset   int32       `json:"offset"`
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+	Limit       int32  `json:"limit"`
+	Offset      int32  `json:"offset"`
 }
 
 type FetchAllEntertainmentExpensesRow struct {
@@ -247,7 +167,7 @@ func (q *Queries) FetchAllEntertainmentExpenses(ctx context.Context, arg FetchAl
 	rows, err := q.db.QueryContext(ctx, fetchAllEntertainmentExpenses,
 		arg.UserID,
 		arg.BudgetID,
-		arg.Column3,
+		arg.Description,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -334,5 +254,89 @@ func (q *Queries) FetchSingleEntertainmentExpense(ctx context.Context, entertain
 		&i.Description,
 		&i.CreatedAt,
 	)
+	return i, err
+}
+
+const fetchTotalRowCountCapital = `-- name: FetchTotalRowCountCapital :one
+SELECT
+    COUNT(*) AS row_count,
+    CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
+FROM capital_expenses
+WHERE user_id = $1
+  AND budget_id = $2
+  AND description LIKE $3
+`
+
+type FetchTotalRowCountCapitalParams struct {
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+}
+
+type FetchTotalRowCountCapitalRow struct {
+	RowCount int64  `json:"row_count"`
+	Total    string `json:"total"`
+}
+
+func (q *Queries) FetchTotalRowCountCapital(ctx context.Context, arg FetchTotalRowCountCapitalParams) (FetchTotalRowCountCapitalRow, error) {
+	row := q.db.QueryRowContext(ctx, fetchTotalRowCountCapital, arg.UserID, arg.BudgetID, arg.Description)
+	var i FetchTotalRowCountCapitalRow
+	err := row.Scan(&i.RowCount, &i.Total)
+	return i, err
+}
+
+const fetchTotalRowCountEatout = `-- name: FetchTotalRowCountEatout :one
+SELECT
+    COUNT(*) AS row_count,
+    CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
+FROM eatout_expenses
+WHERE user_id = $1
+  AND budget_id = $2
+  AND description LIKE $3
+`
+
+type FetchTotalRowCountEatoutParams struct {
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+}
+
+type FetchTotalRowCountEatoutRow struct {
+	RowCount int64  `json:"row_count"`
+	Total    string `json:"total"`
+}
+
+func (q *Queries) FetchTotalRowCountEatout(ctx context.Context, arg FetchTotalRowCountEatoutParams) (FetchTotalRowCountEatoutRow, error) {
+	row := q.db.QueryRowContext(ctx, fetchTotalRowCountEatout, arg.UserID, arg.BudgetID, arg.Description)
+	var i FetchTotalRowCountEatoutRow
+	err := row.Scan(&i.RowCount, &i.Total)
+	return i, err
+}
+
+const fetchTotalRowCountEntertainment = `-- name: FetchTotalRowCountEntertainment :one
+SELECT
+    COUNT(*) AS row_count,
+    CAST(COALESCE(CAST(SUM(expenses) AS DECIMAL(10,2)), 0) AS VARCHAR) AS total 
+FROM entertainment_expenses
+WHERE user_id = $1
+  AND budget_id = $2
+  AND description LIKE $3
+`
+
+type FetchTotalRowCountEntertainmentParams struct {
+	UserID      int64  `json:"user_id"`
+	BudgetID    int64  `json:"budget_id"`
+	Description string `json:"description"`
+}
+
+type FetchTotalRowCountEntertainmentRow struct {
+	RowCount int64  `json:"row_count"`
+	Total    string `json:"total"`
+}
+
+func (q *Queries) FetchTotalRowCountEntertainment(ctx context.Context, arg FetchTotalRowCountEntertainmentParams) (FetchTotalRowCountEntertainmentRow, error) {
+	row := q.db.QueryRowContext(ctx, fetchTotalRowCountEntertainment, arg.UserID, arg.BudgetID, arg.Description)
+	var i FetchTotalRowCountEntertainmentRow
+	err := row.Scan(&i.RowCount, &i.Total)
 	return i, err
 }

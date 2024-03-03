@@ -3,13 +3,13 @@ package utils
 import (
 	"context"
 	"log"
-	"sync"
 
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
+
 func ConcurrentCapExpenses(
-	wg *sync.WaitGroup,
+	// wg *sync.WaitGroup,
 	ctx context.Context,
 	q *sqlc.Queries,
 	userId int64,
@@ -17,36 +17,40 @@ func ConcurrentCapExpenses(
 	limit int32,
 	offset int32,
 	capitalExpenses *[]sqlc.FetchAllCapitalExpensesRow,
-	capitalRowsCount *int64,
+	capitalRowCountTotal *sqlc.FetchTotalRowCountCapitalRow,
 	searchString string,
+	done chan<- bool,
 ) {
-	defer wg.Done()
+	// defer wg.Done()
 	var err error
 	*capitalExpenses, err = q.FetchAllCapitalExpenses(ctx, sqlc.FetchAllCapitalExpensesParams{
 		UserID:      userId,
 		BudgetID:    budgetID,
 		Limit:       limit,
 		Offset:      offset,
-		Column3: searchString,
+		Description: searchString,
 	})
 	if err != nil {
 		log.Println(err)
+		done <- false
 		return
 	}
 
-	*capitalRowsCount, err = q.CountCapitalRows(ctx, sqlc.CountCapitalRowsParams{
+	*capitalRowCountTotal, err = q.FetchTotalRowCountCapital(ctx, sqlc.FetchTotalRowCountCapitalParams{
 		UserID:      userId,
 		BudgetID:    budgetID,
-		Column3: searchString,
+		Description: searchString,
 	})
 	if err != nil {
 		log.Println(err)
+		done <- false
 		return
 	}
+	done <- true
 }
 
 func ConcurrentEatExpenses(
-	wg *sync.WaitGroup,
+	// wg *sync.WaitGroup,
 	ctx context.Context,
 	q *sqlc.Queries,
 	userId int64,
@@ -54,35 +58,39 @@ func ConcurrentEatExpenses(
 	limit int32,
 	offset int32,
 	eatoutExpenses *[]sqlc.FetchAllEatoutExpensesRow,
-	eatoutRowscount *int64,
+	eatoutRowCountTotal *sqlc.FetchTotalRowCountEatoutRow,
 	searchString string,
+	done chan<- bool,
 ) {
-	defer wg.Done()
+	// defer wg.Done()
 	var err error
 	*eatoutExpenses, err = q.FetchAllEatoutExpenses(ctx, sqlc.FetchAllEatoutExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Limit:    limit,
-		Offset:   offset,
-		Column3:  searchString,
-	})
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	*eatoutRowscount, err = q.CountEatoutRows(ctx, sqlc.CountEatoutRowsParams{
 		UserID:      userId,
 		BudgetID:    budgetID,
-		Column3: searchString,
+		Limit:       limit,
+		Offset:      offset,
+		Description: searchString,
 	})
 	if err != nil {
 		log.Println(err)
+		done <- false
 		return
 	}
+	*eatoutRowCountTotal, err = q.FetchTotalRowCountEatout(ctx, sqlc.FetchTotalRowCountEatoutParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Description: searchString,
+	})
+	if err != nil {
+		log.Println(err)
+		done <- false
+		return
+	}
+	done <- true
 }
 
 func ConcurrentEnterExpenses(
-	wg *sync.WaitGroup,
+	// wg *sync.WaitGroup,
 	ctx context.Context,
 	q *sqlc.Queries,
 	userId int64,
@@ -90,98 +98,45 @@ func ConcurrentEnterExpenses(
 	limit int32,
 	offset int32,
 	entertainmentExpenses *[]sqlc.FetchAllEntertainmentExpensesRow,
-	entertRowscount *int64,
+	entertainmentRowCountTotal *sqlc.FetchTotalRowCountEntertainmentRow,
 	searchString string,
+	done chan<- bool,
 ) {
-	defer wg.Done()
+	// defer wg.Done()
 	var err error
 	*entertainmentExpenses, err = q.FetchAllEntertainmentExpenses(ctx, sqlc.FetchAllEntertainmentExpensesParams{
 		UserID:      userId,
 		BudgetID:    budgetID,
 		Limit:       limit,
 		Offset:      offset,
-		Column3: searchString,
+		Description: searchString,
 	})
 	if err != nil {
 		log.Println(err)
+		done <- false
 		return
 	}
 
-	*entertRowscount, err = q.CountEntertainmentRows(ctx, sqlc.CountEntertainmentRowsParams{
+	*entertainmentRowCountTotal, err = q.FetchTotalRowCountEntertainment(ctx, sqlc.FetchTotalRowCountEntertainmentParams{
 		UserID:      userId,
 		BudgetID:    budgetID,
-		Column3: searchString,
+		Description: searchString,
 	})
 	if err != nil {
 		log.Println(err)
+		done <- false
 		return
 	}
+	done <- true
 }
 
-func ConcurrentTotalCapital(
-	wg *sync.WaitGroup,
-	ctx context.Context,
-	q *sqlc.Queries,
-	userId int64,
-	budgetID int64,
-	totalCapital *string,
-	searchString string,
-) {
-	defer wg.Done()
-	var err error
-	*totalCapital, err = q.SumCapitalExpenses(ctx, sqlc.SumCapitalExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
-	})
-	if err != nil {
-		log.Println(err)
-		return
+func PrepareSearchString(searchString string) string {
+	NormalizeInput(&searchString)
+	if searchString == "" {
+		searchString = "%"
+	} else {
+		searchString = "%" + searchString + "%"
 	}
-}
-
-func ConcurrentTotalEatout(
-	wg *sync.WaitGroup,
-	ctx context.Context,
-	q *sqlc.Queries,
-	userId int64,
-	budgetID int64,
-	totalEatout *string,
-	searchString string,
-
-) {
-	defer wg.Done()
-	var err error
-	*totalEatout, err = q.SumEatoutExpenses(ctx, sqlc.SumEatoutExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
-	})
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func ConcurrentTotalEnter(
-	wg *sync.WaitGroup,
-	ctx context.Context,
-	q *sqlc.Queries,
-	userId int64,
-	budgetID int64,
-	totalEnter *string,
-	searchString string,
-
-) {
-	defer wg.Done()
-	var err error
-	*totalEnter, err = q.SumEntertainmentExpenses(ctx, sqlc.SumEntertainmentExpensesParams{
-		UserID:   userId,
-		BudgetID: budgetID,
-		Lower:    searchString,
-	})
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	log.Println("Search term for postgres:", searchString)
+	return searchString
 }

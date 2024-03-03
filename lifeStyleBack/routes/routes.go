@@ -21,9 +21,11 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFin
 	app.Get(cn.URLS.Home, DefaultAuthHandlerReqs.GetHome)
 	app.Get(cn.URLS.Profile, DefaultAuthHandlerReqs.GetProfile)
 	app.Get(cn.URLS.SignOut, h.GetSignOut)
+
 	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetAllBudgets)
 	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBalance)
 	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBudget)
+
 	app.Get(cn.URLS.FetchSinglePlan, m.IsLoggedIn, h.GetSinglePlan)
 	app.Get(cn.URLS.AllPlans, m.IsLoggedIn, h.GetAllFitnessPlans)
 	app.Get(cn.URLS.AllDayPlans, m.IsLoggedIn, h.GetAllFitnessDayPlans)
@@ -37,7 +39,10 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFin
 	app.Post(cn.URLS.Login, DefaultAuthHandlerReqs.PostLogin)
 	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostNewBudget)
 	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostExpenses)
-	app.Post(cn.URLS.AllExpensesBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetAllExpenses)
+	app.Get(cn.URLS.CapitalExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetCapitalExpenses)
+	app.Get(cn.URLS.EatoutExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetEatoutExpenses)
+	app.Get(cn.URLS.EntertainmentExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetEntertainmentExpenses)
+
 	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.PostAddPlan)
 	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.PostEditPlan)
 	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, h.PostAddDayPlanMoves)

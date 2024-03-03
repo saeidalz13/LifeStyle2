@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
-	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
@@ -31,7 +31,7 @@ func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
 
 	limitQry := ftx.Query("limit", "2")
 	offsetQry := ftx.Query("offset", "0")
-	convertedInts, err := utils.ConvertStringToInt64([]string{limitQry, offsetQry})
+	convertedInts, err := utils.ConvertStringToInt64(limitQry, offsetQry)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
@@ -69,8 +69,8 @@ func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
 		log.Println(err)
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
-
-	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	budgetId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the budget ID"})
@@ -103,9 +103,10 @@ func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	budgetId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
-		log.Println(err)
+		log.Println("Conversion error:", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the budget ID"})
 	}
 
@@ -121,83 +122,186 @@ func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(balance)
 }
 
-func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
+// func (f *FinanceHandlerReqs) GetAllExpenses(ftx *fiber.Ctx) error {
+// 	q := sqlc.New(f.Db)
+// 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+// 	defer cancel()
+
+// 	user, err := utils.InitialNecessaryValidationsGetReqs(ftx, ctx, q)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+// 	}
+
+// 	allExpensesReq := &models.IncomingAllExpenses{}
+// 	allExpensesReq.BudgetId = -1
+// 	if err := ftx.BodyParser(&allExpensesReq); err != nil {
+// 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+// 	}
+// 	budgetID := allExpensesReq.BudgetId
+// 	searchString := allExpensesReq.SearchString
+// 	if budgetID == -1 {
+// 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+// 	}
+
+// 	searchString = utils.PrepareSearchString(searchString)
+
+// 	limitQry := ftx.Query("limit", "10")
+// 	offsetQry := ftx.Query("offset", "0")
+// 	convertedInts, err := utils.ConvertStringToInt64(limitQry, offsetQry)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
+// 	}
+// 	limit, offset := int32(convertedInts[0]), int32(convertedInts[1])
+
+// 	numConcurrentOps := 3
+// 	done := make(chan bool, numConcurrentOps)
+// 	var capitalExpenses []sqlc.FetchAllCapitalExpensesRow
+// 	var capitalRowCountTotal sqlc.FetchTotalRowCountCapitalRow
+
+// 	var eatoutExpenses []sqlc.FetchAllEatoutExpensesRow
+// 	var eatoutRowCountTotal sqlc.FetchTotalRowCountEatoutRow
+
+// 	var entertainmentExpenses []sqlc.FetchAllEntertainmentExpensesRow
+// 	var entertainmentRowCountTotal sqlc.FetchTotalRowCountEntertainmentRow
+
+// 	go utils.ConcurrentCapExpenses(ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowCountTotal, searchString, done)
+// 	go utils.ConcurrentEatExpenses(ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowCountTotal, searchString, done)
+// 	go utils.ConcurrentEnterExpenses(ctx, q, user.ID, budgetID, limit, offset, &entertainmentExpenses, &entertainmentRowCountTotal, searchString, done)
+// 	log.Printf("%#v\n", f.Db.Stats())
+
+// 	for i := range numConcurrentOps {
+// 		resp := <-done
+// 		if !resp {
+// 			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
+// 		}
+// 		if i == numConcurrentOps-1 {
+// 			log.Println("expenses data fetched successfully")
+// 		}
+// 	}
+
+// 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"allExpenses": &models.AllExpensesRes{
+// 		CapitalExpenses:            capitalExpenses,
+// 		CapitalTotalRowCount:       capitalRowCountTotal,
+// 		EatoutExpenses:             eatoutExpenses,
+// 		EatoutTotalRowCount:        eatoutRowCountTotal,
+// 		EntertainmentExpenses:      entertainmentExpenses,
+// 		EntertainmentTotalRowCount: entertainmentRowCountTotal,
+// 	}})
+// }
+
+func (f *FinanceHandlerReqs) GetCapitalExpenses(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
-	user, err := utils.InitialNecessaryValidationsGetReqs(ftx, ctx, q)
+	userId, budgetID, limit, offset, searchString, err := prepareInputArgsForGetExpenses(ctx, ftx, q)
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
-	}
-
-	allExpensesReq := &models.IncomingAllExpenses{}
-	allExpensesReq.BudgetId = -1
-
-	if err := ftx.BodyParser(&allExpensesReq); err != nil {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
-	budgetID := allExpensesReq.BudgetId
-	searchString := allExpensesReq.SearchString
-	if budgetID == -1 {
+
+	capitalExpenses, err := q.FetchAllCapitalExpenses(ctx, sqlc.FetchAllCapitalExpensesParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Limit:       limit,
+		Offset:      offset,
+		Description: searchString,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch capital expenses"})
+	}
+
+	capitalRowCountTotal, err := q.FetchTotalRowCountCapital(ctx, sqlc.FetchTotalRowCountCapitalParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Description: searchString,
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to row counts and total of capital"})
+	}
+
+	return ftx.Status(fiber.StatusOK).JSON(models.CapitalExpensesResponse{
+		ExpenseType:          "capital",
+		CapitalExpenses:      capitalExpenses,
+		CapitalTotalRowCount: capitalRowCountTotal,
+	})
+}
+
+func (f *FinanceHandlerReqs) GetEatoutExpenses(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+
+	userId, budgetID, limit, offset, searchString, err := prepareInputArgsForGetExpenses(ctx, ftx, q)
+	if err != nil {
+		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
-	// Normalize the search term 
-	utils.NormalizeInput(&searchString)
-	searchString = "%" + searchString + "%"
-	log.Println("Search term for postgres:", searchString)
 
-	limitQry := ftx.Query("limit", "10")
-	offsetQry := ftx.Query("offset", "0")
-	convertedInts, err := utils.ConvertStringToInt64([]string{limitQry, offsetQry})
+	eatoutExpenses, err := q.FetchAllEatoutExpenses(ctx, sqlc.FetchAllEatoutExpensesParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Limit:       limit,
+		Offset:      offset,
+		Description: searchString,
+	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch data"})
 	}
-	limit, offset := int32(convertedInts[0]), int32(convertedInts[1])
-
-	bugdet, err := q.SelectSingleBudget(ctx, sqlc.SelectSingleBudgetParams{BudgetID: budgetID, UserID: user.ID})
+	eatoutRowCountTotal, err := q.FetchTotalRowCountEatout(ctx, sqlc.FetchTotalRowCountEatoutParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Description: searchString,
+	})
 	if err != nil {
 		log.Println(err)
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch expenses"})
+	}
+	return ftx.Status(fiber.StatusOK).JSON(models.EatoutExpensesResponse{
+		ExpenseType:         "eatout",
+		EatoutExpenses:      eatoutExpenses,
+		EatoutTotalRowCount: eatoutRowCountTotal,
+	})
+}
+
+func (f *FinanceHandlerReqs) GetEntertainmentExpenses(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+
+	userId, budgetID, limit, offset, searchString, err := prepareInputArgsForGetExpenses(ctx, ftx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(6)
-	var capitalExpenses []sqlc.FetchAllCapitalExpensesRow
-	var eatoutExpenses []sqlc.FetchAllEatoutExpensesRow
-	var entertainmentExpenses []sqlc.FetchAllEntertainmentExpensesRow
-	var capitalRowsCount, eatoutRowscount, entertRowscount int64 = -1, -1, -1
-	var totalCapital, totalEatout, totalEnter string = "NA", "NA", "NA"
-
-	// Fetch the Total amounts for each expense type
-	go utils.ConcurrentTotalCapital(&wg, ctx, q, user.ID, budgetID, &totalCapital, searchString)
-	go utils.ConcurrentTotalEatout(&wg, ctx, q, user.ID, budgetID, &totalEatout, searchString)
-	go utils.ConcurrentTotalEnter(&wg, ctx, q, user.ID, budgetID, &totalEnter, searchString)
-
-	// Fetch all expenses for each expense type
-	go utils.ConcurrentCapExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &capitalExpenses, &capitalRowsCount, searchString)
-	go utils.ConcurrentEatExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &eatoutExpenses, &eatoutRowscount, searchString)
-	go utils.ConcurrentEnterExpenses(&wg, ctx, q, user.ID, budgetID, limit, offset, &entertainmentExpenses, &entertRowscount, searchString)
-	wg.Wait()
-
-	if capitalRowsCount == -1 || eatoutRowscount == -1 || entertRowscount == -1 {
-		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the expenses"})
+	entertainmentExpenses, err := q.FetchAllEntertainmentExpenses(ctx, sqlc.FetchAllEntertainmentExpensesParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Limit:       limit,
+		Offset:      offset,
+		Description: searchString,
+	})
+	if err != nil {
+		log.Println(err)
 	}
 
-	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"allExpenses": &models.AllExpensesRes{
-		BudgetName:             bugdet.BudgetName,
-		CapitalExpenses:        capitalExpenses,
-		EatoutExpenses:         eatoutExpenses,
-		EntertainmentExpenses:  entertainmentExpenses,
-		CapitalRowsCount:       capitalRowsCount,
-		EatoutRowsCount:        eatoutRowscount,
-		EntertainmentRowsCount: entertRowscount,
-		TotalCapital:           totalCapital,
-		TotalEatout:            totalEatout,
-		TotalEnter:             totalEnter,
-	}})
+	entertainmentRowCountTotal, err := q.FetchTotalRowCountEntertainment(ctx, sqlc.FetchTotalRowCountEntertainmentParams{
+		UserID:      userId,
+		BudgetID:    budgetID,
+		Description: searchString,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+	return ftx.Status(fiber.StatusOK).JSON(models.EntertainmentExpensesResponse{
+		ExpenseType:                "entertainment",
+		EntertainmentExpenses:      entertainmentExpenses,
+		EntertainmentTotalRowCount: entertainmentRowCountTotal,
+	})
 }
 
 func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
@@ -319,7 +423,8 @@ func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Budget ID
-	budgetId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	budgetId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -540,4 +645,32 @@ func (f *FinanceHandlerReqs) PatchEntertainmentExpenses(ftx *fiber.Ctx) error {
 	}
 
 	return ftx.SendStatus(fiber.StatusOK)
+}
+
+// HELPERS
+
+func prepareInputArgsForGetExpenses(ctx context.Context, ftx *fiber.Ctx, q *sqlc.Queries) (int64, int64, int32, int32, string, error) {
+	user, err := utils.InitialNecessaryValidationsGetReqs(ftx, ctx, q)
+	if err != nil {
+		return -1, -1, -1, -1, "", errors.New("failed to validate user")
+	}
+
+	idString := ftx.Params("id")
+	budgetId, err := utils.FetchIntOfParamId(idString)
+	if err != nil {
+		return -1, -1, -1, -1, "", errors.New("failed to fetch budget ID from url params")
+	}
+
+	limitQry := ftx.Query("limit", "10")
+	offsetQry := ftx.Query("offset", "0")
+	convertedInts, err := utils.ConvertStringToInt64(limitQry, offsetQry)
+
+	searchString := ftx.Query("search", "")
+	searchString = utils.PrepareSearchString(searchString)
+
+	if err != nil {
+		return -1, -1, -1, -1, "", errors.New("failed to fetch budget ID from req json body")
+	}
+	limit, offset := int32(convertedInts[0]), int32(convertedInts[1])
+	return user.ID, int64(budgetId), limit, offset, searchString, nil
 }

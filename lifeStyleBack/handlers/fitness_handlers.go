@@ -59,7 +59,8 @@ func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Plan ID
-	planId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	planId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println("GetAllFitnessDayPlans: FetchIntOfParamId section", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -96,7 +97,8 @@ func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Plan ID
-	planId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	planId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println("GetAllFitnessDayPlanMoves: FetchIntOfParamId section", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -143,7 +145,8 @@ func GetSinglePlan(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 	// Extract Plan ID
-	planId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	planId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -178,7 +181,8 @@ func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Day Plan ID
-	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	dayPlanId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -230,7 +234,8 @@ func GetPlanRecords(ftx *fiber.Ctx) error {
 	}
 
 	// Extract Day Plan ID
-	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	dayPlanId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -347,7 +352,8 @@ func PostAddDayPlanMoves(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	planId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	planId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -394,7 +400,8 @@ func PostAddPlanRecord(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	dayPlanId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -478,7 +485,8 @@ func DeletePlan(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
 	}
 
-	planId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	planId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
@@ -508,7 +516,8 @@ func DeleteDayPlan(ftx *fiber.Ctx) error {
 	}
 
 	// Extracting Day Plan ID
-	dayPlanId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	dayPlanId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the day plan ID"})
@@ -538,7 +547,8 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	}
 
 	// Extracting Day Plan ID
-	dayPlanMoveId, err := utils.FetchIntOfParamId(ftx, "id")
+	idString := ftx.Params("id")
+	dayPlanMoveId, err := utils.FetchIntOfParamId(idString)
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch the day plan Move ID"})

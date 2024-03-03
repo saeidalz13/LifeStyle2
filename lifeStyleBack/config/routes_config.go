@@ -15,11 +15,15 @@ type ProjUrls struct {
 	DeleteProfile string
 
 	// Finance
-	Finance                     string
-	ShowBudgets                 string
-	EachBudget                  string
-	EachExpense                 string
-	AllExpensesBudget           string
+	Finance               string
+	ShowBudgets           string
+	EachBudget            string
+	EachExpense           string
+	AllExpensesBudget     string
+	CapitalExpenses       string
+	EatoutExpenses        string
+	EntertainmentExpenses string
+
 	EachBalance                 string
 	UpdateCapitalExpenses       string
 	UpdateEatoutExpenses        string
@@ -70,6 +74,9 @@ var URLS = &ProjUrls{
 	EachBudget:                  "/finance/show-all-budgets/:id",
 	EachExpense:                 "/finance/submit-expenses/:id",
 	AllExpensesBudget:           "/finance/show-expenses/:id",
+	CapitalExpenses:			 "/finance/show-capital-expenses/:id",
+	EatoutExpenses: 			 "/finance/show-eatout-expenses/:id",
+	EntertainmentExpenses:       "/finance/show-entertainment-expenses/:id",
 	EachBalance:                 "/finance/balance/:id",
 	UpdateBudget:                "/finance/update-budget/:id",
 	UpdateCapitalExpenses:       "/finance/update-capital-expenses",
