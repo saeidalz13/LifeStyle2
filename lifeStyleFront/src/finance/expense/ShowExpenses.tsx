@@ -1,4 +1,4 @@
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, useLocation } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { Button, Col, Container, Form, Row, Tab, Tabs } from "react-bootstrap";
@@ -6,14 +6,21 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
 import {
-  TAllExpensesArr,
-  TNoExpensesData,
+  TCapitalExpenses,
+  TEatoutExpenses,
+  TEntertainmentExpenses,
+  TExpenseData,
+  EXPENSE_TYPES,
 } from "../../assets/FinanceInterfaces";
 import ExpenseBadge from "./ExpenseBadge";
 import ExpenseTable from "./ExpenseTable";
 import { Balance } from "../../assets/FinanceInterfaces";
 
 const ShowExpenses = () => {
+  const _location = useLocation();
+  const searchParams = new URLSearchParams(_location.search);
+  const budgetName = searchParams.get("budget_name");
+
   // Submit Expenses
   const { id } = useParams<{ id: string }>();
   const mountedBalance = useRef(true);
@@ -33,27 +40,24 @@ const ShowExpenses = () => {
 
   // View Expenses
   const [keyTab, setKeyTab] = useState("capital");
+  const [activeTab, setActiveTab] = useState<string>("capital");
+
   const [trigger, setTrigger] = useState(false);
   const [badgeText, setBadgeText] = useState<string>("Total");
   const searchRef = useRef<HTMLInputElement>(null);
-  const [allExpenses, setAllExpenses] = useState<
-    TAllExpensesArr | null | TNoExpensesData | "waiting"
-  >("waiting");
-  const [expenseType, setExpenseType] = useState("capital");
+  const [searchString, setSearchString] = useState<string>("");
 
-  const [totalCapitalRows, setTotalCapitalRows] = useState(0);
-  const [totalEatoutRows, setTotalEatoutRows] = useState(0);
-  const [totalEntertRows, setTotalEntertRows] = useState(0);
+  const [data, setData] = useState<TExpenseData>("waiting");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleNextPage = () => { 
-    mountedExpenses.current = true;
+  const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
+    mountedExpenses.current = true;
   };
 
   const handlePrevPage = () => {
-    mountedExpenses.current = true;
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+    mountedExpenses.current = true;
   };
 
   const toggleTrigger = () => {
@@ -62,7 +66,6 @@ const ShowExpenses = () => {
     setTrigger((prev) => !prev);
   };
 
-  // Submit Expenses
   useEffect(() => {
     if (mountedBalance.current) {
       mountedBalance.current = false;
@@ -102,6 +105,7 @@ const ShowExpenses = () => {
     }
   }, [id, balance, trigger]);
 
+  // Submit Expenses
   async function handleSubmitExpense(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -191,50 +195,46 @@ const ShowExpenses = () => {
     }
   }
 
-  // View Expenses
-
   useEffect(() => {
     if (mountedExpenses.current) {
       mountedExpenses.current = false;
+      console.log("Activate Tab in useEffect", activeTab);
+      console.log("current page In useEffect", currentPage);
 
-      const fetchAllExpenses = async (): Promise<
-        "nodata" | TAllExpensesArr | null
-      > => {
+      const fetchExpensesData = async () => {
         if (id) {
           try {
             const result = await fetch(
-              `${BACKEND_URL}${Urls.finance.index}/${
-                Urls.finance.showExpenses
-              }/${id}?limit=10&offset=${(currentPage - 1) * 10}`,
+              `${BACKEND_URL}/finance/show-${activeTab}-expenses/${id}?limit=10&offset=${
+                (currentPage - 1) * 10
+              }&search=${searchString}`,
               {
-                method: "POST",
+                method: "GET",
                 credentials: "include",
-                body: JSON.stringify({
-                  budget_id: +id,
-                  search_string: searchRef.current?.value,
-                }),
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json;charset=UTF-8",
-                },
               }
             );
 
             if (result.status === StatusCodes.Ok) {
-              return (await result.json()) as TAllExpensesArr;
+              const data = (await result.json()) as
+                | TCapitalExpenses
+                | TEatoutExpenses
+                | TEntertainmentExpenses;
+              setData(data);
+              return;
             }
+
             if (result.status === StatusCodes.NoContent) {
-              return "nodata";
+              setData("nodata");
             }
 
             if (result.status === StatusCodes.UnAuthorized) {
               location.assign(Urls.login);
-              return null;
+              return;
             }
 
             const errResp = await result.json();
             console.log(errResp.message);
-            return null;
+            setData(null);
           } catch (error) {
             console.log(error);
             return null;
@@ -244,28 +244,9 @@ const ShowExpenses = () => {
         return null;
       };
 
-      const invokeFetch = async () => {
-        const data = await fetchAllExpenses();
-        if (data === null) {
-          setAllExpenses(null);
-          return;
-        }
-
-        if (data === "nodata") {
-          setAllExpenses("nodata");
-          return;
-        }
-
-        setTotalCapitalRows(data.allExpenses.capital_rows_count);
-        setTotalEatoutRows(data.allExpenses.eatout_rows_count);
-        setTotalEntertRows(data.allExpenses.entertainment_rows_count);
-        setAllExpenses(data);
-        return;
-      };
-
-      invokeFetch();
+      fetchExpensesData();
     }
-  }, [id, currentPage, trigger]);
+  }, [id, currentPage, activeTab, searchString, trigger]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -273,6 +254,7 @@ const ShowExpenses = () => {
       mountedExpenses.current = true;
       setCurrentPage(1);
       setBadgeText(`'${searchRef.current.value}'`);
+      setSearchString(searchRef.current.value);
       setTrigger((prev) => !prev);
     }
   };
@@ -281,19 +263,25 @@ const ShowExpenses = () => {
     if (searchRef.current) {
       mountedExpenses.current = true;
       searchRef.current.value = "";
+      setSearchString("")
       setCurrentPage(1);
       setBadgeText("Total");
       setTrigger((prev) => !prev);
     }
   };
 
-  if (allExpenses === "waiting") {
+  const changeTabAction = (str: string) => {
+    setKeyTab(str);
+    setCurrentPage((prev) => Math.min(1, prev));
+    setActiveTab(str);
+    mountedExpenses.current = true;
+  };
+
+  if (data === "waiting") {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink
-            to={`${Urls.finance.showBudgets}/${id}`}
-          >
+          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -313,13 +301,11 @@ const ShowExpenses = () => {
     );
   }
 
-  if (allExpenses === "nodata") {
+  if (data === "nodata") {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink
-            to={`${Urls.finance.showBudgets}/${id}`}
-          >
+          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -330,13 +316,11 @@ const ShowExpenses = () => {
     );
   }
 
-  if (allExpenses === null) {
+  if (data === null) {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink
-            to={`${Urls.finance.showBudgets}/${id}`}
-          >
+          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -355,7 +339,7 @@ const ShowExpenses = () => {
       <div className="text-center mt-2">
         <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
           <Button variant="outline-secondary" className="all-budget-choices">
-            Back To Budget '{allExpenses.allExpenses.budget_name}'
+            Back To Budget '{budgetName}'
           </Button>
         </NavLink>
       </div>
@@ -507,56 +491,30 @@ const ShowExpenses = () => {
                   activeKey={keyTab}
                   onSelect={(k) => {
                     if (k !== null && k !== undefined) {
-                      setKeyTab(k);
-                      setExpenseType(k);
-                      setCurrentPage(1);
+                      changeTabAction(k);
                     }
                   }}
                   className="mt-3 mb-2"
                   fill
                 >
-                  <Tab eventKey="capital" title="Capital">
-                    <ExpenseBadge
-                      expenseType="capital"
-                      allExpenses={allExpenses}
-                      badgeText={badgeText}
-                    />
-                    <ExpenseTable
-                      expenseType="capital"
-                      allExpenses={allExpenses}
-                      toggleTrigger={toggleTrigger}
-                    />
+                  <Tab eventKey={EXPENSE_TYPES.cap} title="Capital">
+                    <ExpenseBadge data={data} badgeText={badgeText} />
+                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
                   </Tab>
-                  <Tab eventKey="eatout" title="Eat Out">
-                    <ExpenseBadge
-                      expenseType="eatout"
-                      allExpenses={allExpenses}
-                      badgeText={badgeText}
-                    />
-                    <ExpenseTable
-                      expenseType="eatout"
-                      allExpenses={allExpenses}
-                      toggleTrigger={toggleTrigger}
-                    />
+                  <Tab eventKey={EXPENSE_TYPES.eat} title="Eat Out">
+                    <ExpenseBadge data={data} badgeText={badgeText} />
+                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
                   </Tab>
-                  <Tab eventKey="entertainment" title="Entertainment">
-                    <ExpenseBadge
-                      expenseType="entertainment"
-                      allExpenses={allExpenses}
-                      badgeText={badgeText}
-                    />
-                    <ExpenseTable
-                      expenseType="entertainment"
-                      allExpenses={allExpenses}
-                      toggleTrigger={toggleTrigger}
-                    />
+                  <Tab eventKey={EXPENSE_TYPES.ent} title="Entertainment">
+                    <ExpenseBadge data={data} badgeText={badgeText} />
+                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
                   </Tab>
                 </Tabs>
               </div>
             </div>
 
             <Container>
-              {expenseType === "capital" ? (
+              {data.expense_type === EXPENSE_TYPES.cap ? (
                 <div className="text-center">
                   <Button
                     className="me-1"
@@ -569,12 +527,14 @@ const ShowExpenses = () => {
                   <Button
                     variant="primary"
                     onClick={handleNextPage}
-                    disabled={currentPage * 10 >= totalCapitalRows}
+                    disabled={
+                      currentPage * 10 >= data.total_row_count_capital.row_count
+                    }
                   >
                     Next
                   </Button>
                 </div>
-              ) : expenseType === "eatout" ? (
+              ) : data.expense_type === EXPENSE_TYPES.eat ? (
                 <div className="text-center">
                   <Button
                     className="me-1"
@@ -587,7 +547,9 @@ const ShowExpenses = () => {
                   <Button
                     variant="primary"
                     onClick={handleNextPage}
-                    disabled={currentPage * 10 >= totalEatoutRows}
+                    disabled={
+                      currentPage * 10 >= data.total_row_count_eatout.row_count
+                    }
                   >
                     Next
                   </Button>
@@ -605,7 +567,10 @@ const ShowExpenses = () => {
                   <Button
                     variant="primary"
                     onClick={handleNextPage}
-                    disabled={currentPage * 10 >= totalEntertRows}
+                    disabled={
+                      currentPage * 10 >=
+                      data.total_row_count_entertainment.row_count
+                    }
                   >
                     Next
                   </Button>

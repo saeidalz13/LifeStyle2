@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import {
-  Expenses,
   TExpense,
+  TCapitalExpenses,TEatoutExpenses, TEntertainmentExpenses,
   EXPENSE_TYPES,
 } from "../../assets/FinanceInterfaces";
 import ModalUpdateExpenses from "./ModalUpdateExpenses";
 
 interface ExpenseRowsProps {
-  expenses: Expenses;
-  expenseType: string;
+  data: TCapitalExpenses|TEatoutExpenses|TEntertainmentExpenses;
   toggleTrigger: () => void;
 }
 
 const ExpensesRows: React.FC<ExpenseRowsProps> = ({
-  expenses,
-  expenseType,
+  data,
   toggleTrigger,
 }) => {
   const customSpan = 3;
@@ -31,11 +29,11 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
     return;
   };
 
-  if (expenseType === EXPENSE_TYPES.cap) {
+  if (data.expense_type === EXPENSE_TYPES.cap) {
     return (
       <>
-        {expenses.capitalExpenses ? (
-          expenses.capitalExpenses.map((expense) => (
+        {data.capital_expenses ? (
+          data.capital_expenses.map((expense) => (
             <tr
               key={expense.capital_exp_id}
               onClick={() => handleExpenseRowClick(expense)}
@@ -57,7 +55,7 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
         )}
         {selectedExpenseToUpdate && (
           <ModalUpdateExpenses
-            expenseType={expenseType}
+            expenseType={data.expense_type}
             updateRecModalShow={updateRecModalShow}
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}
@@ -66,11 +64,11 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
         )}
       </>
     );
-  } else if (expenseType === EXPENSE_TYPES.eat) {
+  } else if (data.expense_type === EXPENSE_TYPES.eat) {
     return (
       <>
-        {expenses.eatoutExpenses ? (
-          expenses.eatoutExpenses.map((expense) => (
+        {data.eatout_expenses ? (
+          data.eatout_expenses.map((expense) => (
             <tr
               key={expense.eatout_exp_id}
               onClick={() => handleExpenseRowClick(expense)}
@@ -93,7 +91,7 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
 
         {selectedExpenseToUpdate && (
           <ModalUpdateExpenses
-            expenseType={expenseType}
+            expenseType={data.expense_type}
             updateRecModalShow={updateRecModalShow}
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}
@@ -102,11 +100,11 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
         )}
       </>
     );
-  } else if (expenseType === EXPENSE_TYPES.ent) {
+  } else if (data.expense_type === EXPENSE_TYPES.ent) {
     return (
       <>
-        {expenses.entertainmentExpenses ? (
-          expenses.entertainmentExpenses.map((expense) => (
+        {data.entertainment_expenses ? (
+          data.entertainment_expenses.map((expense) => (
             <tr
               key={expense.entertainment_exp_id}
               onClick={() => handleExpenseRowClick(expense)}
@@ -129,7 +127,7 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
 
         {selectedExpenseToUpdate && (
           <ModalUpdateExpenses
-            expenseType={expenseType}
+            expenseType={data.expense_type}
             updateRecModalShow={updateRecModalShow}
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}

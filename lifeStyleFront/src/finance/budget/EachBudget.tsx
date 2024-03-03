@@ -233,7 +233,7 @@ const EachBudget = () => {
                     </Button>
                   </NavLink> */}
                   <NavLink
-                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budget_id}`}
+                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budget_id}?budget_name=${encodeURIComponent(budget.budget_name)}`}
                   >
                     <Button
                       variant="outline-primary"

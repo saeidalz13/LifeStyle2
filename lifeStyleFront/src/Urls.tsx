@@ -49,6 +49,9 @@ class Urls {
     // Expenses
     submitExpenses: "submit-expenses",
     showExpenses: "show-expenses",
+    showCapitalExpenses: "/finance/show-capital-expenses",
+    showEatoutExpenses: "/finance/show-eatout-expenses",
+    showEntertainmentExpenses: "/finance/show-entertainment-expenses",
     updateCaptialExpenses: "/finance/update-capital-expenses",
     updateEatoutExpenses: "/finance/update-eatout-expenses",
     updateEntertainmentExpenses: "/finance/update-entertainment-expenses",

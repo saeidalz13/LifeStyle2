@@ -1,26 +1,14 @@
 import React from "react";
-import {
-  TAllExpensesArr,
-  TNoExpensesData,
-} from "../../assets/FinanceInterfaces";
+import { TExpenseData } from "../../assets/FinanceInterfaces";
 import ExpensesRows from "./ExpensesRows";
 
 interface ExpenseTableProps {
-  allExpenses: TAllExpensesArr | null | TNoExpensesData | "waiting";
-  expenseType: string;
+  data: TExpenseData;
   toggleTrigger: () => void;
 }
 
-const ExpenseTable: React.FC<ExpenseTableProps> = ({
-  allExpenses,
-  expenseType,
-  toggleTrigger
-}) => {
-  if (
-    allExpenses === "waiting" ||
-    allExpenses === null ||
-    allExpenses == "nodata"
-  ) {
+const ExpenseTable: React.FC<ExpenseTableProps> = ({ data, toggleTrigger }) => {
+  if (data === "waiting" || data === null || data == "nodata") {
     return <h1 className="mt-2 text-center">Loading...</h1>;
   }
 
@@ -54,11 +42,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
         </thead>
 
         <tbody>
-          <ExpensesRows
-            expenses={allExpenses.allExpenses}
-            expenseType={expenseType}
-            toggleTrigger={toggleTrigger}
-          />
+          <ExpensesRows data={data} toggleTrigger={toggleTrigger} />
         </tbody>
       </table>
     </>

@@ -25,10 +25,13 @@ export interface Balance {
   };
 }
 
+export type TTotalRowCount = {
+  row_count: number;
+  total: string;
+};
+
 export type TSingleCapital = {
   capital_exp_id: number;
-  // budget_id: number;
-  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
@@ -37,12 +40,14 @@ export type TSingleCapital = {
   };
 };
 
-export type TCapitalExpenses = Array<TSingleCapital>;
+export type TCapitalExpenses = {
+  expense_type: "capital";
+  capital_expenses: Array<TSingleCapital>;
+  total_row_count_capital: TTotalRowCount;
+};
 
 export type TSingleEatout = {
   eatout_exp_id: number;
-  // budget_id: number;
-  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
@@ -51,12 +56,14 @@ export type TSingleEatout = {
   };
 };
 
-export type TEatoutExpenses = Array<TSingleEatout>;
+export type TEatoutExpenses = {
+  expense_type: "eatout";
+  eatout_expenses: Array<TSingleEatout>;
+  total_row_count_eatout: TTotalRowCount;
+};
 
 export type TSingleEntertaintment = {
   entertainment_exp_id: number;
-  // budget_id: number;
-  // user_id: number;
   expenses: string;
   description: string;
   created_at: {
@@ -65,19 +72,19 @@ export type TSingleEntertaintment = {
   };
 };
 
-export type TEntertainmentExpenses = Array<TSingleEntertaintment>;
+export type TEntertainmentExpenses = {
+  expense_type: "entertainment";
+  entertainment_expenses: Array<TSingleEntertaintment>;
+  total_row_count_entertainment: TTotalRowCount;
+};
 
 export type Expenses = {
-  budget_name: string;
   capitalExpenses: TCapitalExpenses;
+  total_row_count_capital: TTotalRowCount;
   eatoutExpenses: TEatoutExpenses;
+  total_row_count_eatout: TTotalRowCount;
   entertainmentExpenses: TEntertainmentExpenses;
-  capital_rows_count: number;
-  eatout_rows_count: number;
-  entertainment_rows_count: number;
-  total_capital: string;
-  total_eatout: string;
-  total_entertainment: string;
+  total_row_count_entertainment: TTotalRowCount;
 };
 
 export type TAllExpensesArr = {
@@ -87,15 +94,16 @@ export type TAllExpensesArr = {
 export type TNoExpensesData = "nodata";
 
 export type TExpense = TSingleCapital | TSingleEatout | TSingleEntertaintment;
+export type TExpenseData = "waiting"|TCapitalExpenses|TEatoutExpenses|TEntertainmentExpenses|null|"nodata"
 
-interface TExpenseTypes {
-  cap: string;
-  eat: string;
-  ent: string;
+export interface IExpenseTypes {
+  cap: "capital";
+  eat: "eatout";
+  ent: "entertainment";
 }
 
 export const EXPENSE_TYPES = {
   cap: "capital",
   eat: "eatout",
   ent: "entertainment",
-} as TExpenseTypes;
+} as IExpenseTypes;
