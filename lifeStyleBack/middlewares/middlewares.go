@@ -23,3 +23,14 @@ func IsLoggedIn(ftx *fiber.Ctx) error {
 
 	return ftx.Next()
 }
+
+
+type RedisHandler struct {
+	// db
+}
+
+func (r *RedisHandler) CheckFinanceExpenseInRedis(ftx *fiber.Ctx) error {
+	
+
+	return ftx.Next()
+}

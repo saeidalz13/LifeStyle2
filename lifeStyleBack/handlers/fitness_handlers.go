@@ -13,7 +13,7 @@ import (
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
 )
 
-func GetAllFitnessPlans(ftx *fiber.Ctx) error {
+func HandleGetAllFitnessPlans(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 
@@ -41,7 +41,7 @@ func GetAllFitnessPlans(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"plans": plans})
 }
 
-func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
+func HandleGetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -79,7 +79,7 @@ func GetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"day_plans": dayPlans})
 }
 
-func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
+func HandleGetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -128,7 +128,7 @@ func GetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"day_plan_moves": moves})
 }
 
-func GetSinglePlan(ftx *fiber.Ctx) error {
+func HandleGetSinglePlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -163,7 +163,7 @@ func GetSinglePlan(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(plan)
 }
 
-func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
+func HandleGetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -216,7 +216,7 @@ func GetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"moves": moves})
 }
 
-func GetPlanRecords(ftx *fiber.Ctx) error {
+func HandleGetPlanRecords(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -253,7 +253,7 @@ func GetPlanRecords(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"plan_records": planRecords})
 }
 
-func PostAddPlan(ftx *fiber.Ctx) error {
+func HandlePostAddPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -287,7 +287,7 @@ func PostAddPlan(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(addedPlan)
 }
 
-func PostEditPlan(ftx *fiber.Ctx) error {
+func HandlePostEditPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -341,7 +341,7 @@ func PostEditPlan(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(dayPlan)
 }
 
-func PostAddDayPlanMoves(ftx *fiber.Ctx) error {
+func HandlePostAddDayPlanMoves(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -389,7 +389,7 @@ func PostAddDayPlanMoves(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Moves added!"})
 }
 
-func PostAddPlanRecord(ftx *fiber.Ctx) error {
+func HandlePostAddPlanRecord(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -474,7 +474,7 @@ func PatchPlanRecord(ftx *fiber.Ctx) error {
 }
 
 // DELETE
-func DeletePlan(ftx *fiber.Ctx) error {
+func HandleDeletePlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -504,7 +504,7 @@ func DeletePlan(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func DeleteDayPlan(ftx *fiber.Ctx) error {
+func HandleDeleteDayPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -534,7 +534,7 @@ func DeleteDayPlan(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func DeleteDayPlanMove(ftx *fiber.Ctx) error {
+func HandleDeleteDayPlanMove(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)
@@ -560,7 +560,7 @@ func DeleteDayPlanMove(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func DeleteWeekFromPlanRecords(ftx *fiber.Ctx) error {
+func HandleDeleteWeekFromPlanRecords(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(database.DB)

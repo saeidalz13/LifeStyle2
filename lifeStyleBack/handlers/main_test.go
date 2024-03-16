@@ -81,7 +81,6 @@ func ensureFitnessMovesAvailability() error {
 	return nil
 }
 
-
 // Entry point of all the tests in handlers package
 func TestMain(m *testing.M) {
 	// googleOAuthConfig := &oauth2.Config{
@@ -95,7 +94,7 @@ func TestMain(m *testing.M) {
 	randomString32Chars := "c808cd4bc8639e0808216f5180277189"
 
 	cn.EnvVars = &cn.DotEnvVars{
-		DbTestUrl: "postgresql://root:testpassword@localhost:5432/lfdb?sslmode=disable",
+		DbTestUrl: "postgresql://root:testpassword@localhost:3200/lfdb?sslmode=disable",
 		PasetoKey: randomString32Chars,
 		DevStage:  "dev",
 	}
@@ -134,14 +133,10 @@ func TestMain(m *testing.M) {
 	migrateDb.Up()
 
 	TestAuthHandlerReqs = &AuthHandlerReqs{
-		GeneralHandlerReqs: cn.GeneralHandlerReqs{
-			Db: DB_TEST,
-		},
+		Db: DB_TEST,
 	}
 	TestFinanceHandlerReqs = &FinanceHandlerReqs{
-		GeneralHandlerReqs: cn.GeneralHandlerReqs{
-			Db: DB_TEST,
-		},
+		Db: DB_TEST,
 	}
 
 	os.Exit(m.Run())

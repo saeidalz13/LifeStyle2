@@ -48,7 +48,7 @@ func (p *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 
 func NewPasetoMaker(symmKey string) (Maker, error) {
 	if len(symmKey) != chacha20poly1305.KeySize {
-		return nil, fmt.Errorf("Length of symmetric key must be %d", chacha20poly1305.KeySize)
+		return nil, fmt.Errorf("length of symmetric key must be %d", chacha20poly1305.KeySize)
 	}
 	maker := &PasetoMaker{
 		paseto:  paseto.NewV2(),

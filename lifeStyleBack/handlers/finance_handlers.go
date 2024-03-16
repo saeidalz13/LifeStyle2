@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"strings"
@@ -15,10 +16,10 @@ import (
 )
 
 type FinanceHandlerReqs struct {
-	cn.GeneralHandlerReqs
+	Db *sql.DB
 }
 
-func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetAllBudgets(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -59,7 +60,7 @@ func (f *FinanceHandlerReqs) GetAllBudgets(ftx *fiber.Ctx) error {
 
 }
 
-func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetSingleBudget(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -92,7 +93,7 @@ func (f *FinanceHandlerReqs) GetSingleBudget(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(budget)
 }
 
-func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetSingleBalance(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -122,7 +123,7 @@ func (f *FinanceHandlerReqs) GetSingleBalance(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(balance)
 }
 
-func (f *FinanceHandlerReqs) GetCapitalExpenses(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetCapitalExpenses(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -155,6 +156,7 @@ func (f *FinanceHandlerReqs) GetCapitalExpenses(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to row counts and total of capital"})
 	}
 
+	log.Printf("%#v\n", f.Db.Stats())
 	return ftx.Status(fiber.StatusOK).JSON(models.CapitalExpensesResponse{
 		ExpenseType:          "capital",
 		CapitalExpenses:      capitalExpenses,
@@ -162,7 +164,7 @@ func (f *FinanceHandlerReqs) GetCapitalExpenses(ftx *fiber.Ctx) error {
 	})
 }
 
-func (f *FinanceHandlerReqs) GetEatoutExpenses(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetEatoutExpenses(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -198,7 +200,7 @@ func (f *FinanceHandlerReqs) GetEatoutExpenses(ftx *fiber.Ctx) error {
 	})
 }
 
-func (f *FinanceHandlerReqs) GetEntertainmentExpenses(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleGetEntertainmentExpenses(ftx *fiber.Ctx) error {
 	q := sqlc.New(f.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -235,7 +237,7 @@ func (f *FinanceHandlerReqs) GetEntertainmentExpenses(ftx *fiber.Ctx) error {
 	})
 }
 
-func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandlePostNewBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(f.Db)
@@ -267,7 +269,7 @@ func (f *FinanceHandlerReqs) PostNewBudget(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusCreated).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Budget Created Successfully!"})
 }
 
-func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandlePostExpenses(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(f.Db)
@@ -305,7 +307,7 @@ func (f *FinanceHandlerReqs) PostExpenses(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(updatedBalance)
 }
 
-func PostGptApi(ftx *fiber.Ctx) error {
+func HandlePostGptApi(ftx *fiber.Ctx) error {
 	if err := utils.ValidateContentType(ftx); err != nil {
 		return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
 	}
@@ -342,7 +344,7 @@ func PostGptApi(ftx *fiber.Ctx) error {
 }
 
 // DELETE
-func (f *FinanceHandlerReqs) DeleteBudget(ftx *fiber.Ctx) error {
+func (f *FinanceHandlerReqs) HandleDeleteBudget(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
 	q := sqlc.New(f.Db)

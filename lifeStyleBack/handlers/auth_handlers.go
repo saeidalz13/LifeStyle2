@@ -19,10 +19,10 @@ import (
 )
 
 type AuthHandlerReqs struct {
-	cn.GeneralHandlerReqs
+	Db *sql.DB
 }
 
-func (a *AuthHandlerReqs) GetHome(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandleGetHome(ftx *fiber.Ctx) error {
 	validEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		log.Println(err)
@@ -41,7 +41,7 @@ func (a *AuthHandlerReqs) GetHome(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func (a *AuthHandlerReqs) GetProfile(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandleGetProfile(ftx *fiber.Ctx) error {
 	q := sqlc.New(a.Db)
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
@@ -54,7 +54,7 @@ func (a *AuthHandlerReqs) GetProfile(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(user)
 }
 
-func GetSignOut(ftx *fiber.Ctx) error {
+func HandleGetSignOut(ftx *fiber.Ctx) error {
 	ftx.Cookie(&fiber.Cookie{
 		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    "",                           // Clear the cookie value
@@ -66,7 +66,7 @@ func GetSignOut(ftx *fiber.Ctx) error {
 	return ftx.SendStatus(fiber.StatusOK)
 }
 
-func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandlePostSignUp(ftx *fiber.Ctx) error {
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusBadRequest).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ContentType})
@@ -126,7 +126,7 @@ func (a *AuthHandlerReqs) PostSignUp(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
 }
 
-func (a *AuthHandlerReqs) PostLogin(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandlePostLogin(ftx *fiber.Ctx) error {
 	var userLogin sqlc.CreateUserParams
 	if err := utils.ValidateContentType(ftx); err != nil {
 		log.Println(err)
@@ -174,7 +174,7 @@ func (a *AuthHandlerReqs) PostLogin(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "Successfully logged in! Redirecting to home page..."})
 }
 
-func (a *AuthHandlerReqs) DeleteUser(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandleDeleteUser(ftx *fiber.Ctx) error {
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
 	if err != nil {
 		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
@@ -207,13 +207,13 @@ func (a *AuthHandlerReqs) DeleteUser(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusNoContent).JSON(&cn.ApiRes{ResType: cn.ResTypes.Success, Msg: "User was deleted successfully!"})
 }
 
-func GetGoogleSignIn(ftx *fiber.Ctx) error {
+func HandleGetGoogleSignIn(ftx *fiber.Ctx) error {
 	randString := cn.GenerateRandomString(20)
 	url := cn.OAuthConfigFitFin.AuthCodeURL(randString)
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"googleUrl": url})
 }
 
-func (a *AuthHandlerReqs) GetGoogleCallback(ftx *fiber.Ctx) error {
+func (a *AuthHandlerReqs) HandleGetGoogleCallback(ftx *fiber.Ctx) error {
 	state := ftx.Query("state")
 	if state != cn.GoogleState {
 		return ftx.Redirect(cn.EnvVars.FrontEndUrl)

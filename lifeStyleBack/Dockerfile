@@ -1,5 +1,5 @@
 # Build Stage
-FROM golang:1.21.3-alpine3.18 AS builder
+FROM golang:1.22-alpine3.18 AS builder
 WORKDIR /app
 
 COPY . .
@@ -13,7 +13,7 @@ WORKDIR /app
 
 COPY --from=builder /app/lifestyle /app
 COPY --from=builder /app/db /app
-# COPY .env /app
+# COPY .env /app 
 
 EXPOSE 1300
 CMD [ "./lifestyle" ]

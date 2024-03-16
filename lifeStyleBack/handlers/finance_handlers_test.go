@@ -41,7 +41,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusOK,
 		Route:              cn.URLS.SignUp,
 	}
-	app.Post(test.Route, TestAuthHandlerReqs.PostSignUp)
+	app.Post(test.Route, TestAuthHandlerReqs.HandlePostSignUp)
 	newUser := &sqlc.CreateUserParams{
 		Email:    cn.EXISTENT_EMAIL_IN_TEST_DB,
 		Password: cn.EXISTENT_AND_VALID_PASSWORD,
@@ -64,7 +64,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusCreated,
 		Route:              cn.URLS.PostNewBudget,
 	}
-	app.Post(test.Route, TestFinanceHandlerReqs.PostNewBudget)
+	app.Post(test.Route, TestFinanceHandlerReqs.HandlePostNewBudget)
 	budgetParams := &sqlc.CreateBudgetParams{
 		BudgetName:    "random",
 		StartDate:     time.Now(),
@@ -92,7 +92,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusInternalServerError,
 		Route:              cn.URLS.PostNewBudget,
 	}
-	app.Post(test.Route, TestFinanceHandlerReqs.PostNewBudget)
+	app.Post(test.Route, TestFinanceHandlerReqs.HandlePostNewBudget)
 	budgetParams = &sqlc.CreateBudgetParams{
 		BudgetName:    "random",
 		StartDate:     time.Now(),
@@ -120,7 +120,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusInternalServerError,
 		Route:              cn.URLS.PostNewBudget,
 	}
-	app.Post(test.Route, TestFinanceHandlerReqs.PostNewBudget)
+	app.Post(test.Route, TestFinanceHandlerReqs.HandlePostNewBudget)
 	budgetParams = &sqlc.CreateBudgetParams{
 		BudgetName:    "new_random",
 		StartDate:     time.Now(),
@@ -148,7 +148,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusUnauthorized,
 		Route:              cn.URLS.PostNewBudget,
 	}
-	app.Post(test.Route, TestFinanceHandlerReqs.PostNewBudget)
+	app.Post(test.Route, TestFinanceHandlerReqs.HandlePostNewBudget)
 	budgetParams = &sqlc.CreateBudgetParams{
 		BudgetName:    "new_random_2",
 		StartDate:     time.Now(),
@@ -176,7 +176,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusOK,
 		Route:              cn.URLS.ShowBudgets,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetAllBudgets)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetAllBudgets)
 	req = httptest.NewRequest("GET", test.Route, nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	resp, err := utils.CheckRespReturnResp(app, req, test.ExpectedStatusCode)
@@ -199,7 +199,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusUnauthorized,
 		Route:              cn.URLS.ShowBudgets,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetAllBudgets)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetAllBudgets)
 	req = httptest.NewRequest("GET", test.Route, nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: InvalidToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
@@ -213,8 +213,8 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusOK,
 		Route:              cn.URLS.EachBudget,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
-	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1) , nil)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
+	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
 		deleteUserIfErr(validToken)
@@ -227,7 +227,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusNotFound,
 		Route:              cn.URLS.EachBudget,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
 	invalidBudgetId := "-1"
 	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", invalidBudgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
@@ -242,7 +242,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusUnauthorized,
 		Route:              cn.URLS.EachBudget,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
 	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: invalidBudgetId})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
@@ -257,7 +257,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusOK,
 		Route:              cn.URLS.EachBalance,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
 	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
@@ -271,7 +271,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusNotFound,
 		Route:              cn.URLS.EachBalance,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
 	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", invalidBudgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
@@ -285,7 +285,7 @@ func TestFinance(t *testing.T) {
 		ExpectedStatusCode: fiber.StatusUnauthorized,
 		Route:              cn.URLS.EachBalance,
 	}
-	app.Get(test.Route, TestFinanceHandlerReqs.GetSingleBudget)
+	app.Get(test.Route, TestFinanceHandlerReqs.HandleGetSingleBudget)
 	req = httptest.NewRequest(cn.RequestMethods.Get, strings.Replace(test.Route, ":id", budgetId, 1), nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: InvalidToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {
@@ -304,7 +304,7 @@ func deleteUserIfErr(validToken string) {
 		ExpectedStatusCode: fiber.StatusNoContent,
 		Route:              cn.URLS.DeleteProfile,
 	}
-	app.Delete(test.Route, TestAuthHandlerReqs.DeleteUser)
+	app.Delete(test.Route, TestAuthHandlerReqs.HandleDeleteUser)
 	req := httptest.NewRequest("DELETE", test.Route, nil)
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: validToken})
 	if err := utils.CheckResp(app, req, test.ExpectedStatusCode); err != nil {

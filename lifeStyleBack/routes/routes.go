@@ -16,45 +16,45 @@ import (
 
 func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFinanceHandlerReqs *h.FinanceHandlerReqs) {
 	// Get
-	app.Get(cn.URLS.OAuthSignIn, h.GetGoogleSignIn)
-	app.Get(cn.URLS.OAuthCallback, DefaultAuthHandlerReqs.GetGoogleCallback)
-	app.Get(cn.URLS.Home, DefaultAuthHandlerReqs.GetHome)
-	app.Get(cn.URLS.Profile, DefaultAuthHandlerReqs.GetProfile)
-	app.Get(cn.URLS.SignOut, h.GetSignOut)
+	app.Get(cn.URLS.OAuthSignIn, h.HandleGetGoogleSignIn)
+	app.Get(cn.URLS.OAuthCallback, DefaultAuthHandlerReqs.HandleGetGoogleCallback)
+	app.Get(cn.URLS.Home, DefaultAuthHandlerReqs.HandleGetHome)
+	app.Get(cn.URLS.Profile, DefaultAuthHandlerReqs.HandleGetProfile)
+	app.Get(cn.URLS.SignOut, h.HandleGetSignOut)
 
-	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetAllBudgets)
-	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBalance)
-	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetSingleBudget)
+	app.Get(cn.URLS.ShowBudgets, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetAllBudgets)
+	app.Get(cn.URLS.EachBalance, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetSingleBalance)
+	app.Get(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetSingleBudget)
 
-	app.Get(cn.URLS.FetchSinglePlan, m.IsLoggedIn, h.GetSinglePlan)
-	app.Get(cn.URLS.AllPlans, m.IsLoggedIn, h.GetAllFitnessPlans)
-	app.Get(cn.URLS.AllDayPlans, m.IsLoggedIn, h.GetAllFitnessDayPlans)
-	app.Get(cn.URLS.AllDayPlanMoves, m.IsLoggedIn, h.GetAllFitnessDayPlanMoves)
-	app.Get(cn.URLS.FetchDayPlanMovesWorkout, m.IsLoggedIn, h.GetAllFitnessDayPlanMovesWorkout)
-	app.Get(cn.URLS.FetchPlanRecords, m.IsLoggedIn, h.GetPlanRecords)
-	app.Post(cn.URLS.GptApi, h.PostGptApi)
+	app.Get(cn.URLS.FetchSinglePlan, m.IsLoggedIn, h.HandleGetSinglePlan)
+	app.Get(cn.URLS.AllPlans, m.IsLoggedIn, h.HandleGetAllFitnessPlans)
+	app.Get(cn.URLS.AllDayPlans, m.IsLoggedIn, h.HandleGetAllFitnessDayPlans)
+	app.Get(cn.URLS.AllDayPlanMoves, m.IsLoggedIn, h.HandleGetAllFitnessDayPlanMoves)
+	app.Get(cn.URLS.FetchDayPlanMovesWorkout, m.IsLoggedIn, h.HandleGetAllFitnessDayPlanMovesWorkout)
+	app.Get(cn.URLS.FetchPlanRecords, m.IsLoggedIn, h.HandleGetPlanRecords)
+	app.Post(cn.URLS.GptApi, h.HandlePostGptApi)
 
 	// Post
-	app.Post(cn.URLS.SignUp, DefaultAuthHandlerReqs.PostSignUp)
-	app.Post(cn.URLS.Login, DefaultAuthHandlerReqs.PostLogin)
-	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostNewBudget)
-	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.PostExpenses)
-	app.Get(cn.URLS.CapitalExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetCapitalExpenses)
-	app.Get(cn.URLS.EatoutExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetEatoutExpenses)
-	app.Get(cn.URLS.EntertainmentExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.GetEntertainmentExpenses)
+	app.Post(cn.URLS.SignUp, DefaultAuthHandlerReqs.HandlePostSignUp)
+	app.Post(cn.URLS.Login, DefaultAuthHandlerReqs.HandlePostLogin)
+	app.Post(cn.URLS.PostNewBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandlePostNewBudget)
+	app.Post(cn.URLS.EachExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandlePostExpenses)
+	app.Get(cn.URLS.CapitalExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetCapitalExpenses)
+	app.Get(cn.URLS.EatoutExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetEatoutExpenses)
+	app.Get(cn.URLS.EntertainmentExpenses, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleGetEntertainmentExpenses)
 
-	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.PostAddPlan)
-	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.PostEditPlan)
-	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, h.PostAddDayPlanMoves)
-	app.Post(cn.URLS.AddPlanRecord, m.IsLoggedIn, h.PostAddPlanRecord)
+	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, h.HandlePostAddPlan)
+	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, h.HandlePostEditPlan)
+	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, h.HandlePostAddDayPlanMoves)
+	app.Post(cn.URLS.AddPlanRecord, m.IsLoggedIn, h.HandlePostAddPlanRecord)
 
 	// Delete
-	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteBudget)
-	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, DefaultAuthHandlerReqs.DeleteUser)
-	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.DeletePlan)
-	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.DeleteDayPlan)
-	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, h.DeleteDayPlanMove)
-	app.Delete(cn.URLS.DeleteWeekPlanRecords, m.IsLoggedIn, h.DeleteWeekFromPlanRecords)
+	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, DefaultFinanceHandlerReqs.HandleDeleteBudget)
+	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, DefaultAuthHandlerReqs.HandleDeleteUser)
+	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, h.HandleDeletePlan)
+	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, h.HandleDeleteDayPlan)
+	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, h.HandleDeleteDayPlanMove)
+	app.Delete(cn.URLS.DeleteWeekPlanRecords, m.IsLoggedIn, h.HandleDeleteWeekFromPlanRecords)
 	app.Delete(cn.URLS.DeletePlanRecord, m.IsLoggedIn, h.DeleteSetFromPlanRecord)
 	app.Delete(cn.URLS.DeleteCapitalExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteCapitalExpense)
 	app.Delete(cn.URLS.DeleteEatoutExpense, m.IsLoggedIn, DefaultFinanceHandlerReqs.DeleteEatoutExpense)
@@ -71,7 +71,7 @@ func Setup(app *fiber.App, DefaultAuthHandlerReqs *h.AuthHandlerReqs, DefaultFin
 	app.Get("/ws", websocket.New(func(wsc *websocket.Conn) {
 		defer wsc.Close()
 		client := openai.NewClient(cn.EnvVars.GptApiKey)
-
+		
 		for {
 			// Handle WebSocket messages here
 			messageType, msg, err := wsc.ReadMessage()

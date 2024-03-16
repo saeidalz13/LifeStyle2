@@ -1,7 +1,6 @@
 package config
 
 import (
-	"database/sql"
 	"math/rand"
 	"time"
 )
@@ -11,15 +10,6 @@ const PASETO_COOKIE_NAME = "paseto"
 const GOOGLE_API_OAUTH2_URL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 const OPENAI_ACCESS_USER_URL = "https://api.openai.com/v1/chat/completions"
 const PASSWORD_MIN_LEN = 8
-
-
-type GeneralHandlerReqs struct {
-	Db *sql.DB
-}
-
-type AuthHandlerReqs struct {
-	GeneralHandlerReqs
-}
 
 type ApiRes struct {
 	ResType string `json:"responseType"`
@@ -31,16 +21,12 @@ type ResTypesStruct struct {
 	Err     string
 }
 
-
-
 type OAuthResp struct {
 	Email         string `json:"email"`
 	ID            string `json:"id"`
 	Picture       string `json:"picture"`
 	VerifiedEmail bool   `json:"verified_email"`
 }
-
-
 
 var ResTypes = &ResTypesStruct{
 	Success: "success",

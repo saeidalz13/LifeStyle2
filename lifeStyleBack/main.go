@@ -24,9 +24,9 @@ var (
 )
 
 func main() {
-	prepareReqVars()
-	prepareGlobalPasetoMaker()
-	database.ConnectToDb()
+	mustPrepareReqVars()
+	mustPrepareGlobalPasetoMaker()
+	database.MustConnectToDb()
 	app := fiber.New()
 	app.Use(logger.New())
 	DefaultAuthHandlerReqs.Db = database.DB
@@ -46,10 +46,10 @@ func main() {
 	app.Listen(cn.EnvVars.Port)
 }
 
-func getEnvVars() (*cn.DotEnvVars, error) {
+func mustGetEnvVars() *cn.DotEnvVars {
 	if os.Getenv("DEV_STAGE") != cn.DefaultDevStages.Production {
 		if err := godotenv.Load(".env"); err != nil {
-			log.Fatalf("No .env file found")
+			panic("no .env file found")
 		}
 	}
 
@@ -63,15 +63,11 @@ func getEnvVars() (*cn.DotEnvVars, error) {
 		GClientSec:  os.Getenv("GOOGLE_CLIENT_SEC"),
 		GRedirUrl:   os.Getenv("GOOGLE_REDIRECT_URL"),
 		GptApiKey:   os.Getenv("GPT_API_KEY"),
-	}, nil
+	}
 }
 
-func prepareReqVars() {
-	envVars, err := getEnvVars()
-	if err != nil {
-		log.Fatalln("Failed to retrieve data from dotenv file", err)
-	}
-	
+func mustPrepareReqVars() {
+	envVars := mustGetEnvVars()
 	googleOAuthConfig := &oauth2.Config{
 		RedirectURL:  envVars.GRedirUrl,
 		ClientID:     envVars.GClientId,
@@ -84,10 +80,10 @@ func prepareReqVars() {
 	cn.OAuthConfigFitFin = googleOAuthConfig
 }
 
-func prepareGlobalPasetoMaker() {
+func mustPrepareGlobalPasetoMaker() {
 	tempPaseto, err := token.NewPasetoMaker(cn.EnvVars.PasetoKey)
 	if err != nil {
-		log.Fatalln("Failed to extract Paseto Key!")
+		panic("Failed to extract Paseto Key!")
 	}
 	token.PasetoMakerGlobal = tempPaseto
 }
