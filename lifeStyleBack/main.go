@@ -13,24 +13,26 @@ import (
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
+	appRedis "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/redis"
+
 	h "github.com/saeidalz13/LifeStyle2/lifeStyleBack/handlers"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/routes"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
-)
-
-var (
-	DefaultAuthHandlerReqs    = &h.AuthHandlerReqs{}
-	DefaultFinanceHandlerReqs = &h.FinanceHandlerReqs{}
 )
 
 func main() {
 	mustPrepareReqVars()
 	mustPrepareGlobalPasetoMaker()
 	database.MustConnectToDb()
+	appRedis.ConnectDb()
+	handlersConfig := &h.HandlersConfig{
+		Auth:    &h.AuthHandlersConfig{Db: database.DB},
+		Finance: &h.FinanceHandlersConfig{Db: database.DB},
+		Fitness: &h.FitnessHandlersConfig{Db: database.DB},
+	}
+
 	app := fiber.New()
 	app.Use(logger.New())
-	DefaultAuthHandlerReqs.Db = database.DB
-	DefaultFinanceHandlerReqs.Db = database.DB
 
 	app.Use(cors.New(cors.Config{
 		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,X-CSRF-Token,Set-Cookie,Authorization",
@@ -40,7 +42,7 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	routes.Setup(app, DefaultAuthHandlerReqs, DefaultFinanceHandlerReqs)
+	routes.Setup(app, handlersConfig)
 
 	log.Printf("Listening to port %v...", cn.EnvVars.Port)
 	app.Listen(cn.EnvVars.Port)

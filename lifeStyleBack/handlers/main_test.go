@@ -22,8 +22,8 @@ import (
 const TEST_DB_DRIVER = "postgres"
 
 var DB_TEST *sql.DB
-var TestAuthHandlerReqs *AuthHandlerReqs
-var TestFinanceHandlerReqs *FinanceHandlerReqs
+var TestAuthHandlerReqs *AuthHandlersConfig
+var TestFinanceHandlerReqs *FinanceHandlersConfig
 
 func determineMigrationDrive() string {
 	return "file:../db/migration"
@@ -115,9 +115,9 @@ func TestMain(m *testing.M) {
 		panic(err.Error())
 	}
 	log.Println("Connected to lifestyledb_test database...")
-	DB_TEST.SetMaxOpenConns(cn.DB_MAX_OPEN_CONNECTIONS)
-	DB_TEST.SetMaxIdleConns(cn.DB_MAX_IDLE_CONNECTIONS)
-	DB_TEST.SetConnMaxLifetime(cn.DB_MAX_CONNECTION_LIFETIME)
+	DB_TEST.SetMaxOpenConns(cn.DbMaxOpenConnections)
+	DB_TEST.SetMaxIdleConns(cn.DbMaxIdleConnections)
+	DB_TEST.SetConnMaxLifetime(cn.DbMaxConnectionLifetime)
 
 	migrationDir := determineMigrationDrive()
 
@@ -136,10 +136,10 @@ func TestMain(m *testing.M) {
 	}
 	migrateDb.Up()
 
-	TestAuthHandlerReqs = &AuthHandlerReqs{
+	TestAuthHandlerReqs = &AuthHandlersConfig{
 		Db: DB_TEST,
 	}
-	TestFinanceHandlerReqs = &FinanceHandlerReqs{
+	TestFinanceHandlerReqs = &FinanceHandlersConfig{
 		Db: DB_TEST,
 	}
 

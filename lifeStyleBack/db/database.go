@@ -90,9 +90,9 @@ func MustConnectToDb() {
 	}
 	log.Println("Connected to database!")
 
-	db.SetMaxOpenConns(cn.DB_MAX_OPEN_CONNECTIONS)
-	db.SetMaxIdleConns(cn.DB_MAX_IDLE_CONNECTIONS)
-	db.SetConnMaxLifetime(cn.DB_MAX_CONNECTION_LIFETIME)
+	db.SetMaxOpenConns(cn.DbMaxOpenConnections)
+	db.SetMaxIdleConns(cn.DbMaxIdleConnections)
+	db.SetConnMaxLifetime(cn.DbMaxConnectionLifetime)
 	DB = db
 
 	migrationDir := mustDetermineMigrationDrive()
