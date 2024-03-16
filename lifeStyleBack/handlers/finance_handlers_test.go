@@ -158,10 +158,10 @@ func TestFinance(t *testing.T) {
 		Eatout:        "55",
 		Entertainment: "55",
 	}
-	newBudgetJson, err = json.Marshal(budgetParams)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// newBudgetJson, err = json.Marshal(budgetParams)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 	req = httptest.NewRequest(cn.RequestMethods.Post, test.Route, nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(&http.Cookie{Name: cn.PASETO_COOKIE_NAME, Value: InvalidToken})

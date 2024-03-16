@@ -122,6 +122,10 @@ func TestMain(m *testing.M) {
 	migrationDir := determineMigrationDrive()
 
 	driver, err := postgres.WithInstance(DB_TEST, &postgres.Config{})
+	if err != nil {
+		panic(err)
+	}
+
 	migrateDb, err := migrate.NewWithDatabaseInstance(
 		migrationDir,
 		"lfdb",
