@@ -431,113 +431,126 @@ const StartWorkout = () => {
         </NavLink>
       </div>
 
-      <div className="text-center mt-4 mx-2 p-2 page-explanations">
-        <h1 className="mt-1 mb-3 text-primary">Workout Time!</h1>
-        <p style={{ fontSize: "18px" }}>
-          First, add all the sets for every move with the corresponding reps and
-          weights. Then, smash the submit button!
-        </p>
-      </div>
+      <Container>
+        <div
+          className="text-center mt-4 p-3 page-explanations"
+          style={{ margin: "auto", maxWidth: "1000px" }}
+        >
+          <h1 className="mt-1 mb-3 text-primary">Workout Time!</h1>
+          <p style={{ fontSize: "18px" }}>
+            First, add all the sets for every move with the corresponding reps
+            and weights. Then, smash the submit button!
+          </p>
+        </div>
+      </Container>
 
-      <div
-        className="text-center mt-4 mx-2 p-3 page-explanations"
-        style={{ backgroundColor: "#212226" }}
-      >
-        {planRecords === "waiting" ? (
-          <div className="mt-5" style={{ textAlign: "center" }}>
-            <img
-              className="bg-primary rounded p-2"
-              src={rl}
-              height="150px"
-              width="150px"
-              alt="Rotation"
-            />
-          </div>
-        ) : planRecords.plan_records.length === 0 ? (
-          <div className="text-center mt-3">
-            <h3 className="text-danger">No History Of Workout Yet</h3>
-          </div>
-        ) : (
-          <Row className="mb-2">
-            <div className="text-center mt-2 mb-3">
-              <h3 className="text-warning">History Of Workout</h3>
+      <Container>
+        <div
+          className="text-center mt-4 p-3 page-explanations"
+          style={{
+            backgroundColor: "#212226",
+            margin: "auto",
+            maxWidth: "750px",
+          }}
+        >
+          {planRecords === "waiting" ? (
+            <div className="mt-5" style={{ textAlign: "center" }}>
+              <img
+                className="bg-primary rounded p-2"
+                src={rl}
+                height="150px"
+                width="150px"
+                alt="Rotation"
+              />
             </div>
-            {Object.values(groupedPlanRecords).map(
-              (planRecordsArray: PlanRecord[], index: number) => (
-                <Accordion key={index}>
-                  <Accordion.Item eventKey={`${index}`}>
-                    <Accordion.Header>
-                      <span style={{ fontSize: "20px" }}>
-                        Week {planRecordsArray[0].week}
-                      </span>
-                    </Accordion.Header>
-                    <Accordion.Body>
-                      <p
-                        className="mb-1 text-success"
-                        style={{ fontSize: "15px" }}
-                      >
-                        Click on row to update or delete sets
-                      </p>
-                      <Table hover key={planRecordsArray[0].plan_record_id}>
-                        <thead>
-                          <tr>
-                            <th className="text-primary">Move</th>
-                            <th className="text-info">Set</th>
-                            <th className="text-warning">Reps</th>
-                            <th className="text-danger">Weights</th>
-                          </tr>
-                        </thead>
-                        <tbody className="plan-records-table">
-                          {planRecordsArray.map((moveRec, moveIndex) => (
-                            <tr
-                              key={moveIndex}
-                              onClick={() => handlePlanRecordRowClick(moveRec)}
-                            >
-                              <td className="text-light">
-                                {moveRec.move_name}
-                              </td>
-                              <td className="text-light">
-                                {moveRec.set_record}
-                              </td>
-                              <td className="text-light">{moveRec.reps}</td>
-                              <td className="text-light">{moveRec.weight}</td>
+          ) : planRecords.plan_records.length === 0 ? (
+            <div className="text-center mt-3">
+              <h3 className="text-danger">No History Of Workout Yet</h3>
+            </div>
+          ) : (
+            <Row className="mb-2">
+              <div className="text-center mt-2 mb-3">
+                <h3 className="text-warning">History Of Workout</h3>
+              </div>
+              {Object.values(groupedPlanRecords).map(
+                (planRecordsArray: PlanRecord[], index: number) => (
+                  <Accordion key={index}>
+                    <Accordion.Item eventKey={`${index}`}>
+                      <Accordion.Header>
+                        <span style={{ fontSize: "20px" }}>
+                          Week {planRecordsArray[0].week}
+                        </span>
+                      </Accordion.Header>
+                      <Accordion.Body>
+                        <p
+                          className="mb-1 text-success"
+                          style={{ fontSize: "15px" }}
+                        >
+                          Click on row to update or delete sets
+                        </p>
+                        <Table hover key={planRecordsArray[0].plan_record_id}>
+                          <thead>
+                            <tr>
+                              <th className="text-primary">Move</th>
+                              <th className="text-info">Set</th>
+                              <th className="text-warning">Reps</th>
+                              <th className="text-danger">Weights</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                      <Button
-                        onClick={() =>
-                          handleDeleteWeek(planRecordsArray[0].week)
-                        }
-                        className="px-4"
-                        variant="outline-danger"
-                      >
-                        Delete Week {planRecordsArray[0].week}
-                      </Button>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
-              )
-            )}
-          </Row>
-        )}
-        {/* <Button
+                          </thead>
+                          <tbody className="plan-records-table">
+                            {planRecordsArray.map((moveRec, moveIndex) => (
+                              <tr
+                                key={moveIndex}
+                                onClick={() =>
+                                  handlePlanRecordRowClick(moveRec)
+                                }
+                              >
+                                <td className="text-light">
+                                  {moveRec.move_name}
+                                </td>
+                                <td className="text-light">
+                                  {moveRec.set_record}
+                                </td>
+                                <td className="text-light">{moveRec.reps}</td>
+                                <td className="text-light">{moveRec.weight}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                        <Button
+                          onClick={() =>
+                            handleDeleteWeek(planRecordsArray[0].week)
+                          }
+                          className="px-4"
+                          variant="outline-danger"
+                        >
+                          Delete Week {planRecordsArray[0].week}
+                        </Button>
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Accordion>
+                )
+              )}
+            </Row>
+          )}
+          {/* <Button
           variant="outline-warning"
           className=" mt-2"
           onClick={handleUpdateHistory}
         >
           {loadingUpdate ? <img src={rl} alt="Rotation" /> : "Update"}
         </Button> */}
-        <div className="mt-1 text-danger">{updatePossibleErrs}</div>
-        <div className="mt-1" style={SUCCESS_STYLE}>
-          {updatePossibleSuccess}
+          <div className="mt-1 text-danger">{updatePossibleErrs}</div>
+          <div className="mt-1" style={SUCCESS_STYLE}>
+            {updatePossibleSuccess}
+          </div>
         </div>
-      </div>
+      </Container>
 
       <Container className="text-center mt-4 mb-4">
         <Row>
           <Col>
-            <Form className="mx-4 form-fitfin">
+            <Form className="form-fitfin">
               <Row className="mb-3 mt-2">
                 <Col>
                   <Form.Group className="text-center mx-5">

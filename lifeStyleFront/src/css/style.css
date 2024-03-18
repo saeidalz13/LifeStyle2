@@ -61,7 +61,7 @@ footer {
     border-radius: 20px;
     box-shadow: var(--default-box-shadow);
     color: lightgray;
-    font-size: 18px
+    font-size: 18px;
 }
 
 .page-explanations-homepanels {
@@ -124,6 +124,8 @@ footer {
     padding: 20px;
     border-radius: 20px;
     box-shadow: var(--default-box-shadow);
+    margin: auto;
+    max-width: 750px;
 }
 
 .list-group-balance {

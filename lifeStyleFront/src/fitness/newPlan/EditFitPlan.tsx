@@ -266,7 +266,7 @@ const EditFitPlan = () => {
     <>
       <BackFitnessBtn />
       <Container className="mb-4">
-        <Form onSubmit={handleAddMove} className="mt-4 mx-4 form-fitfin">
+        <Form onSubmit={handleAddMove} className="mt-4 form-fitfin">
           <Row>
             <Col md>
               <Form.Group>
@@ -359,7 +359,7 @@ const EditFitPlan = () => {
               You're All Set!
             </div>
           ) : (
-            <div className="text-center text-primary mt-4 mb-2">
+            <div className="text-center text-primary mt-3 mb-2">
               <Badge
                 style={{
                   fontSize: "14px",

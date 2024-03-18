@@ -85,6 +85,11 @@ const Login = () => {
       return;
     } catch (error) {
       console.log(error);
+      setErr(true);
+      setErrMsg("Server might have run into some issues! sorry for the inconvenience");
+      setTimeout(() => {
+        setErr(false);
+      }, 5000);
       return;
     }
   };

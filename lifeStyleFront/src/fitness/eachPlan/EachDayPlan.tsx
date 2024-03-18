@@ -5,7 +5,7 @@ import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { DayPlanMoves, DayPlanMove } from "../../assets/FitnessInterfaces";
 import StatusCodes from "../../StatusCodes";
-import { Badge, Button, ListGroup, Modal } from "react-bootstrap";
+import { Badge, Button, Container, ListGroup, Modal } from "react-bootstrap";
 import ModalAddPlan from "./ModalAddPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import cp from "../ConstantsPlan";
@@ -434,90 +434,98 @@ const EachDayPlan = () => {
           </Button>
         </div>
 
-        <div className="page-explanations-homepanels mx-5 my-4">
-          <h2 className="text-center">Day Plans</h2>
-          <p className="text-center">
-            You can see the list of the day plans you created so far. <br />{" "}
-            Click on each one to see a YouTube video of how the move is done
-            properly. You can also delete the move from your day plan.
-          </p>
-        </div>
-        <div>
-          {groupedData &&
-            Object.keys(groupedData).map((day, idx) => (
-              <div key={day} className="text-center form-fitfin mt-4 mx-3">
-                <h2 className="text-primary">Day {day}</h2>
-                {groupedData[parseInt(day)].map((item, index) => (
-                  <ListGroup key={crypto.randomUUID()} as="ul">
-                    {cp.YOUTUBE_LINKS_MOVES[item.move_name] ? (
-                      <ListGroup.Item
-                        action
-                        key={index}
-                        style={{ fontSize: "18px" }}
-                        onClick={() =>
-                          handleMoveClicked(
-                            +day,
-                            item.move_name,
-                            item.day_plan_move_id,
-                            cp.YOUTUBE_LINKS_MOVES[item.move_name]
-                          )
-                        }
-                      >
-                        {item.move_name}{" "}
-                        <Badge className="ms-2 my-0 mx-0">&#127916;</Badge>
-                      </ListGroup.Item>
-                    ) : (
-                      // Handle the case when item.move_name is not found in YOUTUBE_LINKS_MOVES
-                      <ListGroup.Item
-                        action
-                        key={index}
-                        style={{ fontSize: "18px" }}
-                        onClick={() =>
-                          handleMoveClicked(
-                            +day,
-                            item.move_name,
-                            item.day_plan_move_id,
-                            ""
-                          )
-                        }
-                      >
-                        {item.move_name}
-                      </ListGroup.Item>
-                    )}
-                  </ListGroup>
-                ))}
-                <div key={crypto.randomUUID()} className="mt-3">
-                  <NavLink
-                    to={`${Urls.fitness.startWorkout}/${
-                      groupedData[parseInt(day)][0].day_plan_id
-                    }`}
-                  >
-                    <Button className="me-1" variant="outline-success">
-                      Start Workout
-                    </Button>
-                  </NavLink>
-                  <Button
-                    onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
-                    variant="outline-warning"
-                  >
-                    Add Exercise
-                  </Button>
-                  <br />
-                  <Button
-                    variant="outline-danger"
-                    className="mt-1"
-                    onClick={() =>
-                      clickDeleteDayPlan(
+        <Container>
+          <div
+            className="page-explanations-homepanels my-4"
+            style={{ margin: "auto", maxWidth: "1200px" }}
+          >
+            <h2 className="text-center">Day Plans</h2>
+            <p className="text-center">
+              You can see the list of the day plans you created so far. <br />{" "}
+              Click on each one to see a YouTube video of how the move is done
+              properly. You can also delete the move from your day plan.
+            </p>
+          </div>
+        </Container>
+
+        <Container>
+          <div>
+            {groupedData &&
+              Object.keys(groupedData).map((day, idx) => (
+                <div key={day} className="text-center form-fitfin mt-4">
+                  <h2 className="text-primary">Day {day}</h2>
+                  {groupedData[parseInt(day)].map((item, index) => (
+                    <ListGroup key={crypto.randomUUID()} as="ul">
+                      {cp.YOUTUBE_LINKS_MOVES[item.move_name] ? (
+                        <ListGroup.Item
+                          action
+                          key={index}
+                          style={{ fontSize: "18px" }}
+                          onClick={() =>
+                            handleMoveClicked(
+                              +day,
+                              item.move_name,
+                              item.day_plan_move_id,
+                              cp.YOUTUBE_LINKS_MOVES[item.move_name]
+                            )
+                          }
+                        >
+                          {item.move_name}{" "}
+                          <Badge className="ms-2 my-0 mx-0">&#127916;</Badge>
+                        </ListGroup.Item>
+                      ) : (
+                        // Handle the case when item.move_name is not found in YOUTUBE_LINKS_MOVES
+                        <ListGroup.Item
+                          action
+                          key={index}
+                          style={{ fontSize: "18px" }}
+                          onClick={() =>
+                            handleMoveClicked(
+                              +day,
+                              item.move_name,
+                              item.day_plan_move_id,
+                              ""
+                            )
+                          }
+                        >
+                          {item.move_name}
+                        </ListGroup.Item>
+                      )}
+                    </ListGroup>
+                  ))}
+                  <div key={crypto.randomUUID()} className="mt-3">
+                    <NavLink
+                      to={`${Urls.fitness.startWorkout}/${
                         groupedData[parseInt(day)][0].day_plan_id
-                      )
-                    }
-                  >
-                    Delete Day {day}
-                  </Button>
+                      }`}
+                    >
+                      <Button className="me-1" variant="outline-success">
+                        Start Workout
+                      </Button>
+                    </NavLink>
+                    <Button
+                      onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
+                      variant="outline-warning"
+                    >
+                      Add Exercise
+                    </Button>
+                    <br />
+                    <Button
+                      variant="outline-danger"
+                      className="mt-1"
+                      onClick={() =>
+                        clickDeleteDayPlan(
+                          groupedData[parseInt(day)][0].day_plan_id
+                        )
+                      }
+                    >
+                      Delete Day {day}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-        </div>
+              ))}
+          </div>
+        </Container>
 
         <ModalAddPlan
           show={modalShow}

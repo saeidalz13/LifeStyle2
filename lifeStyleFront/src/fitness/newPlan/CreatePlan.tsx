@@ -78,7 +78,7 @@ const CreatePlan = () => {
   return (
     <div id="create-fitnessplan-container">
       <Container className="mb-2 mt-4">
-        <Form onSubmit={handleValidation} className="mx-2 form-fitfin">
+        <Form onSubmit={handleValidation} className="form-fitfin">
           <Row className="align-items-center">
             <Col>
               <Form.Group>
