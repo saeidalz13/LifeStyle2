@@ -1,11 +1,13 @@
-import { NavLink, Outlet, useLoaderData } from "react-router-dom";
+import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
 import Urls from "../Urls";
 import BACKEND_URL from "../Config";
 import StatusCodes from "../StatusCodes";
 import { Navbar, Nav, Container } from "react-bootstrap";
+import { useAuth } from "../context/useAuth";
 
 const NavbarComp = () => {
-  const isAuth = useLoaderData() as boolean;
+  const navigateToHome = useNavigate();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
 
   async function handleSignOut() {
     const result = await fetch(`${BACKEND_URL}/signout`, {
@@ -14,12 +16,15 @@ const NavbarComp = () => {
     });
 
     if (result.status === StatusCodes.Ok) {
-      location.assign(Urls.home);
-      return;
+      setIsAuthenticated(false);
+      navigateToHome(Urls.home);
+      return
     }
 
     console.log("Failed to sign out the user!");
   }
+
+  
 
   return (
     <>
@@ -38,18 +43,26 @@ const NavbarComp = () => {
           </NavLink>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse>
-            {isAuth ? (
+            {isAuthenticated ? (
               <Nav className="ms-auto">
-                <Nav.Link className="text-primary" href={Urls.profile}>
+                <Nav.Link as={Link} className="text-primary" to={Urls.profile}>
                   Profile
                 </Nav.Link>
-                <Nav.Link className="text-success" href={Urls.finance.index}>
+                <Nav.Link
+                  as={Link}
+                  className="text-success"
+                  to={Urls.finance.index}
+                >
                   Finance
                 </Nav.Link>
-                <Nav.Link className="text-info" href={Urls.fitness.index}>
+                <Nav.Link
+                  as={Link}
+                  className="text-info"
+                  to={Urls.fitness.index}
+                >
                   Fitness
                 </Nav.Link>
-                <Nav.Link className="text-warning" href={Urls.about}>
+                <Nav.Link as={Link} className="text-warning" to={Urls.about}>
                   About
                 </Nav.Link>
                 <Nav.Link className="text-danger" onClick={handleSignOut}>
@@ -58,13 +71,13 @@ const NavbarComp = () => {
               </Nav>
             ) : (
               <Nav className="ms-auto">
-                <Nav.Link className="text-success" href={Urls.login}>
+                <Nav.Link as={Link} className="text-success" to={Urls.login}>
                   Log In
                 </Nav.Link>
-                <Nav.Link className="text-info" href={Urls.signup}>
+                <Nav.Link as={Link} className="text-info" to={Urls.signup}>
                   Sign Up
                 </Nav.Link>
-                <Nav.Link className="text-primary" href={Urls.about}>
+                <Nav.Link as={Link} className="text-primary" to={Urls.about}>
                   About
                 </Nav.Link>
               </Nav>

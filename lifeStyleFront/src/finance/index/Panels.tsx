@@ -1,5 +1,4 @@
 import {
-  useRouteLoaderData,
   NavLink,
   //  Outlet
 } from "react-router-dom";
@@ -10,11 +9,6 @@ import NewBudgSvg from "../../svg/NewBudget.svg";
 import { Container, Row, Col, Button } from "react-bootstrap";
 
 const Panels = () => {
-  const isAuth = useRouteLoaderData("navbar") as boolean;
-  if (!isAuth) {
-    location.assign(Urls.login);
-  }
-
   return (
     <>
       <Container className="text-center mt-1 mb-4">

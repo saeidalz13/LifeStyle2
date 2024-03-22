@@ -162,15 +162,12 @@ const Signup = () => {
     <>
       <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
-          <div className="col mx-5">
+          <div className="col" style={{ maxWidth: "400px", margin: "auto" }}>
             <div style={{ marginBottom: "20px" }}>
               <Link to={Urls.home}>
-                <button
-                  className="btn btn-success"
-                  style={{ padding: "8px 20px" }}
-                >
-                  Home
-                </button>
+                <div className="text-center">
+                  <button className="btn btn-success px-5">Home</button>
+                </div>
               </Link>
             </div>
             <Form onSubmit={handleSubmitSignup}>
@@ -220,25 +217,37 @@ const Signup = () => {
           </Link>
         </div>
         {errMsg !== "" ? (
-          <div style={{fontSize:"18px"}}  className="alert alert-warning mt-2 text-center mx-5 p-2">
+          <div
+            style={{ fontSize: "18px" }}
+            className="alert alert-warning mt-2 text-center mx-5 p-2"
+          >
             {errMsg}
           </div>
         ) : (
           errMsg
         )}
         {success && (
-          <div style={{fontSize:"18px"}} className="alert alert-success mt-2 text-center mx-5 p-2">
+          <div
+            style={{ fontSize: "18px" }}
+            className="alert alert-success mt-2 text-center mx-5 p-2"
+          >
             Signed in successfully! Redirecting to home page...
           </div>
         )}
       </div>
 
-      <div style={{fontSize:"30px"}} className="text-center text-light mb-3">OR</div>
+      <div style={{ fontSize: "30px" }} className="text-center text-light mb-3">
+        OR
+      </div>
       <div className="text-center">
-
-        <Button variant="dark" style={{boxShadow:"1px 1px 5px rgb(0, 86, 86)"}} onClick={handleGoogleSignIn}>
+        <Button
+          variant="dark"
+          style={{ boxShadow: "1px 1px 5px rgb(0, 86, 86)" }}
+          onClick={handleGoogleSignIn}
+        >
           {" "}
-          <span style={{fontSize:"18px"}}>Sign In With Google </span> <img src={gIcon} alt="Google Icon" height={"60px"} width={"60px"} />
+          <span style={{ fontSize: "18px" }}>Sign In With Google </span>{" "}
+          <img src={gIcon} alt="Google Icon" height={"60px"} width={"60px"} />
         </Button>
       </div>
     </>

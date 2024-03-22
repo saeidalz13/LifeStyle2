@@ -8,12 +8,15 @@ import {
   Row,
 } from "react-bootstrap";
 import Panels from "./Panels";
-import { NavLink, useRouteLoaderData } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Urls from "../Urls";
 import { useState } from "react";
+import { useAuth } from "../context/useAuth";
+
 
 const Home = () => {
-  const isAuth = useRouteLoaderData("navbar") as boolean;
+  const { isAuthenticated } = useAuth();
+
   const [openFinance, setOpenFinance] = useState(false);
   const [openFitness, setOpenFitness] = useState(false);
 
@@ -86,7 +89,7 @@ const Home = () => {
                 </ListGroupItem>
               </ListGroup>
             </div>
-            {isAuth ? (
+            {isAuthenticated ? (
               ""
             ) : (
               <div
@@ -119,7 +122,7 @@ const Home = () => {
           </Col>
 
           <Col lg>
-            <Panels isAuth={isAuth} />
+            <Panels isAuth={isAuthenticated} />
           </Col>
         </Row>
       </Container>

@@ -4,17 +4,12 @@ import rl from "../../svg/RotatingLoad.svg";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
-import { useRouteLoaderData, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Badge, Button } from "react-bootstrap";
 import ScrUp from "../../images/ScrollUp.png";
 import BackFinance from "../../misc/BackFinance";
 
 const NewBudget = () => {
-  const isAuth = useRouteLoaderData("navbar") as boolean;
-  if (!isAuth) {
-    location.assign(Urls.login);
-  }
-
   const minMoney = "0.00";
   const minSave = "0.00";
   const step = "0.01";

@@ -13,7 +13,7 @@ const Panels = (props: Authorized) => {
           <h2 style={{ color: "#FFBF00" }} className="mb-2">
             Finance
           </h2>
-          <NavLink to={Urls.finance.index}>
+          <NavLink to={props.isAuth ? Urls.finance.index: "#"}>
             <Button
               className={
                 props.isAuth
@@ -39,7 +39,7 @@ const Panels = (props: Authorized) => {
           <h2 style={{ color: "#FFBF00" }} className="mb-2">
             Fitness
           </h2>
-          <NavLink to={Urls.fitness.index}>
+          <NavLink to={props.isAuth ? Urls.fitness.index: "#"}>
             <button
               className={
                 props.isAuth

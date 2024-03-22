@@ -2,6 +2,7 @@ class Urls {
   home = "/";
   profile = "/profile";
   deleteProf = "/delete-profile";
+  reduxEmail = "/retrieve-email-redux-from-google-token";
   signup = "/signup";
   login = "/login";
   signout = "/signout";

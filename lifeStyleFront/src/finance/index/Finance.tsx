@@ -1,13 +1,16 @@
 import Panels from "./Panels";
 import Urls from "../../Urls";
-import { useRouteLoaderData } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
 import { Accordion, Button, Col, Container, Row } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import WS_URL from "../../WsUrl";
 import rl from "../../svg/RotatingLoad.svg";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
 
 const Finance = () => {
+  const navigateToHome = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [startOrEndConn, setStartOrEndConn] = useState<"start" | "end">(
     "start"
   );
@@ -18,11 +21,6 @@ const Finance = () => {
   const [responses, setResponses] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [msgLoading, setMsgLoading] = useState(false);
-
-  const isAuth = useRouteLoaderData("navbar") as boolean;
-  if (!isAuth) {
-    location.assign(Urls.login);
-  }
 
   const accBodyStyle = {
     color: "rgba(189, 255, 254, 0.75)",
@@ -81,13 +79,17 @@ const Finance = () => {
   };
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigateToHome(Urls.home);
+      return;
+    }
     const targetElement = document.getElementById("main-navbar");
 
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: "smooth" });
       window.scrollTo(0, 0);
     }
-  }, []);
+  }, [isAuthenticated, navigateToHome]);
 
   return (
     <div id="main-finance-div">

@@ -15,13 +15,12 @@ import {
 import Urls from "./Urls";
 import NavbarComp from "./layout/Navbar";
 import Invalid from "./Invalid";
-import { isAuthenticated } from "./loaders/NavbarLoader";
+
 import ShowAllBudgets from "./finance/budget/ShowAllBudgets";
 import About from "./misc/About";
 import UserProfile from "./misc/UserProfile";
-import { fetchUserInfo } from "./loaders/fetchUserProfile";
-import EachBudget from "./finance/budget/EachBudget";
 
+import EachBudget from "./finance/budget/EachBudget";
 import EditFitPlan from "./fitness/newPlan/EditFitPlan";
 import EachDayPlan from "./fitness/eachPlan/EachDayPlan";
 import StartWorkout from "./fitness/startWorkout/StartWorkout";
@@ -32,12 +31,11 @@ const router = createBrowserRouter(
       <Route path={Urls.signup} element={<Signup />} />
       <Route path={Urls.login} element={<Login />} />
 
-      <Route element={<NavbarComp />} loader={isAuthenticated} id="navbar">
+      <Route element={<NavbarComp />} id="navbar">
         <Route path={Urls.home} element={<Home />} />
         <Route
           path={Urls.profile}
           element={<UserProfile />}
-          loader={fetchUserInfo}
         />
 
         {/* Finance */}

@@ -77,16 +77,17 @@ const Login = () => {
         return;
       }
 
-      setErrMsg("Unexpected Error Happened, Try again later!");
+      setErrMsg("Unexpected Error Happened, Try again later!:" + result.status);
       setTimeout(() => {
         setErrMsg("");
         setErr(false);
       }, 5000);
-      return;
     } catch (error) {
       console.log(error);
       setErr(true);
-      setErrMsg("Server might have run into some issues! sorry for the inconvenience");
+      setErrMsg(
+        "Server might have run into some issues! sorry for the inconvenience"
+      );
       setTimeout(() => {
         setErr(false);
       }, 5000);
@@ -98,15 +99,12 @@ const Login = () => {
     <>
       <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
-          <div className="col mx-5">
+          <div className="col" style={{ maxWidth: "400px", margin: "auto" }}>
             <div style={{ marginBottom: "20px" }}>
               <Link to={Urls.home}>
-                <button
-                  className="btn btn-success"
-                  style={{ padding: "8px 20px" }}
-                >
-                  Home
-                </button>
+                <div className="text-center">
+                  <button className="btn btn-success px-5">Home</button>
+                </div>
               </Link>
             </div>
             <form onSubmit={handleSubmitLogin}>
@@ -129,7 +127,7 @@ const Login = () => {
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
                 <button type="submit" className="btn btn-danger submit-btn">
-                  {loading ? <img  src={rl} alt="Rotation" /> : "Submit"}
+                  {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
                 </button>
               </div>
             </form>

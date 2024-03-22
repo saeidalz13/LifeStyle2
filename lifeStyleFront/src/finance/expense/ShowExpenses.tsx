@@ -346,7 +346,7 @@ const ShowExpenses = () => {
 
       <Container className="mt-1 mb-4">
         <Row>
-          <Col>
+          <Col lg>
             <div>
               <h3 className="text-light text-center mt-4 mb-3">
                 Submit New Expense
@@ -442,7 +442,7 @@ const ShowExpenses = () => {
             </Form>
           </Col>
 
-          <Col>
+          <Col lg>
             <div className="container">
               <div className="row mt-4">
                 <div>

@@ -1,23 +1,14 @@
 import { useState } from "react";
 import { Button, Container, Modal, Alert, Row, Col } from "react-bootstrap";
-import { useLoaderData } from "react-router-dom";
 import BACKEND_URL from "../Config";
 import Urls from "../Urls";
 import StatusCodes from "../StatusCodes";
 import BackHomeBtn from "./BackHomeBtn";
+import { useAuth } from "../context/useAuth";
 
-interface User {
-  id: number;
-  email: string;
-  password: string;
-  created_at: {
-    String: string;
-    Valid: boolean;
-  };
-}
 
 const UserProfile = () => {
-  const user = useLoaderData() as User | null;
+  const { userEmail } = useAuth();
 
   const [msg, setMsg] = useState("");
   const [show, setShow] = useState(false);
@@ -34,9 +25,6 @@ const UserProfile = () => {
           Accept: "application/json",
           "Content-Type": "application/json;charset=UTF-8",
         },
-        body: JSON.stringify({
-          user: user,
-        }),
       });
 
       if (result.status === StatusCodes.UnAuthorized) {
@@ -86,7 +74,7 @@ const UserProfile = () => {
         <Row className="mb-2">
           <Col>
             <div className="border border-dark all-budget-choices text-center p-3 rounded">
-              <div className="h4 text-light">{user ? user.email : ""}</div>
+              <div className="h4 text-light">{userEmail}</div>
               <div className="mt-3">
                 <Button
                   variant="danger"
