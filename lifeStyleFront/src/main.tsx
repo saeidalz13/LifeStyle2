@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./css/bootstrap.min.css";
 import "./css/style.css";
-import { AuthProvider } from "./context/Context";
+import { AuthProvider } from "./context/AuthContext.tsx";
 
 // allow us to connect redux to react components
 // import { Provider } from "react-redux";

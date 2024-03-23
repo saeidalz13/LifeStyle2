@@ -52,7 +52,7 @@ export interface ReqAddPlanRecord {
   move_name: string;
   week: number;
   set_record: number[];
-  reps: number[];
+  reps: Array<number>;
   weight: number[];
 }
 

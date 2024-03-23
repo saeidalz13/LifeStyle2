@@ -24,12 +24,14 @@ import { ReqAddPlanRecord } from "../../assets/FitnessInterfaces";
 import cn from "../ConstantsPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import ModalUpdatePlanRecord from "./ModalUpdatePlanRecord";
+import { useAuth } from "../../context/useAuth";
 
 interface GroupedPlanRecords {
   [key: number]: PlanRecord[];
 }
 
 const StartWorkout = () => {
+  const { userId } = useAuth();
   const mount = useRef(false);
   const { id } = useParams();
 
@@ -41,7 +43,6 @@ const StartWorkout = () => {
 
   const [addSetErrs, setAddSetErrs] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [week, setWeek] = useState(1);
   const [moveName, setMoveName] = useState("");
   const [reps, setReps] = useState<number>(cn.REPS[0]);
@@ -61,6 +62,29 @@ const StartWorkout = () => {
     PlanRecords | "error" | "waiting"
   >("waiting");
 
+  useEffect(() => {
+    if (
+      dayPlanMoves &&
+      dayPlanMoves !== "error" &&
+      dayPlanMoves !== "waiting"
+    ) {
+      const storedData = sessionStorage.getItem(
+        `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`
+      );
+      if (storedData) {
+        const _toSubmit = JSON.parse(storedData) as ReqAddPlanRecord;
+        setMoveName(_toSubmit.move_name || dayPlanMoves.moves[0].move_name);
+        setAddedReps(_toSubmit.reps);
+        setAddedWeights(_toSubmit.weight);
+        setReps(_toSubmit.reps[_toSubmit.reps.length - 1] || cn.REPS[0]);
+        setWeights(
+          _toSubmit.weight[_toSubmit.weight.length - 1] || cn.WEIGHTS[0]
+        );
+        setWeek(_toSubmit.week)
+      }
+    }
+  }, [dayPlanMoves, userId]);
+
   const handleAddSet = () => {
     setAddSetErrs("");
     setPossibleSuccess("");
@@ -68,8 +92,33 @@ const StartWorkout = () => {
     setLoading(false);
 
     if (reps !== 0) {
-      setAddedReps((prevReps) => [...prevReps, +reps]);
-      setAddedWeights((prevWeights) => [...prevWeights, weights]);
+      const newAddedReps = [...addedReps, +reps];
+      const newAddedWeights = [...addedWeights, weights]; 
+      setAddedReps(newAddedReps);
+      setAddedWeights(newAddedWeights);
+
+      const setRecords = new Array(newAddedReps.length)
+        .fill(null)
+        .map((_, i) => i + 1);
+
+      if (
+        dayPlanMoves &&
+        dayPlanMoves !== "error" &&
+        dayPlanMoves !== "waiting"
+      ) {
+        const _moves = {
+          move_name: moveName,
+          week: +week,
+          reps: newAddedReps,
+          weight: newAddedWeights,
+          set_record: setRecords,
+          day_plan_move_id: +dayPlanMoves.moves[0].day_plan_move_id,
+        };
+        sessionStorage.setItem(
+          `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`,
+          JSON.stringify(_moves)
+        );
+      }
       return;
     }
     setAddSetErrs("Enter non-zero value both reps and weights!");
@@ -85,18 +134,44 @@ const StartWorkout = () => {
     setPossibleSuccess("");
     setPossibleErrs("");
 
-    setAddedReps((prevReps) => prevReps.filter((_, idxRep) => idxRep !== idx));
-    setAddedWeights((prevWeights) =>
-      prevWeights.filter((_, idxWgt) => idxWgt !== idx)
-    );
+    const newReps = addedReps.filter((_, idxRep) => idxRep !== idx);
+    const newWeights = addedWeights.filter((_, idxWgt) => idxWgt !== idx);
 
-    return;
+    setAddedReps(newReps);
+    setAddedWeights(newWeights);
+
+    if (
+      dayPlanMoves &&
+      dayPlanMoves !== "error" &&
+      dayPlanMoves !== "waiting"
+    ) {
+      if (newReps.length === 0) {
+        sessionStorage.removeItem(
+          `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`
+        );
+        return;
+      }
+
+      const setRecords = new Array(newReps.length)
+        .fill(null)
+        .map((_, i) => i + 1);
+      const _moves = {
+        move_name: moveName,
+        week: +week,
+        reps: newReps,
+        weight: newWeights,
+        set_record: setRecords,
+        day_plan_move_id: +dayPlanMoves.moves[0].day_plan_move_id,
+      };
+      sessionStorage.setItem(
+        `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`,
+        JSON.stringify(_moves)
+      );
+    }
   };
 
   const handlePlanRecordRowClick = (moveRec: PlanRecord) => {
-    // First set to null
     setSelectedMoveToUpdate(null);
-    // Then set to new value
     setTimeout(() => setSelectedMoveToUpdate(moveRec), 0);
     setUpdateRecModalShow(true);
     return;
@@ -207,6 +282,9 @@ const StartWorkout = () => {
           setPossibleSuccess("Record added successfully!");
           setAddedReps([]);
           setAddedWeights([]);
+          sessionStorage.removeItem(
+            `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`
+          );
           setTimeout(() => {
             setPossibleSuccess("");
           }, 5000);
@@ -556,7 +634,21 @@ const StartWorkout = () => {
                   <Form.Group className="text-center mx-5">
                     <Form.Select
                       value={week}
-                      onChange={(e) => setWeek(+e.target.value)}
+                      onChange={(e) => {
+                        setWeek(+e.target.value);
+                        const storedData = sessionStorage.getItem(
+                          `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`
+                        );
+                        if (storedData) {
+                          const _data = JSON.parse(
+                            storedData
+                          ) as ReqAddPlanRecord;
+                          _data.week = +e.target.value;
+                          sessionStorage.setItem(`movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`,
+                            JSON.stringify(_data)
+                          );
+                        }
+                      }}
                     >
                       {cn.WEEKS.map((w) => (
                         <option key={w} value={w}>
@@ -570,7 +662,25 @@ const StartWorkout = () => {
 
               <Row>
                 <Form.Group>
-                  <Form.Select onChange={(e) => setMoveName(e.target.value)}>
+                  <Form.Select
+                    value={moveName}
+                    onChange={(e) => {
+                      setMoveName(e.target.value);
+                      const storedData = sessionStorage.getItem(
+                        `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`
+                      );
+                      if (storedData) {
+                        const _data = JSON.parse(
+                          storedData
+                        ) as ReqAddPlanRecord;
+                        _data.move_name = e.target.value;
+                        sessionStorage.setItem(
+                          `movesToSubmit${dayPlanMoves.moves[0].day_plan_move_id}_userID${userId}`,
+                          JSON.stringify(_data)
+                        );
+                      }
+                    }}
+                  >
                     {dayPlanMoves.moves.map((move) => (
                       <option key={move.move_name} value={move.move_name}>
                         {move.move_name}
@@ -584,7 +694,10 @@ const StartWorkout = () => {
                 <Col xs>
                   <Form.Group>
                     <Form.Label className="text-primary">Reps:</Form.Label>
-                    <Form.Select onChange={(e) => setReps(+e.target.value)}>
+                    <Form.Select
+                      value={reps}
+                      onChange={(e) => setReps(+e.target.value)}
+                    >
                       {cn.REPS.map((rep) => (
                         <option value={rep} key={rep}>
                           {rep}
@@ -596,7 +709,10 @@ const StartWorkout = () => {
                 <Col xs>
                   <Form.Group>
                     <Form.Label className="text-primary">Weight:</Form.Label>
-                    <Form.Select onChange={(e) => setWeights(+e.target.value)}>
+                    <Form.Select
+                      value={weights}
+                      onChange={(e) => setWeights(+e.target.value)}
+                    >
                       {cn.WEIGHTS.map((weight) => (
                         <option value={weight} key={weight}>
                           {weight === 0 ? "No Weight" : weight}
