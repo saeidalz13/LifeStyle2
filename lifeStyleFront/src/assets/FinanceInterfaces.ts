@@ -7,7 +7,10 @@ export interface Budget {
   eatout: string;
   entertainment: string;
   savings: string;
-  income: string;
+  income: {
+    String: string;
+    Valid: boolean;
+  };
 }
 
 export interface Budgets {
@@ -94,7 +97,13 @@ export type TAllExpensesArr = {
 export type TNoExpensesData = "nodata";
 
 export type TExpense = TSingleCapital | TSingleEatout | TSingleEntertaintment;
-export type TExpenseData = "waiting"|TCapitalExpenses|TEatoutExpenses|TEntertainmentExpenses|null|"nodata"
+export type TExpenseData =
+  | "waiting"
+  | TCapitalExpenses
+  | TEatoutExpenses
+  | TEntertainmentExpenses
+  | null
+  | "nodata";
 
 export interface IExpenseTypes {
   cap: "capital";

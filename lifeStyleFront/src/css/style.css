@@ -38,6 +38,20 @@ footer {
 .all-budget-choices, .expenses-table {
     box-shadow: var(--default-box-shadow);
  }
+
+.each-budget-card {
+    box-shadow: var(--default-box-shadow);
+    width: 21rem;
+    background-color: var(--div-generic-color);
+}
+
+.table-each-budget-card {
+    font-size: 17px;
+}
+
+.table-each-budget-card-row {
+    background-color: var(--accordion-btn-color);
+}
  
 .budget-panels {
     width: 90%;
@@ -263,3 +277,10 @@ transform: translateX(5px); /* Arrow moves right on hover */
     font-size: 14px;
     line-height: 20px; 
   }
+
+
+.list-grp-item-all-budgets {
+    border-radius: 10px;
+    background-color: var(--accordion-btn-color);
+    margin-bottom: 5px;
+}

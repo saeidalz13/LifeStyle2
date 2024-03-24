@@ -15,9 +15,9 @@ const InsideGenericDiv = (props: InsideGenericDivProps) => {
 
   return (
     <div style={style}>
-      <MainDivHeader text={props.header} />
-      {props.texts.map((t) => (
-        <p>{t}</p>
+      <MainDivHeader text={props.header} style={null} />
+      {props.texts.map((text, idx) => (
+        <p key={idx}>{text}</p>
       ))}
     </div>
   );

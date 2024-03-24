@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Container,
   Pagination,
@@ -16,14 +16,24 @@ import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import rl from "../../svg/RotatingLoad.svg";
 import BackFinance from "../../misc/BackFinance";
+import { useAuth } from "../../context/useAuth";
+import { useSpring, animated } from "react-spring";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
 
 const ShowAllBudgets = () => {
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
   const limit = 2;
   const mounted = useRef(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [numBudgets, setNumBudgets] = useState<number>(0);
   const [numbers, setNumbers] = useState<null | Array<number>>(null);
   const [budgets, setBudgets] = useState<Waiting | Budgets | null>("waiting");
+
+  const springProps = useSpring({
+    to: { opacity: 1, transform: "translateX(0)" }, // End at original position
+    from: { opacity: 0, transform: "translateX(-100px)" }, // Start 100px to the left
+    delay: 20,
+  });
 
   const changeCurrentPage = (idx: number) => {
     mounted.current = false;
@@ -31,60 +41,87 @@ const ShowAllBudgets = () => {
   };
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
 
-      const fetchAllBudgets = async (): Promise<null | Budgets> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.showBudgets}?limit=${limit}&offset=${
-              (currentPage - 1) * limit
-            }`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
+  useEffect(() => {
+    const offset = (currentPage - 1) * limit;
 
-          if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return null;
+    const fetchAllBudgets = async (): Promise<null | Budgets> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.finance.showBudgets}?limit=${limit}&offset=${offset}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
+        );
 
-          if (result.status === StatusCodes.InternalServerError) {
-            return null;
-          }
-
-          if (result.status === StatusCodes.Ok) {
-            return result.json();
-          }
-
+        if (result.status === StatusCodes.UnAuthorized) {
           location.assign(Urls.login);
           return null;
-        } catch (error) {
-          console.log(error);
+        }
+
+        if (result.status === StatusCodes.InternalServerError) {
           return null;
         }
-      };
 
-      const executeFetch = async () => {
-        const receivedBudgets = await fetchAllBudgets();
-        if (receivedBudgets) {
-          setBudgets(receivedBudgets);
-          setNumBudgets(receivedBudgets.num_budgets);
-
-          const nums = [];
-          const upperBound = receivedBudgets.num_budgets / limit;
-          for (let i = 1; i <= upperBound; i++) {
-            nums.push(i);
-          }
-          setNumbers(nums);
+        if (result.status === StatusCodes.Ok) {
+          return result.json();
         }
-      };
 
-      executeFetch();
+        location.assign(Urls.login);
+        return null;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    };
+
+    const executeFetch = async () => {
+      const receivedBudgets = await fetchAllBudgets();
+      if (receivedBudgets) {
+        setBudgets(receivedBudgets);
+        
+        const localStorageKey = `user${userId}_limit${limit}_offset${offset}`;
+        localStorage.setItem(
+          localStorageKey,
+          JSON.stringify(receivedBudgets)
+        );
+
+        const nums = [];
+        const upperBound = receivedBudgets.num_budgets / limit;
+        for (let i = 1; i <= upperBound; i++) {
+          nums.push(i);
+        }
+        setNumbers(nums);
+      }
+    };
+
+    if (userId !== -1) {
+      const localStorageKey = `user${userId}_limit${limit}_offset${offset}`;
+      const storedData = localStorage.getItem(localStorageKey);
+      if (storedData) {
+        const data = JSON.parse(storedData) as Budgets;
+        setBudgets(data);
+
+        const nums = [];
+        const upperBound = data.num_budgets / limit;
+        for (let i = 1; i <= upperBound; i++) {
+          nums.push(i);
+        }
+        setNumbers(nums);
+      } else {
+        executeFetch();
+      }
     }
-  }, [budgets, currentPage, numBudgets]);
+
+  }, [currentPage, userId]);
 
   if (budgets === "waiting") {
     return (
@@ -117,69 +154,80 @@ const ShowAllBudgets = () => {
   }
 
   return (
-    <div id="show-all-bugdets-section" className="mb-4">
+    <animated.div style={springProps} className="mb-4">
       <BackFinance />
       <Container className="mt-3 text-center mb-2">
         <Row>
           {budgets.budgets.length > 0
-            ? // ? records.map((budget, idx) => (
-              budgets.budgets.map((budget, idx) => (
-                <Col key={idx} lg>
-                  <ListGroup
-                    style={{
-                      boxShadow: "1px 1px 10px 1px rgba(0, 86, 86, 0.5)",
-                    }}
-                    className="rounded border border-dark mb-2 px-3 py-2 page-explanations-homepanels"
-                  >
-                    <h5 className="mt-2 text-light">
-                      &#128176; {budget.budget_name} &#128176;
-                    </h5>
-                    <ListGroup.Item>
-                      &#128337;{" "}
-                      <span style={{ color: "rgba(0, 205, 68, 0.8)" }}>
-                        Start Date:{" "}
+            ? budgets.budgets.map((budget, idx) => (
+                <Col key={idx} className="mb-2" lg>
+                  <div className="page-explanations">
+                    <ListGroup
+                      style={{
+                        boxShadow: "1px 1px 10px 1px rgba(0, 86, 86, 0.5)",
+                      }}
+                      className="rounded border border-dark mb-2 p-4"
+                    >
+                      <MainDivHeader
+                        text={`💰 ${budget.budget_name} 💰`}
+                        style={null}
+                      />
+
+                      <ListGroup.Item className="list-grp-item-all-budgets">
+                        &#128337; <b>Start Date:</b>{" "}
                         {budget.start_date.substring(
                           0,
                           budget.start_date.length - 10
-                        )}{" "}
-                      </span>
-                    </ListGroup.Item>
+                        )}
+                      </ListGroup.Item>
 
-                    <ListGroup.Item>
-                      &#128337;{" "}
-                      <span style={{ color: "rgba(255, 93, 154, 0.8)" }}>
-                        End Date:{" "}
+                      <ListGroup.Item className="list-grp-item-all-budgets">
+                        &#128337; <b>End Date:</b>{" "}
                         {budget.end_date.substring(
                           0,
                           budget.end_date.length - 10
-                        )}{" "}
-                      </span>
-                    </ListGroup.Item>
-                    <div className="mt-2 mb-1">
-                      <NavLink
-                        to={`${Urls.finance.showBudgets}/${budget.budget_id}`}
-                      >
-                        <Button
-                          key={crypto.randomUUID()}
-                          variant="outline-primary"
-                          className="px-4 all-budget-choices"
+                        )}
+                      </ListGroup.Item>
+
+                      <ListGroup.Item className="list-grp-item-all-budgets">
+                        <b>Total Budgeted: </b>
+                        {budget.income.String}
+                      </ListGroup.Item>
+
+                      <ListGroup.Item className="list-grp-item-all-budgets">
+                        <b>Savings: </b>
+                        {budget.savings}
+                      </ListGroup.Item>
+
+                      <div className="mt-2 mb-1">
+                        <NavLink
+                          to={`${Urls.finance.showBudgets}/${budget.budget_id}`}
+                          state={{ idBudget: budget }}
                         >
-                          View
-                        </Button>
-                      </NavLink>
-                    </div>
-                  </ListGroup>
+                          <Button
+                            key={crypto.randomUUID()}
+                            variant="outline-light"
+                            className="px-4 all-budget-choices"
+                          >
+                            View
+                          </Button>
+                        </NavLink>
+                      </div>
+                    </ListGroup>
+                  </div>
                 </Col>
               ))
             : ""}
         </Row>
-        <Row className="mt-2">
+        <Row className="mt-3">
           <Col xs={12} className="d-flex justify-content-center">
             <Pagination>
               {numbers
                 ? numbers.map((n, idx) => (
                     <Pagination.Item
-                      className={`${currentPage === n ? "active" : ""}`}
+                      className={`${
+                        currentPage === n ? "active" : ""
+                      } text-dark`}
                       key={idx}
                       onClick={() => changeCurrentPage(n)}
                     >
@@ -191,12 +239,7 @@ const ShowAllBudgets = () => {
           </Col>
         </Row>
       </Container>
-      {/* <div className="text-center mt-3">
-        <Button variant="info" onClick={() => window.scrollTo(0, 0)}>
-          <img src={ScrUp} height={30} />
-        </Button>
-      </div> */}
-    </div>
+    </animated.div>
   );
 };
 

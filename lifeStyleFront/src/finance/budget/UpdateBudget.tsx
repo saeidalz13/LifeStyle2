@@ -1,4 +1,4 @@
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef, FormEvent } from "react";
 import {
   ListGroup,
@@ -14,6 +14,9 @@ import Urls from "../../Urls";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import { Budget, Balance } from "../../assets/FinanceInterfaces";
+import { useAuth } from "../../context/useAuth";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
+import { useSpring, animated } from "react-spring";
 
 interface UpdatedResp {
   updated_budget: Budget;
@@ -21,12 +24,17 @@ interface UpdatedResp {
 }
 
 const EachBudget = () => {
+  const loc = useLocation();
+  const balanceState = loc.state?.balance as Balance | undefined;
+  const budgetState = loc.state?.budget as Budget | undefined;
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
+
   const [loading, setLoading] = useState<boolean>(false);
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
   const [successRes, setSuccessRes] = useState(false);
 
   const step = "0.01";
-  // const incomeRef = useRef<HTMLInputElement>(null);
   const savingsRef = useRef<HTMLInputElement>(null);
   const capitalRef = useRef<HTMLInputElement>(null);
   const eatoutRef = useRef<HTMLInputElement>(null);
@@ -34,71 +42,134 @@ const EachBudget = () => {
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [trigger, setTrigger] = useState<boolean>(false);
 
-  const { id } = useParams();
-  const mounted = useRef(true);
+  const { id: budgetIdParam } = useParams();
+  const springProps = useSpring({
+    to: { opacity: 1, transform: "translateY(0)" },
+    from: { opacity: 0, transform: "translateY(-20px)" },
+    delay: 20,
+  });
 
   useEffect(() => {
-    if (mounted.current) {
-      mounted.current = false;
-      const fetchDataBudget = async (): Promise<Budget | null> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.showBudgets}/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth, trigger]);
 
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          } else {
-            console.log("Failed to fetch the budget data");
-            return null;
+  useEffect(() => {
+    const fetchDataBudget = async (): Promise<Budget | null> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.finance.showBudgets}/${budgetIdParam}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
-        } catch (error) {
-          console.log(error);
+        );
+
+        if (result.status === StatusCodes.Ok) {
+          return await result.json();
+        } else {
+          console.log("Failed to fetch the budget data");
           return null;
         }
-      };
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    };
 
-      const fetchDataBalance = async (): Promise<Balance | null> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          } else {
-            console.log("Failed to fetch the balance data");
-            return null;
+    const fetchDataBalance = async (): Promise<Balance | null> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${budgetIdParam}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
-        } catch (error) {
-          console.log(error);
+        );
+
+        if (result.status === StatusCodes.Ok) {
+          return await result.json();
+        } else {
+          console.log("Failed to fetch the balance data");
           return null;
         }
-      };
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    };
+    // Handling budget status
+    // If the budget came from location state
+    if (budgetState) {
+      setBudget(budgetState);
+      const storedBudget = localStorage.getItem(
+        `budget_user${userId}_budget${budgetIdParam}`
+      );
+      if (!storedBudget && userId !== -1) {
+        localStorage.setItem(
+          `budget_user${userId}_budget${budgetIdParam}`,
+          JSON.stringify(budgetState)
+        );
+      }
 
-      // Invoke the fetchDataBudget and fetchDataBalance to set the state
-      const updateBudget = async () => {
-        const budgetData = await fetchDataBudget();
-        setBudget(budgetData);
-      };
-      const updateBalance = async () => {
-        const balanceData = await fetchDataBalance();
-        setBalance(balanceData);
-      };
+      // If budget did not exist in location state (e.g. reloading)
+    } else {
+      const storedBudget = localStorage.getItem(
+        `budget_user${userId}_budget${budgetIdParam}`
+      );
+      if (storedBudget) {
+        setBudget(JSON.parse(storedBudget));
+      } else {
+        const updateBudget = async () => {
+          const budgetData = await fetchDataBudget();
+          if (budgetData && userId !== -1) {
+            localStorage.setItem(
+              `budget_user${userId}_budget${budgetIdParam}`,
+              JSON.stringify(budgetData)
+            );
+          }
 
-      updateBudget();
+          setBudget(budgetData);
+        };
+        updateBudget();
+      }
+    }
+
+    const updateBalance = async () => {
+      if (balanceState) {
+        setBalance(balanceState);
+        return;
+      }
+
+      const storedBalance = localStorage.getItem(
+        `balance_user${userId}_budget${budgetIdParam}`
+      );
+      if (storedBalance) {
+        setBalance(JSON.parse(storedBalance));
+        return;
+      }
+
+      const balanceData = await fetchDataBalance();
+      setBalance(balanceData);
+
+      if (balanceData && userId !== -1) {
+        localStorage.setItem(
+          `balance_user${userId}_budget${budgetIdParam}`,
+          JSON.stringify(balanceData)
+        );
+      }
+    };
+
+    if (userId !== -1) {
       updateBalance();
     }
-  }, [id, budget, balance]);
+  }, [budgetIdParam, userId, budgetState, balanceState]);
 
   async function handleUpdateBudget(e: FormEvent) {
     e.preventDefault();
@@ -106,7 +177,7 @@ const EachBudget = () => {
     setPossibleErrsMsg("");
     setSuccessRes(false);
 
-    if (id) {
+    if (budgetIdParam) {
       if (
         // incomeRef.current &&
         savingsRef.current &&
@@ -115,14 +186,10 @@ const EachBudget = () => {
         entertainmentRef.current &&
         budget
       ) {
-        // let incomeData = incomeRef.current.value;
         let savingsData = savingsRef.current.value;
         let capitalData = capitalRef.current.value;
         let eatoutData = eatoutRef.current.value;
         let entertainmentData = entertainmentRef.current.value;
-
-        // budget source
-        // const updatedIncome = +budget.income + +incomeData;
 
         // budget sink
         const updatedSavings = +budget.savings + +savingsData;
@@ -153,10 +220,6 @@ const EachBudget = () => {
 
         // To prevent the error in golang and postgres!
         let nullVals = 0;
-        // if (!incomeData) {
-        //   nullVals++;
-        //   incomeData = "0";
-        // }
         if (!savingsData) {
           nullVals++;
           savingsData = "0";
@@ -186,7 +249,7 @@ const EachBudget = () => {
         // Sending data
         try {
           const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.updateBudget}/${budget?.budget_id}`,
+            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.updateBudget}/${budgetIdParam}`,
             {
               method: "PATCH",
               credentials: "include",
@@ -196,7 +259,7 @@ const EachBudget = () => {
                 capital: capitalData,
                 eatout: eatoutData,
                 entertainment: entertainmentData,
-                budget_id: +id,
+                budget_id: +budgetIdParam,
               }),
               headers: {
                 Accept: "application/json",
@@ -220,11 +283,23 @@ const EachBudget = () => {
             setTimeout(() => {
               setSuccessRes(false);
             }, 5000);
+
+            localStorage.setItem(
+              `balance_user${userId}_budget${budgetIdParam}`,
+              JSON.stringify(data.updated_balance)
+            );
+            localStorage.setItem(
+              `budget_user${userId}_budget${budgetIdParam}`,
+              JSON.stringify(data.updated_budget)
+            );
+
+            setTrigger((oldTrigger) => !oldTrigger);
+
             return;
           }
 
           if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
+            navigateAuth(Urls.login);
             return;
           }
 
@@ -266,14 +341,12 @@ const EachBudget = () => {
   }
 
   return (
-    <>
+    <animated.div style={springProps}>
       <Container className="mb-4">
         <Row>
           <Col>
             <Container className="text-center mt-4 mb-3">
-              <NavLink
-                to={`${Urls.finance.showBudgets}/${id}`}
-              >
+              <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
                 <Button
                   variant="outline-secondary"
                   className="all-budget-choices"
@@ -287,24 +360,33 @@ const EachBudget = () => {
               className="text-center"
               onSubmit={handleUpdateBudget}
             >
-              <legend className="text-center text-light">
-              {budget?.budget_name}
-              </legend>
-              <legend style={{ textAlign: "center", fontSize: "17px" }}>
+              <MainDivHeader
+                text={budget?.budget_name ? budget?.budget_name : ""}
+                style={null}
+              />
+
+              <legend
+                className="text-light"
+                style={{ textAlign: "center", fontSize: "17px" }}
+              >
                 Total Remaining:{" "}
-                <span className="text-success">
+                <span className="text-info">
                   ${balance ? balance.total.String : ""} &#128176;
                 </span>
               </legend>
 
               <ListGroup className="text-center mx-4">
-                <ListGroup.Item>
-                  Savings
-                  <Badge className="ms-2 border border-warning" bg="dark">
-                    Current &#x1F449; ${budget ? budget.savings : ""}
-                  </Badge>
+                <ListGroup.Item className="list-grp-item-all-budgets">
+                  <div style={{ fontSize: "14px" }}>
+                    <Badge className="border border-warning bg-dark">
+                      Savings
+                    </Badge>
+                    <br />
+                    Current: ${budget ? budget.savings : ""}
+                  </div>
                 </ListGroup.Item>
 
+                {/*  */}
                 <Form.Control
                   className="mb-3"
                   type="number"
@@ -313,12 +395,14 @@ const EachBudget = () => {
                   placeholder="$ Enter amount to add to Savings"
                 ></Form.Control>
 
-                <ListGroup.Item>
-                  Capital
-                  <Badge className="ms-2 border border-info" bg="dark">
-                    Budgeted: ${budget ? budget.capital : ""} &#x26A1; Balance:
-                    ${balance ? balance.capital : ""}
-                  </Badge>
+                <ListGroup.Item className="list-grp-item-all-budgets">
+                  <div style={{ fontSize: "14px" }}>
+                    <Badge className="border border-info bg-dark">
+                      Capital
+                    </Badge>
+                    <br /> Budgeted: ${budget ? budget.capital : ""} <br />
+                    Balance: ${balance ? balance.capital : ""}
+                  </div>
                 </ListGroup.Item>
 
                 <Form.Control
@@ -329,12 +413,14 @@ const EachBudget = () => {
                   placeholder="$ Enter amount to add to Capital"
                 ></Form.Control>
 
-                <ListGroup.Item>
-                  Eat Out
-                  <Badge className="ms-2 border border-primary" bg="dark">
-                    Budgeted: ${budget ? budget.eatout : ""} &#x26A1; Balance: $
-                    {balance ? balance.eatout : ""}
-                  </Badge>
+                <ListGroup.Item className="list-grp-item-all-budgets">
+                  <div style={{ fontSize: "14px" }}>
+                    <Badge className="border border-success bg-dark">
+                      Eat Out
+                    </Badge>
+                    <br /> Budgeted: ${budget ? budget.eatout : ""} <br />
+                    Balance: ${balance ? balance.eatout : ""}
+                  </div>
                 </ListGroup.Item>
 
                 <Form.Control
@@ -342,15 +428,18 @@ const EachBudget = () => {
                   type="number"
                   step={step}
                   ref={eatoutRef}
-                  placeholder="$ Enter amount to add to Eat Out"
+                  placeholder="$ Add amount to Eat Out"
                 ></Form.Control>
 
-                <ListGroup.Item>
-                  Entertainment
-                  <Badge className="ms-2 border border-danger" bg="dark">
-                    Budgeted: ${budget ? budget.entertainment : ""} &#x26A1;
+                <ListGroup.Item className="list-grp-item-all-budgets">
+                  <div style={{ fontSize: "14px" }}>
+                    <Badge className="border border-danger bg-dark">
+                      Entertainment
+                    </Badge>
+                    <br /> Budgeted: ${budget ? budget.entertainment : ""}{" "}
+                    <br />
                     Balance: ${balance ? balance.entertainment : ""}
-                  </Badge>
+                  </div>
                 </ListGroup.Item>
 
                 <Form.Control
@@ -394,7 +483,7 @@ const EachBudget = () => {
           </Col>
         </Row>
       </Container>
-    </>
+    </animated.div>
   );
 };
 

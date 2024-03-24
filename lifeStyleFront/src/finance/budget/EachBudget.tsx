@@ -1,5 +1,5 @@
-import { useParams, NavLink, Outlet } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useParams, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import BACKEND_URL from "../../Config";
 import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
@@ -16,10 +16,23 @@ import {
 import { Budget, Balance } from "../../assets/FinanceInterfaces";
 import BackBudgets from "../../misc/BackBudgets";
 import { ApiRes } from "../../assets/GeneralInterfaces";
+import { useSpring, animated } from "react-spring";
+import { useAuth } from "../../context/useAuth";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
 
 const EachBudget = () => {
-  const mounted = useRef(true);
-  const { id } = useParams();
+  const navigateAuth = useNavigate();
+  const loc = useLocation();
+  const budgetDataState = loc.state?.idBudget as Budget | undefined;
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+
+  const springProps = useSpring({
+    to: { opacity: 1, transform: "translateX(0)" },
+    from: { opacity: 0, transform: "translateX(100px)" },
+    delay: 20,
+  });
+
+  const { id: budgetIdParam } = useParams();
   const [budget, setBudget] = useState<Budget | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
   const [show, setShow] = useState(false);
@@ -31,103 +44,159 @@ const EachBudget = () => {
     fontSize: "20px",
     color: "whitesmoke",
   };
+
   useEffect(() => {
-    if (mounted.current) {
-      mounted.current = false;
-      const fetchDataBudget = async (): Promise<Budget | null> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.showBudgets}/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
 
-          if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return null;
+  useEffect(() => {
+    const fetchDataBudget = async (): Promise<Budget | null> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.finance.showBudgets}/${budgetIdParam}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
+        );
 
-          if (result.status === StatusCodes.NotFound) {
-            const data = (await result.json()) as ApiRes;
-            console.log(data.message);
-            return null;
-          }
-
-          if (result.status === StatusCodes.InternalServerError) {
-            alert(
-              "Something went wrong on server side! Please try again later"
-            );
-            return null;
-          }
-
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          }
-
-          console.log("Failed to fetch the budget data");
-          return null;
-        } catch (error) {
-          console.log(error);
+        if (result.status === StatusCodes.UnAuthorized) {
+          location.assign(Urls.login);
           return null;
         }
-      };
 
-      const fetchDataBalance = async (): Promise<Balance | null> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-
-          if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return null;
-          }
-
-          if (result.status === StatusCodes.NotFound) {
-            return null;
-          }
-
-          if (result.status === StatusCodes.InternalServerError) {
-            return null;
-          }
-
-          if (result.status === StatusCodes.Ok) {
-            return await result.json();
-          }
-
-          console.log("Failed to fetch the balance data");
-          return null;
-        } catch (error) {
-          console.log(error);
+        if (result.status === StatusCodes.NotFound) {
+          const data = (await result.json()) as ApiRes;
+          console.log(data.message);
           return null;
         }
-      };
 
-      // Invoke the fetchDataBudget and fetchDataBalance to set the state
-      const updateBudget = async () => {
-        const budgetData = await fetchDataBudget();
-        setBudget(budgetData);
-      };
-      const updateBalance = async () => {
-        const balanceData = await fetchDataBalance();
-        setBalance(balanceData);
-      };
+        if (result.status === StatusCodes.InternalServerError) {
+          alert("Something went wrong on server side! Please try again later");
+          return null;
+        }
 
-      updateBudget();
+        if (result.status === StatusCodes.Ok) {
+          return await result.json();
+        }
+
+        console.log("Failed to fetch the budget data");
+        return null;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    };
+
+    const fetchDataBalance = async (): Promise<Balance | null> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${budgetIdParam}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        if (result.status === StatusCodes.UnAuthorized) {
+          location.assign(Urls.login);
+          return null;
+        }
+
+        if (result.status === StatusCodes.NotFound) {
+          return null;
+        }
+
+        if (result.status === StatusCodes.InternalServerError) {
+          return null;
+        }
+
+        if (result.status === StatusCodes.Ok) {
+          return await result.json();
+        }
+
+        console.log("Failed to fetch the balance data");
+        return null;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    };
+
+    // Handling budget status
+    // If the budget came from location state
+    if (budgetDataState) {
+      setBudget(budgetDataState);
+      const storedBudget = localStorage.getItem(
+        `budget_user${userId}_budget${budgetIdParam}`
+      );
+      if (!storedBudget && userId !== -1) {
+        localStorage.setItem(
+          `budget_user${userId}_budget${budgetIdParam}`,
+          JSON.stringify(budgetDataState)
+        );
+      }
+
+      // If budget did not exist in location state (e.g. reloading)
+    } else {
+      const storedBudget = localStorage.getItem(
+        `budget_user${userId}_budget${budgetIdParam}`
+      );
+      if (storedBudget) {
+        setBudget(JSON.parse(storedBudget));
+      } else {
+        if (userId !== -1) {
+          const updateBudget = async () => {
+            const budgetData = await fetchDataBudget();
+            if (budgetData) {
+
+              localStorage.setItem(
+                `budget_user${userId}_budget${budgetIdParam}`,
+                JSON.stringify(budgetData)
+              );
+            }
+
+            setBudget(budgetData);
+          };
+          updateBudget();
+        }
+      }
+    }
+
+    const updateBalance = async () => {
+      const storedBalance = localStorage.getItem(
+        `balance_user${userId}_budget${budgetIdParam}`
+      );
+      if (storedBalance) {
+        setBalance(JSON.parse(storedBalance));
+        return;
+      }
+
+      const balanceData = await fetchDataBalance();
+      setBalance(balanceData);
+
+      if (balanceData && userId !== -1) {
+        localStorage.setItem(
+          `balance_user${userId}_budget${budgetIdParam}`,
+          JSON.stringify(balanceData)
+        );
+      }
+    };
+
+    if (userId !== -1) {
       updateBalance();
     }
-  }, [id, budget, balance]);
+  }, [budgetIdParam, userId, budgetDataState]);
 
   async function handleDeleteBudget() {
     try {
       const result = await fetch(
-        `${BACKEND_URL}$${Urls.finance.showBudgets}/${id}`,
+        `${BACKEND_URL}$${Urls.finance.showBudgets}/${budgetIdParam}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -141,77 +210,57 @@ const EachBudget = () => {
       }
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigateAuth(Urls.login);
         return;
       }
 
       if (result.status === StatusCodes.NoContent) {
-        location.assign(`${Urls.finance.showBudgets}`);
+        navigateAuth(Urls.finance.showBudgets);
         return;
       }
 
       alert("Unexpected Error! Please Try Again Later");
     } catch (error) {
       console.log(error);
+      alert("Unexpected Error! Please Try Again Later");
       return;
     }
   }
 
   return (
-    <>
+    <animated.div style={springProps}>
       <BackBudgets />
-      {/* <div className="text-center mt-3">
-        <NavLink to={`/finance/show-all-budgets`}>
-          <Button variant="outline-secondary" className="all-budget-choices">
-            Back To Budgets
-          </Button>
-        </NavLink>
-      </div> */}
 
       {budget ? <h1 className="mt-3 mb-1">{budget.budget_name}</h1> : ""}
       <Container className="mt-3 mb-4">
         <Row className="text-center">
-          <Col className="d-flex justify-content-center m-2">
-            <Card
-              className="p-1"
-              border="dark all-budget-choices"
-              style={{
-                width: "18rem",
-                backgroundColor: "rgba(30, 30, 30, 0.7)",
-              }}
-            >
+          <Col className="d-flex justify-content-center mb-2" lg>
+            <Card className="p-1" border="dark each-budget-card ">
               <Card.Header style={headerTitle}>
-                &#128176; Balance &#128176;
+                <MainDivHeader text="💰 Balance 💰" style={null} />
               </Card.Header>
               <Card.Body>
                 {balance ? (
-                  <Table style={{ fontSize: "18px" }} striped>
+                  <Table
+                    className="table-each-budget-card table-secondary"
+                    striped
+                  >
                     <tbody>
                       <tr>
-                        <td colSpan={2} className="text-light">
-                          Total
-                        </td>
-                        <td className="text-light">${balance.total.String}</td>
+                        <td colSpan={2}>Total</td>
+                        <td>${balance.total.String}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} className="text-success">
-                          Capital
-                        </td>
-                        <td className="text-success">${balance.capital}</td>
+                        <td colSpan={2}>Capital</td>
+                        <td>${balance.capital}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} style={{ color: "hotpink" }}>
-                          Eat Out
-                        </td>
-                        <td style={{ color: "hotpink" }}>${balance.eatout}</td>
+                        <td colSpan={2}>Eat Out</td>
+                        <td>${balance.eatout}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} style={{ color: "orange" }}>
-                          Entertainment
-                        </td>
-                        <td style={{ color: "orange" }}>
-                          ${balance.entertainment}
-                        </td>
+                        <td colSpan={2}>Entertainment</td>
+                        <td>${balance.entertainment}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -221,24 +270,17 @@ const EachBudget = () => {
               </Card.Body>
               {budget ? (
                 <Card.Text className="mt-0">
-                  {/* <NavLink
-                    to={`${Urls.finance.index}/${Urls.finance.submitExpenses}/${budget?.budget_id}`}
-                  >
-                    <Button
-                      variant="outline-info"
-                      key={crypto.randomUUID()}
-                      className="mb-3 ms-1 all-budget-choices"
-                    >
-                      Submit Expenses
-                    </Button>
-                  </NavLink> */}
                   <NavLink
-                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budget.budget_id}?budget_name=${encodeURIComponent(budget.budget_name)}`}
+                    to={`${Urls.finance.index}/${
+                      Urls.finance.showExpenses
+                    }/${budgetIdParam}?budget_name=${encodeURIComponent(
+                      budget.budget_name
+                    )}`}
                   >
                     <Button
-                      variant="outline-primary"
+                      variant="info"
                       key={crypto.randomUUID()}
-                      className=" mb-3 ms-1 all-budget-choices"
+                      className="mb-3 all-budget-choices"
                     >
                       Submit/View Expenses
                     </Button>
@@ -250,47 +292,33 @@ const EachBudget = () => {
             </Card>
           </Col>
 
-          <Col className="d-flex justify-content-center m-2">
-            <Card
-              className="p-1"
-              border="dark all-budget-choices"
-              style={{
-                width: "18rem",
-                backgroundColor: "rgba(30, 30, 30, 0.7)",
-              }}
-            >
+          <Col className="d-flex justify-content-center mb-2">
+            <Card className="p-1" border="dark each-budget-card ">
               <Card.Header style={headerTitle}>
-                &#128181; Budget &#128181;
+                <MainDivHeader text="💵 Budget 💵" style={null} />
               </Card.Header>
               <Card.Body>
                 {budget ? (
-                  <Table style={{ fontSize: "18px" }} striped>
+                  <Table
+                    className="table-each-budget-card table-secondary"
+                    striped
+                  >
                     <tbody>
                       <tr>
-                        <td colSpan={2} className="text-light">
-                          Savings
-                        </td>
-                        <td className="text-light">${budget.savings}</td>
+                        <td colSpan={2}>Savings</td>
+                        <td>${budget.savings}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} className="text-success">
-                          Capital
-                        </td>
-                        <td className="text-success">${budget.capital}</td>
+                        <td colSpan={2}>Capital</td>
+                        <td>${budget.capital}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} style={{ color: "hotpink" }}>
-                          Eat Out
-                        </td>
-                        <td style={{ color: "hotpink" }}>${budget.eatout}</td>
+                        <td colSpan={2}>Eat Out</td>
+                        <td>${budget.eatout}</td>
                       </tr>
                       <tr>
-                        <td colSpan={2} style={{ color: "orange" }}>
-                          Entertainment
-                        </td>
-                        <td style={{ color: "orange" }}>
-                          ${budget.entertainment}
-                        </td>
+                        <td colSpan={2}>Entertainment</td>
+                        <td>${budget.entertainment}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -302,21 +330,22 @@ const EachBudget = () => {
               {budget ? (
                 <Card.Text>
                   <Button
-                    variant="outline-danger"
+                    variant="danger"
                     onClick={handleShow}
                     // onClick={() => handleDeleteBudget(budget.budget_id)}
                     key={crypto.randomUUID()}
-                    className=" mb-3 all-budget-choices"
+                    className="mb-3 me-1 all-budget-choices"
                   >
                     Delete Budget
                   </Button>
                   <NavLink
-                    to={`${Urls.finance.showBudgets}/update/${budget?.budget_id}`}
+                    to={`${Urls.finance.showBudgets}/update/${budgetIdParam}`}
+                    state={{ budget: budget, balance: balance }}
                   >
                     <Button
-                      variant="outline-success"
+                      variant="success"
                       key={crypto.randomUUID()}
-                      className=" mb-3 ms-1 all-budget-choices"
+                      className=" mb-3 all-budget-choices"
                     >
                       Update Budget
                     </Button>
@@ -346,9 +375,7 @@ const EachBudget = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      <Outlet />
-    </>
+    </animated.div>
   );
 };
 
