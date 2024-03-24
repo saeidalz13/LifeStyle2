@@ -18,13 +18,11 @@ const NavbarComp = () => {
     if (result.status === StatusCodes.Ok) {
       setIsAuthenticated(false);
       navigateToHome(Urls.home);
-      return
+      return;
     }
 
     console.log("Failed to sign out the user!");
   }
-
-  
 
   return (
     <>
@@ -45,12 +43,12 @@ const NavbarComp = () => {
           <Navbar.Collapse>
             {isAuthenticated ? (
               <Nav className="ms-auto">
-                <Nav.Link as={Link} className="text-primary" to={Urls.profile}>
+                <Nav.Link as={Link} className="text-light" to={Urls.profile}>
                   Profile
                 </Nav.Link>
                 <Nav.Link
                   as={Link}
-                  className="text-success"
+                  className="text-info"
                   to={Urls.finance.index}
                 >
                   Finance
@@ -71,13 +69,13 @@ const NavbarComp = () => {
               </Nav>
             ) : (
               <Nav className="ms-auto">
-                <Nav.Link as={Link} className="text-success" to={Urls.login}>
+                <Nav.Link as={Link} className="text-info" to={Urls.login}>
                   Log In
                 </Nav.Link>
                 <Nav.Link as={Link} className="text-info" to={Urls.signup}>
                   Sign Up
                 </Nav.Link>
-                <Nav.Link as={Link} className="text-primary" to={Urls.about}>
+                <Nav.Link as={Link} className="text-warning" to={Urls.about}>
                   About
                 </Nav.Link>
               </Nav>

@@ -1,5 +1,4 @@
 import {
-  Collapse,
   Button,
   Col,
   Container,
@@ -7,125 +6,182 @@ import {
   ListGroupItem,
   Row,
 } from "react-bootstrap";
-import Panels from "./Panels";
+import MainDivHeader from "../components/Headers/MainDivHeader";
+import PageHeader from "../components/Headers/PageHeader";
 import { NavLink } from "react-router-dom";
 import Urls from "../Urls";
-import { useState } from "react";
 import { useAuth } from "../context/useAuth";
-
+import fitSVG from "../svg/FitnessHomePanel.svg";
+import finSVG from "../svg/FinanceHomePanel.svg";
+import { useSpring, animated } from "react-spring";
+import { useState } from "react";
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
+  const heightWidthSVGs = 90;
 
-  const [openFinance, setOpenFinance] = useState(false);
-  const [openFitness, setOpenFitness] = useState(false);
+  const fadeInUp = useSpring({
+    from: { opacity: 0, transform: "translateY(20px)" },
+    to: { opacity: 1, transform: "translateY(0)" },
+    delay: 30, // Adjust delay as needed
+  });
+
+  // Hover effect for the button, scales up slightly on hover
+  const [hover, setHover] = useState(false);
+  const [hoverFinance, setHoverFinance] = useState(false);
+
+  const scale = useSpring({
+    transform: hover ? "scale(1.05)" : "scale(1)",
+  });
+  const scaleFinance = useSpring({
+    transform: hoverFinance ? "scale(1.05)" : "scale(1)",
+  });
 
   return (
     <div>
-      <h1 className="mt-4 mb-4">
-        &#127776; Discipline your life style &#127776;
-      </h1>
+      <PageHeader text="Discipline your life style" />
 
       <Container>
         <Row className="align-items-center">
-          <Col lg>
-            <div className="mb-3 p-4 page-explanations">
-              <p style={{ color: "#FFEFD5" }}>
-                You and I will be a better person if we discipline our habits.
-                My plan is that we can do this more conveniently! <br />
-                With your free account, you can have access to{" "}
-                <b style={{ color: "greenyellow" }}>Finance</b> and{" "}
-                <b style={{ color: "hotpink" }}>Fitness</b> modules. Click on
-                the explanations to learn more.
-              </p>
-              <ListGroup className="mt-2">
-                <ListGroupItem>
-                  <div className="text-center mt-1">
-                    <Button
-                      onClick={() => setOpenFinance(!openFinance)}
-                      variant="outline-success"
-                      style={{ color: "#E0FFFF" }}
-                      active={openFinance ? true : false}
-                    >
-                      Finance Explanation
-                    </Button>
+          <Col>
+            <div className="mb-3 p-4 home-modules-explanation-div">
+              <div
+                style={{
+                  backgroundColor: "#2A2A2A",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  color: "#FFEFD5",
+                }}
+              >
+                <MainDivHeader text="Let's Grow Together!" />
+                <p>
+                  You and I will be a better person if we discipline our habits.
+                  My plan is that we can do this more conveniently!
+                </p>
+                <p>
+                  With your{" "}
+                  <span style={{ fontWeight: "bold", color: "#FBC6A4" }}>
+                    free account
+                  </span>
+                  , you will have access to the services below.
+                </p>
+              </div>
+
+              {isAuthenticated ? (
+                ""
+              ) : (
+                <div
+                  role="alert"
+                  style={{ backgroundColor: "#FBC6A4" }}
+                  className="mt-2 py-2 text-center rounded"
+                >
+                  <span style={{ fontSize: "18px" }}>
+                    Features are <b className="text-danger">locked</b> if you're
+                    not logged in
+                  </span>
+                  <div className="mt-2">
+                    <NavLink to={Urls.login}>
+                      <Button variant="success" className="ms-3">
+                        Login
+                      </Button>
+                    </NavLink>
+                    <NavLink to={Urls.signup}>
+                      <Button variant="dark" className="ms-1">
+                        Sign Up
+                      </Button>
+                    </NavLink>
+                  </div>
+                </div>
+              )}
+
+              <ListGroup className="mt-2 ">
+                <ListGroupItem style={{ backgroundColor: "#EDCDBB" }}>
+                  <div className="mt-1 text-center">
+                    <h3>Finance</h3>
                   </div>
 
-                  <Collapse in={openFinance}>
-                    <div
-                      className="mt-2"
-                      style={{ fontSize: 16, color: "#E0FFFF" }}
+                  <div className="mt-2" style={{ fontSize: 16 }}>
+                    This module helps you create budgets and then track your
+                    finances for any period of time you want. Your expenses are
+                    categorized into three main groups of 'capital', 'eatout',
+                    and 'entertainment.'
+                  </div>
+
+                  <div className="text-center mt-3 mb-2">
+                    <animated.div
+                      style={fadeInUp}
+                      onMouseEnter={() => setHoverFinance(true)}
+                      onMouseLeave={() => setHoverFinance(false)}
                     >
-                      This module helps you create budgets and then track your
-                      finances for any period of time you want. Your expenses
-                      are categorized into three main groups of 'capital',
-                      'eatout', and 'entertainment.'
-                    </div>
-                  </Collapse>
+                      <NavLink to={isAuthenticated ? Urls.finance.index : "#"}>
+                        <animated.button
+                          style={scaleFinance}
+                          className={
+                            isAuthenticated
+                              ? "btn btn-outline-dark home-panels py-3"
+                              : "btn btn-danger py-3 home-panels"
+                          }
+                          disabled={isAuthenticated ? false : true}
+                        >
+                          <img
+                            src={finSVG}
+                            alt="Finance"
+                            height={heightWidthSVGs}
+                            width={heightWidthSVGs}
+                          />
+                        </animated.button>
+                      </NavLink>
+                    </animated.div>
+                  </div>
                 </ListGroupItem>
 
-                <ListGroupItem>
-                  <div className="text-center mt-1">
-                    <Button
-                      onClick={() => setOpenFitness(!openFitness)}
-                      active={openFitness ? true : false}
-                      variant="outline-danger"
-                      style={{ color: "#FFE4E1" }}
-                    >
-                      Fitness Explanation
-                    </Button>
+                <ListGroupItem style={{ backgroundColor: "#EDCDBB" }}>
+                  <div className="mt-1 text-center">
+                    <h3>Fitness</h3>
                   </div>
 
-                  <Collapse in={openFitness}>
-                    <div
-                      className="mt-2"
-                      style={{ fontSize: 16, color: "#FFE4E1" }}
+                  <div className="mt-2" style={{ fontSize: 16 }}>
+                    This module helps you create workout plans and then track
+                    your progress for every week. This helps achieve progress
+                    overload and you can get rid of your annoying notes!
+                  </div>
+
+                  <div className="text-center mt-3 mb-2">
+                    <animated.div
+                      style={fadeInUp}
+                      onMouseEnter={() => setHover(true)}
+                      onMouseLeave={() => setHover(false)}
                     >
-                      This module helps you create workout plans and then track
-                      your progress for every week. This helps achieve progress
-                      overload and you can get rid of your annoying notes!
-                    </div>
-                  </Collapse>
+                      <NavLink to={isAuthenticated ? Urls.fitness.index : "#"}>
+                        <animated.button
+                          style={scale}
+                          className={
+                            isAuthenticated
+                              ? "btn btn-outline-dark home-panels py-3"
+                              : "btn btn-danger py-3 home-panels"
+                          }
+                          disabled={!isAuthenticated}
+                        >
+                          <img
+                            src={fitSVG}
+                            alt="Fitness"
+                            height={heightWidthSVGs}
+                            width={heightWidthSVGs}
+                          />
+                        </animated.button>
+                      </NavLink>
+                    </animated.div>
+                  </div>
                 </ListGroupItem>
               </ListGroup>
             </div>
-            {isAuthenticated ? (
-              ""
-            ) : (
-              <div
-                role="alert"
-                className="mt-0 mx-3 py-4 alert alert-dark text-center border border-danger rounded"
-              >
-                <span style={{ fontSize: "20px", color: "orange" }}>
-                  Features are locked if you're not logged in
-                </span>
-                <div className="mt-2">
-                  <NavLink to={Urls.login}>
-                    <Button
-                      variant="outline-success"
-                      className="ms-3 all-budget-choices"
-                    >
-                      Login
-                    </Button>
-                  </NavLink>
-                  <NavLink to={Urls.signup}>
-                    <Button
-                      variant="outline-info"
-                      className="ms-1 all-budget-choices"
-                    >
-                      Sign Up
-                    </Button>
-                  </NavLink>
-                </div>
-              </div>
-            )}
-          </Col>
-
-          <Col lg>
-            <Panels isAuth={isAuthenticated} />
           </Col>
         </Row>
       </Container>
+
+      {/* <Col> */}
+      {/* <Panels isAuth={isAuthenticated} /> */}
+      {/* </Col> */}
     </div>
   );
 };

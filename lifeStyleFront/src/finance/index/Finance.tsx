@@ -1,16 +1,18 @@
 import Panels from "./Panels";
-import Urls from "../../Urls";
 import BackHomeBtn from "../../misc/BackHomeBtn";
-import { Accordion, Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import WS_URL from "../../WsUrl";
 import rl from "../../svg/RotatingLoad.svg";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import PageHeader from "../../components/Headers/PageHeader";
+import InsideGenericDiv from "../../components/Div/InsideGenericDiv";
+import Urls from "../../Urls";
 
 const Finance = () => {
-  const navigateToHome = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const navigateAuth = useNavigate();
+  const { isAuthenticated, loadingAuth } = useAuth();
   const [startOrEndConn, setStartOrEndConn] = useState<"start" | "end">(
     "start"
   );
@@ -21,15 +23,6 @@ const Finance = () => {
   const [responses, setResponses] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [msgLoading, setMsgLoading] = useState(false);
-
-  const accBodyStyle = {
-    color: "rgba(189, 255, 254, 0.75)",
-    backgroundColor: "rgba(30, 30, 30, 0.7)",
-  };
-
-  const accHeaderStyle = {
-    fontSize: "19px",
-  };
 
   const handleStartWsConn = () => {
     setLoading(true);
@@ -78,77 +71,60 @@ const Finance = () => {
     }
   };
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigateToHome(Urls.home);
-      return;
-    }
-    const targetElement = document.getElementById("main-navbar");
 
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth" });
-      window.scrollTo(0, 0);
+  useEffect(() => {
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+      }
+    } else {
+      const targetElement = document.getElementById("main-navbar");
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth" });
+        window.scrollTo(0, 0);
+      }
     }
-  }, [isAuthenticated, navigateToHome]);
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
+
 
   return (
-    <div id="main-finance-div">
+    <div>
       <BackHomeBtn />
-      <Container className="mt-3">
+
+      <PageHeader text="Welcome to the finance section!" />
+
+      <Container className="mt-3 mb-5">
         <Row className="align-items-center">
-          <Col className="mb-2" lg>
-            <div className=" mx-1 p-4 page-explanations">
-              <div className="text-center mb-4">
-                <h3 className="mb-3 text-primary">
-                  Welcome to the finance section!
-                </h3>
-                <p>
-                  In this section, you can define custom budgets and manage your
-                  finances. Here's the steps how to start your finance
-                  management journey:
-                </p>
-              </div>
-              <Accordion className="mx-2 mb-2">
-                <Accordion.Item eventKey="0" className="acc-button">
-                  <Accordion.Header>
-                    {" "}
-                    <span style={accHeaderStyle}>Create New Budget</span>
-                  </Accordion.Header>
-                  <Accordion.Body style={accBodyStyle}>
-                    Create a budget to record your weekly/monthly budgeting plan
-                    using the "New Budget" panel. You need to consider a time
-                    period and then specify your income and savings, and then
-                    capital, eating out and entertainment budgets.
-                  </Accordion.Body>
-                </Accordion.Item>
-                <Accordion.Item eventKey="1" className="acc-button">
-                  <Accordion.Header>
-                    {" "}
-                    <span style={accHeaderStyle}>
-                      Navigate Through Budgets
-                    </span>{" "}
-                  </Accordion.Header>
-                  <Accordion.Body style={accBodyStyle}>
-                    If you have already created a budget/budgets, you can click
-                    on "All Budgets" to see the details and the possible
-                    actions. You can delete and edit your budget, submit new
-                    expenses, and check your balance for your specific budget.
-                  </Accordion.Body>
-                </Accordion.Item>
-              </Accordion>
+          <Col xxl>
+            <div className="page-explanations">
+              <InsideGenericDiv
+                header="What to do here?"
+                texts={[
+                  "In this section, you can define custom budgets and manage your finances. Here's the steps how to start your finance management journey:",
+                ]}
+              />
             </div>
           </Col>
+        </Row>
 
-          <Col lg>
+        <Row>
+          <Panels />
+        </Row>
+        <Row>
+          <Col xxl>
             <div className="text-center page-explanations p-3">
-              <h2 className="text-primary">Ask GPT!</h2>
+              <InsideGenericDiv
+                header="Ask GPT!"
+                texts={[
+                  "Note: Your response will have maximum of 1000 characters for financial reasons!",
+                ]}
+              />
+
               <div
                 style={{ fontSize: "18px" }}
                 className="text-light text-center mb-3"
-              >
-                Note: Your response will have maximum of 1000 characters for
-                financial reasons!
-              </div>
+              ></div>
 
               <h4 className="mb-3 text-info">Question:</h4>
               {startOrEndConn === "start" ? (
@@ -156,7 +132,7 @@ const Finance = () => {
                   {loading ? (
                     <img src={rl} alt="Rotation" />
                   ) : (
-                    "Start Connection"
+                    "Start Chat"
                   )}
                 </Button>
               ) : (
@@ -177,20 +153,22 @@ const Finance = () => {
                   </Button>
                   <br />
                   <Button onClick={handleEndWsConn} variant="outline-danger">
-                    End Connection
+                    End Chat
                   </Button>
                 </div>
               )}
 
               <div>
                 <h4 className="text-warning mt-3 mb-1">Response:</h4>
-                <span>
+                <span className="gpt-response">
                   {responses.length > 0 ? (
                     responses.map((response, index) => (
-                      <span key={index}>{response} </span>
+                      <span className="text-light" key={index}>
+                        {response}{" "}
+                      </span>
                     ))
                   ) : (
-                    <span className="text-secondary" style={{ fontSize: 16 }}>
+                    <span className="text-secondary" style={{ fontSize: 15 }}>
                       Your response will be streamed here...
                     </span>
                   )}
@@ -200,9 +178,8 @@ const Finance = () => {
           </Col>
         </Row>
       </Container>
-      <hr className="mx-5" />
 
-      <Panels />
+      {/* <hr className="mx-5" /> */}
     </div>
   );
 };

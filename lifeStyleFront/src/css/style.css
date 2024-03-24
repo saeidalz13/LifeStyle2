@@ -1,13 +1,19 @@
 :root {
     --beige-custom: rgba(44, 42, 27, 0.5);
-    --header-color: rgb(249, 215, 215);
-    --default-box-shadow: 1px 1px 10px 1px rgb(0, 86, 86);
+    --header-color: #F4A9A8;
+    --default-box-shadow:  0 6px 20px rgba(102, 12, 57, 0.377);
+    --div-generic-color: #3A3845;
+    --div-inside-generic-div-color: #FFEFD5;
+    --accordion-btn-color: #EDCDBB;
+}
+
+body {
+    background-color: #EAD7BB;
 }
 
 h1 {
     margin: 50px 0px;
     text-align: center;
-    color: var(--header-color);
 }
 
 input {
@@ -43,10 +49,14 @@ footer {
     padding-right: 100px;
     padding-left: 100px;
     border-radius: 100px;
+    background-color: #5F939A;
 }   
 
+.home-panels:hover {
+    background-color: #F4A9A8;
+}
 
-.submit-btn {
+.submit-btn-padding {
     padding: 8px 20px;
 }
 
@@ -55,29 +65,37 @@ footer {
     font-size: 35px;
 }
 
-.page-explanations {
+
+.home-modules-explanation-div {
+    background-color: var(--div-generic-color);
+    max-width: 750px;
+    margin: auto;
     border-radius: 20px;
     padding: 20px;
     border-radius: 20px;
-    box-shadow: var(--default-box-shadow);
-    color: lightgray;
+}
+
+.page-explanations {
+    background-color: var(--div-generic-color);
+    border-radius: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    max-width: 750px;
+    margin: auto;
+    /* box-shadow: var(--default-box-shadow); */
+    /* color: lightgray; */
     font-size: 18px;
 }
 
 .page-explanations-homepanels {
-    background-color: rgba(41, 41, 41, 0.5);
-    border-radius: 20px;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 1px 1px 10px 1px rgba(219, 106, 0, 0.5);
-    color: lightgray;
-    font-size: 18px
+    max-width: 400px;
+    margin: auto;
 }
 
 
-.finance-explanations {
+/* .finance-explanations {
     color: lightgray;
-}
+} */
 
 .all-budgets-btn {
     font-size: 25px;
@@ -112,19 +130,17 @@ footer {
 }
 
 #new-budget-tips {
-    background-color: var(--beige-custom);
-    border-radius: 20px;
-    padding: 20px;
-    border-radius: 20px;
+    background-color: var(--accordion-btn-color);
     box-shadow: var(--default-box-shadow);
+    border-radius: 20px;
 }
 
 #form-new-budget, #form-edit-budget, #form-submit-expenses, .list-group-balance, .form-fitfin {
-    background-color: rgba(29, 0, 23,0.2);
+    background-color: var(--div-generic-color);
     padding: 20px;
     border-radius: 20px;
-    box-shadow: var(--default-box-shadow);
     margin: auto;
+    box-shadow: 0 6px 20px rgba(102, 12, 57, 0.377);
     max-width: 750px;
 }
 
@@ -174,3 +190,76 @@ background-color: rgb(253, 222, 245);
 .plan-records-table:hover {
     cursor: pointer;
 }
+
+
+.accordion {
+    --bs-accordion-btn-bg:var(--accordion-btn-color);
+    --bs-accordion-active-bg:var(--header-color);
+    font-size: 25;
+}
+
+/* FinanceLinks.css */
+.finance-choices {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    width: 100%;
+    background-color: #FBC6A4; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    text-decoration: none;
+  }
+  
+.finance-choices:hover {
+transform: scale(1.05); /* Slightly enlarge on hover */
+box-shadow: 0 6px 12px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
+}
+
+.finance-choices img {
+    margin: 0 auto; 
+}
+
+.finance-choices-explanation {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Elegant shadow */
+    padding: 20px;
+    background-color: var(--accordion-btn-color);
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Smooth transition for shadow and background color */
+}
+
+.finance-choices-explanation:hover {
+    background-color: var(--bs-accordion-active-bg);
+    box-shadow: 0 6px 20px rgba(102, 12, 57, 0.377);
+}
+
+.no-link-style {
+    color: inherit; /* Or set a specific color */
+    text-decoration: none; /* Removes underline */
+  }
+
+.no-link-style .finance-choices-explanation::after {
+content: '➔'; /* Unicode arrow character */
+display: inline-block;
+margin-left: 10px; /* Space between text and arrow */
+transition: transform 0.3s ease-in-out; /* Smooth transition */
+}
+
+.no-link-style:hover .finance-choices-explanation::after {
+transform: translateX(5px); /* Arrow moves right on hover */
+}
+
+.gpt-response {
+    font-size: 16px;
+    color: var(--div-inside-generic-div-color);
+}
+
+.question-mark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #17a2b8; 
+    color: white;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 20px; 
+  }

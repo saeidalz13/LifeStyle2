@@ -6,6 +6,7 @@ import rl from "../svg/RotatingLoad.svg";
 import gIcon from "../svg/GoogleIcon.svg";
 import StatusCodes from "../StatusCodes";
 import { Button } from "react-bootstrap";
+import BackHomeBtn from "../misc/BackHomeBtn";
 
 const Login = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -100,14 +101,9 @@ const Login = () => {
       <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
           <div className="col" style={{ maxWidth: "400px", margin: "auto" }}>
-            <div style={{ marginBottom: "20px" }}>
-              <Link to={Urls.home}>
-                <div className="text-center">
-                  <button className="btn btn-success px-5">Home</button>
-                </div>
-              </Link>
-            </div>
-            <form onSubmit={handleSubmitLogin}>
+            <BackHomeBtn />
+
+            <form onSubmit={handleSubmitLogin} className="mt-4">
               <legend>Log In!</legend>
               <input
                 className="form-control"
@@ -126,16 +122,20 @@ const Login = () => {
                 ref={passwordRef}
               />
               <div style={{ marginTop: "10px", textAlign: "center" }}>
-                <button type="submit" className="btn btn-danger submit-btn">
+                <Button
+                  variant="success"
+                  type="submit"
+                  className="submit-btn-padding"
+                >
                   {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         </div>
         <div style={{ marginTop: "10px", textAlign: "center" }}>
           <Link to={Urls.signup}>
-            <Button variant="outline-primary">
+            <Button variant="light" className="border border-info">
               Need An Account? Click Here
             </Button>
           </Link>
@@ -153,9 +153,6 @@ const Login = () => {
         )}
       </div>
 
-      <div style={{ fontSize: "30px" }} className="text-center text-light mb-3">
-        OR
-      </div>
       <div className="text-center">
         <Button
           variant="dark"

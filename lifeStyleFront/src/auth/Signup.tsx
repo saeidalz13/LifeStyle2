@@ -6,6 +6,7 @@ import BACKEND_URL from "../Config";
 import rl from "../svg/RotatingLoad.svg";
 import StatusCodes from "../StatusCodes";
 import gIcon from "../svg/GoogleIcon.svg";
+import BackHomeBtn from "../misc/BackHomeBtn";
 
 const Signup = () => {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -163,14 +164,9 @@ const Signup = () => {
       <div className="container mt-5 mb-3 mx-auto">
         <div className="row">
           <div className="col" style={{ maxWidth: "400px", margin: "auto" }}>
-            <div style={{ marginBottom: "20px" }}>
-              <Link to={Urls.home}>
-                <div className="text-center">
-                  <button className="btn btn-success px-5">Home</button>
-                </div>
-              </Link>
-            </div>
-            <Form onSubmit={handleSubmitSignup}>
+            <BackHomeBtn />
+
+            <Form onSubmit={handleSubmitSignup} className="mt-4">
               <legend>Sign Up!</legend>
               <Form.Control
                 className="form-control"
@@ -202,18 +198,20 @@ const Signup = () => {
               />
               <Form.Text className="text-danger">{passMsg}</Form.Text>
               <div style={{ marginTop: "10px", textAlign: "center" }}>
-                <button type="submit" className="btn btn-danger submit-btn">
+                <Button
+                  type="submit"
+                  variant="success"
+                  className="submit-btn-padding"
+                >
                   {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
-                </button>
+                </Button>
               </div>
             </Form>
           </div>
         </div>
         <div style={{ marginTop: "10px", textAlign: "center" }}>
           <Link to={Urls.login}>
-            <Button variant="outline-primary">
-              Already Have An Account? Click Here
-            </Button>
+            <Button variant="light" className="border border-info">Already Have An Account? Click Here</Button>
           </Link>
         </div>
         {errMsg !== "" ? (
@@ -236,9 +234,6 @@ const Signup = () => {
         )}
       </div>
 
-      <div style={{ fontSize: "30px" }} className="text-center text-light mb-3">
-        OR
-      </div>
       <div className="text-center">
         <Button
           variant="dark"
@@ -246,7 +241,7 @@ const Signup = () => {
           onClick={handleGoogleSignIn}
         >
           {" "}
-          <span style={{ fontSize: "18px" }}>Sign In With Google </span>{" "}
+          <span style={{ fontSize: "18px" }}>Sign Up With Google </span>{" "}
           <img src={gIcon} alt="Google Icon" height={"60px"} width={"60px"} />
         </Button>
       </div>

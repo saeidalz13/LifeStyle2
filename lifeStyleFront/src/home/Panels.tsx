@@ -4,25 +4,27 @@ import finSVG from "../svg/FinanceHomePanel.svg";
 import fitSVG from "../svg/FitnessHomePanel.svg";
 import { Container, Row, Col, Button } from "react-bootstrap";
 
-const Panels = (props: Authorized) => {
+interface PanelsProps {
+  isAuth: boolean;
+}
+
+const Panels = (props: PanelsProps) => {
   const heightWidthSVGs = 90;
   return (
     <Container className="mt-2">
       <Row>
-        <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "#FFBF00" }} className="mb-2">
-            Finance
-          </h2>
-          <NavLink to={props.isAuth ? Urls.finance.index: "#"}>
+        <Col className="page-explanations-homepanels text-center mb-3" lg>
+          <NavLink to={props.isAuth ? Urls.finance.index : "#"}>
             <Button
               className={
                 props.isAuth
-                  ? "btn btn-success border border-primary home-panels py-3"
+                  ? "btn btn-outline-dark home-panels py-3"
                   : "btn btn-danger py-3 home-panels"
               }
-              style={{ width: "100%" }}
+              style={{ backgroundColor: "#5F939A" }}
               disabled={props.isAuth ? false : true}
             >
+              <h2 className="mb-2">Finance</h2>
               <img
                 src={finSVG}
                 alt="Finance"
@@ -32,23 +34,20 @@ const Panels = (props: Authorized) => {
             </Button>
           </NavLink>
         </Col>
-      </Row>
 
-      <Row>
-        <Col className="page-explanations-homepanels text-center mb-3" xl>
-          <h2 style={{ color: "#FFBF00" }} className="mb-2">
-            Fitness
-          </h2>
-          <NavLink to={props.isAuth ? Urls.fitness.index: "#"}>
+        <Col className="page-explanations-homepanels text-center mb-3" lg>
+          <NavLink to={props.isAuth ? Urls.fitness.index : "#"}>
             <button
               className={
                 props.isAuth
-                  ? "btn btn-warning border border-primary home-panels py-3"
+                  ? "btn btn-outline-dark home-panels py-3"
                   : "btn btn-danger py-3 home-panels"
               }
-              style={{ width: "100%" }}
+              style={{ backgroundColor: "#5F939A" }}
               disabled={props.isAuth ? false : true}
             >
+              <h2 className="mb-2">Fitness</h2>
+
               <img
                 src={fitSVG}
                 alt="Finance"
@@ -63,7 +62,4 @@ const Panels = (props: Authorized) => {
   );
 };
 
-interface Authorized {
-  isAuth: boolean;
-}
 export default Panels;

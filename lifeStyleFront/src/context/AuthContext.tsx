@@ -12,8 +12,10 @@ export const AuthContext = createContext<{
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   userEmail: string;
   setUserEmail: React.Dispatch<React.SetStateAction<string>>;
-  userId: number
+  userId: number;
   setUserId: React.Dispatch<React.SetStateAction<number>>;
+  loadingAuth: boolean;
+  setLoadingAuth: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
   isAuthenticated: false,
   setIsAuthenticated: () => {},
@@ -21,18 +23,21 @@ export const AuthContext = createContext<{
   setUserEmail: () => {},
   userId: -1,
   setUserId: () => {},
+  loadingAuth: true,
+  setLoadingAuth: () => {},
 });
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const mounted = useRef(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [userId, setUserId] = useState<number>(-1)
+  const [userId, setUserId] = useState<number>(-1);
+  const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
 
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
-      console.log("auth context ran to fetch data of user")
+      console.log("auth context ran to fetch data of user");
       const checkAuthStatus = async () => {
         try {
           const result = await fetch(`${BACKEND_URL}/profile`, {
@@ -40,16 +45,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             credentials: "include",
           });
 
-
           if (result.status === StatusCodes.Ok) {
-            const data = await result.json() as User;
+            const data = (await result.json()) as User;
             setIsAuthenticated(true);
             setUserEmail(data.email);
-            setUserId(data.id)
+            setUserId(data.id);
           }
+
+          setLoadingAuth(false);
         } catch (error) {
           console.error("Error checking authentication status: ", error);
           setIsAuthenticated(false);
+          setLoadingAuth(false);
         }
       };
 
@@ -58,7 +65,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, userEmail, setUserEmail, userId, setUserId }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        setIsAuthenticated,
+        userEmail,
+        setUserEmail,
+        userId,
+        setUserId,
+        loadingAuth,
+        setLoadingAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
