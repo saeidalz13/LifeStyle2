@@ -9,11 +9,19 @@ import ModalUpdateExpenses from "./ModalUpdateExpenses";
 interface ExpenseRowsProps {
   data: TCapitalExpenses|TEatoutExpenses|TEntertainmentExpenses;
   toggleTrigger: () => void;
+  currentPage: number;
+  budgetIdParam: string;
+  userId: number;
+  activeTab: string;
 }
 
 const ExpensesRows: React.FC<ExpenseRowsProps> = ({
   data,
   toggleTrigger,
+  currentPage,
+  budgetIdParam,
+  userId,
+  activeTab,
 }) => {
   const customSpan = 3;
   const [selectedExpenseToUpdate, setSelectedExpenseToUpdate] =
@@ -60,6 +68,10 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}
             toggleTrigger={toggleTrigger}
+            currentPage={currentPage}
+            budgetIdParam={budgetIdParam}
+            userId={userId}
+            activeTab={activeTab}
           />
         )}
       </>
@@ -96,6 +108,10 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}
             toggleTrigger={toggleTrigger}
+            currentPage={currentPage}
+            budgetIdParam={budgetIdParam}
+            userId={userId}
+            activeTab={activeTab}
           />
         )}
       </>
@@ -132,6 +148,10 @@ const ExpensesRows: React.FC<ExpenseRowsProps> = ({
             onHide={() => setUpdateRecModalShow(false)}
             selectedExpenseToUpdate={selectedExpenseToUpdate}
             toggleTrigger={toggleTrigger}
+            currentPage={currentPage}
+            budgetIdParam={budgetIdParam}
+            userId={userId}
+            activeTab={activeTab}
           />
         )}
       </>

@@ -5,9 +5,20 @@ import ExpensesRows from "./ExpensesRows";
 interface ExpenseTableProps {
   data: TExpenseData;
   toggleTrigger: () => void;
+  currentPage: number;
+  budgetIdParam: string;
+  userId: number;
+  activeTab: string;
 }
 
-const ExpenseTable: React.FC<ExpenseTableProps> = ({ data, toggleTrigger }) => {
+const ExpenseTable: React.FC<ExpenseTableProps> = ({
+  data,
+  toggleTrigger,
+  currentPage,
+  budgetIdParam,
+  userId,
+  activeTab,
+}) => {
   if (data === "waiting" || data === null || data == "nodata") {
     return <h1 className="mt-2 text-center">Loading...</h1>;
   }
@@ -42,7 +53,14 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ data, toggleTrigger }) => {
         </thead>
 
         <tbody>
-          <ExpensesRows data={data} toggleTrigger={toggleTrigger} />
+          <ExpensesRows 
+          data={data} 
+          toggleTrigger={toggleTrigger}
+          currentPage={currentPage}
+          budgetIdParam={budgetIdParam}
+          userId={userId}
+          activeTab={activeTab}
+           />
         </tbody>
       </table>
     </>

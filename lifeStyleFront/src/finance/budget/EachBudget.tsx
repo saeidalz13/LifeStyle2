@@ -19,6 +19,7 @@ import { ApiRes } from "../../assets/GeneralInterfaces";
 import { useSpring, animated } from "react-spring";
 import { useAuth } from "../../context/useAuth";
 import MainDivHeader from "../../components/Headers/MainDivHeader";
+import { getLocalStorageValuesByKeyContains } from "../../utils/LocalStorageUtils";
 
 const EachBudget = () => {
   const navigateAuth = useNavigate();
@@ -154,7 +155,6 @@ const EachBudget = () => {
           const updateBudget = async () => {
             const budgetData = await fetchDataBudget();
             if (budgetData) {
-
               localStorage.setItem(
                 `budget_user${userId}_budget${budgetIdParam}`,
                 JSON.stringify(budgetData)
@@ -195,8 +195,9 @@ const EachBudget = () => {
 
   async function handleDeleteBudget() {
     try {
+      console.log("here")
       const result = await fetch(
-        `${BACKEND_URL}$${Urls.finance.showBudgets}/${budgetIdParam}`,
+        `${BACKEND_URL}${Urls.finance.showBudgets}/${budgetIdParam}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -215,6 +216,12 @@ const EachBudget = () => {
       }
 
       if (result.status === StatusCodes.NoContent) {
+        const keysToRemove = getLocalStorageValuesByKeyContains("allbudgets")
+        if (keysToRemove) {
+          keysToRemove.forEach((key) => {
+            localStorage.removeItem(key)
+          })
+        }
         navigateAuth(Urls.finance.showBudgets);
         return;
       }
@@ -271,18 +278,15 @@ const EachBudget = () => {
               {budget ? (
                 <Card.Text className="mt-0">
                   <NavLink
-                    to={`${Urls.finance.index}/${
-                      Urls.finance.showExpenses
-                    }/${budgetIdParam}?budget_name=${encodeURIComponent(
-                      budget.budget_name
-                    )}`}
+                    to={`${Urls.finance.index}/${Urls.finance.showExpenses}/${budgetIdParam}`}
+                    state={{ budget: budget, balance: balance }}
                   >
                     <Button
                       variant="info"
                       key={crypto.randomUUID()}
                       className="mb-3 all-budget-choices"
                     >
-                      Submit/View Expenses
+                      Manage Expenses
                     </Button>
                   </NavLink>
                 </Card.Text>
@@ -363,14 +367,14 @@ const EachBudget = () => {
         <Modal.Header closeButton>
           <Modal.Title className="text-danger">Delete Budget!</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="text-light">
+        <Modal.Body className="text-dark">
           Are you sure you want to delete this budget?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="success" onClick={handleClose}>
             No!
           </Button>
-          <Button variant="outline-danger" onClick={handleDeleteBudget}>
+          <Button variant="danger" onClick={handleDeleteBudget}>
             Delete
           </Button>
         </Modal.Footer>

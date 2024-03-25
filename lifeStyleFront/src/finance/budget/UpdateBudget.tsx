@@ -348,7 +348,7 @@ const EachBudget = () => {
             <Container className="text-center mt-4 mb-3">
               <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
                 <Button
-                  variant="outline-secondary"
+                  variant="dark"
                   className="all-budget-choices"
                 >
                   Back To Budget
@@ -392,7 +392,7 @@ const EachBudget = () => {
                   type="number"
                   step={step}
                   ref={savingsRef}
-                  placeholder="$ Enter amount to add to Savings"
+                  placeholder="$ Add amount to Savings"
                 ></Form.Control>
 
                 <ListGroup.Item className="list-grp-item-all-budgets">
@@ -410,7 +410,7 @@ const EachBudget = () => {
                   type="number"
                   step={step}
                   ref={capitalRef}
-                  placeholder="$ Enter amount to add to Capital"
+                  placeholder="$ Add amount to Capital"
                 ></Form.Control>
 
                 <ListGroup.Item className="list-grp-item-all-budgets">
@@ -447,7 +447,7 @@ const EachBudget = () => {
                   type="number"
                   step={step}
                   ref={entertainmentRef}
-                  placeholder="$ Enter amount to add to Entertainment"
+                  placeholder="$ Add amount to Entertainment"
                 ></Form.Control>
               </ListGroup>
 

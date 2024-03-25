@@ -1,4 +1,4 @@
-import { useParams, NavLink, useLocation } from "react-router-dom";
+import { useParams, NavLink, useNavigate } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { Button, Col, Container, Form, Row, Tab, Tabs } from "react-bootstrap";
@@ -15,14 +15,20 @@ import {
 import ExpenseBadge from "./ExpenseBadge";
 import ExpenseTable from "./ExpenseTable";
 import { Balance } from "../../assets/FinanceInterfaces";
+import { useAuth } from "../../context/useAuth";
+import PageHeader from "../../components/Headers/PageHeader";
+
+type Expense = TCapitalExpenses | TEatoutExpenses | TEntertainmentExpenses;
 
 const ShowExpenses = () => {
-  const _location = useLocation();
-  const searchParams = new URLSearchParams(_location.search);
-  const budgetName = searchParams.get("budget_name");
+  // const loc = useLocation();
+  // const balanceState = loc.state?.balance as Balance | undefined;
+  // const budgetState = loc.state?.budget as Budget | undefined;
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
 
   // Submit Expenses
-  const { id } = useParams<{ id: string }>();
+  const { id: budgetIdParam } = useParams();
   const mountedBalance = useRef(true);
   const mountedExpenses = useRef(true);
   const [balance, setBalance] = useState<Balance | null>(null);
@@ -67,43 +73,62 @@ const ShowExpenses = () => {
   };
 
   useEffect(() => {
-    if (mountedBalance.current) {
-      mountedBalance.current = false;
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth, trigger]);
 
-      const fetchSingleBalance = async () => {
-        const result = await fetch(
-          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${id}`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
+  useEffect(() => {
+    const fetchSingleBalance = async () => {
+      const result = await fetch(
+        `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.balance}/${budgetIdParam}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (result.status === StatusCodes.Ok) {
+        const data = await result.json();
+        setBalance(data);
+        localStorage.setItem(
+          `balance_user${userId}_budget${budgetIdParam}`,
+          data
         );
+        return;
+      }
 
-        if (result.status === StatusCodes.Ok) {
-          const data = await result.json();
-          setBalance(data);
-          return;
-        }
-
-        if (result.status === StatusCodes.NoContent) {
-          setBalance(null);
-          return;
-        }
-
-        if (result.status === StatusCodes.InternalServerError) {
-          console.log("Failed to fetch the data!");
-          setBalance(null);
-          return;
-        }
-
-        console.log("Unexpected error happened!");
+      if (result.status === StatusCodes.NoContent) {
         setBalance(null);
         return;
-      };
+      }
+
+      if (result.status === StatusCodes.InternalServerError) {
+        console.log("Failed to fetch the data!");
+        setBalance(null);
+        return;
+      }
+
+      console.log("Unexpected error happened!");
+      setBalance(null);
+      return;
+    };
+
+    if (!loadingAuth) {
+      const storedBalance = localStorage.getItem(
+        `balance_user${userId}_budget${budgetIdParam}`
+      );
+      if (storedBalance) {
+        setBalance(JSON.parse(storedBalance));
+        return;
+      }
 
       fetchSingleBalance();
     }
-  }, [id, balance, trigger]);
+  }, [budgetIdParam, trigger, userId, loadingAuth]);
 
   // Submit Expenses
   async function handleSubmitExpense(e: FormEvent) {
@@ -113,16 +138,16 @@ const ShowExpenses = () => {
       expenseTypeRef.current?.value &&
       expenseAmountRef.current?.value &&
       expenseDescRef.current?.value &&
-      id
+      budgetIdParam
     ) {
       try {
         const result = await fetch(
-          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.submitExpenses}/${id}`,
+          `${BACKEND_URL}${Urls.finance.index}/${Urls.finance.submitExpenses}/${budgetIdParam}`,
           {
             method: "POST",
             credentials: "include",
             body: JSON.stringify({
-              budget_id: +id,
+              budget_id: +budgetIdParam,
               expense_type: expenseTypeRef.current?.value,
               expense_desc: expenseDescRef.current?.value,
               expense_amount: expenseAmountRef.current?.value,
@@ -152,9 +177,6 @@ const ShowExpenses = () => {
           }, 5000);
           return;
         } else if (result.status === StatusCodes.Ok) {
-          mountedBalance.current = true;
-          mountedExpenses.current = true;
-          handleResetSearch();
           const updatedBalance = (await result.json()) as Balance;
           setBalance(updatedBalance);
           setSuccessRes(true);
@@ -164,6 +186,17 @@ const ShowExpenses = () => {
 
           expenseDescRef.current.value = "";
           expenseAmountRef.current.value = "";
+
+          localStorage.setItem(
+            `balance_user${userId}_budget${budgetIdParam}`,
+            JSON.stringify(updatedBalance)
+          );
+
+          const offset = (currentPage - 1) * 10;
+          localStorage.removeItem(
+            `expense_user${userId}_budget${budgetIdParam}_expense${expenseTypeRef.current?.value}_limit10_offset${offset}_search`
+          );
+          handleResetSearch();
 
           return;
         } else {
@@ -196,62 +229,80 @@ const ShowExpenses = () => {
   }
 
   useEffect(() => {
-    if (mountedExpenses.current) {
-      mountedExpenses.current = false;
-      console.log("Activate Tab in useEffect", activeTab);
-      console.log("current page In useEffect", currentPage);
+    const offset = (currentPage - 1) * 10;
+    console.log("Activate Tab in useEffect", activeTab);
+    console.log("current page In useEffect", currentPage);
 
-      const fetchExpensesData = async () => {
-        if (id) {
-          try {
-            const result = await fetch(
-              `${BACKEND_URL}/finance/show-${activeTab}-expenses/${id}?limit=10&offset=${
-                (currentPage - 1) * 10
-              }&search=${searchString}`,
-              {
-                method: "GET",
-                credentials: "include",
-              }
-            );
-
-            if (result.status === StatusCodes.Ok) {
-              const data = (await result.json()) as
-                | TCapitalExpenses
-                | TEatoutExpenses
-                | TEntertainmentExpenses;
-              setData(data);
-              return;
+    const fetchExpensesData = async () => {
+      if (budgetIdParam) {
+        try {
+          const result = await fetch(
+            `${BACKEND_URL}/finance/show-${activeTab}-expenses/${budgetIdParam}?limit=10&offset=${offset}&search=${searchString}`,
+            {
+              method: "GET",
+              credentials: "include",
             }
+          );
 
-            if (result.status === StatusCodes.NoContent) {
-              setData("nodata");
+          if (result.status === StatusCodes.Ok) {
+            const data = (await result.json()) as Expense;
+            setData(data);
+            if (searchString === "") {
+              localStorage.setItem(
+                `expense_user${userId}_budget${budgetIdParam}_expense${activeTab}_limit10_offset${offset}_search`,
+                JSON.stringify(data)
+              );
             }
-
-            if (result.status === StatusCodes.UnAuthorized) {
-              location.assign(Urls.login);
-              return;
-            }
-
-            const errResp = await result.json();
-            console.log(errResp.message);
-            setData(null);
-          } catch (error) {
-            console.log(error);
-            return null;
+            return;
           }
+
+          if (result.status === StatusCodes.NoContent) {
+            setData("nodata");
+            return;
+          }
+
+          if (result.status === StatusCodes.UnAuthorized) {
+            location.assign(Urls.login);
+            return;
+          }
+
+          const errResp = await result.json();
+          console.log(errResp.message);
+          setData(null);
+        } catch (error) {
+          console.log(error);
+          return null;
         }
-        console.log("No budget ID!");
-        return null;
-      };
+      }
+      console.log("No budget ID!");
+      return null;
+    };
+
+    if (!loadingAuth) {
+      const storedExpense = localStorage.getItem(
+        `expense_user${userId}_budget${budgetIdParam}_expense${activeTab}_limit10_offset${offset}_search`
+      );
+
+      if (storedExpense && searchString === "") {
+        setData(JSON.parse(storedExpense));
+        return;
+      }
 
       fetchExpensesData();
     }
-  }, [id, currentPage, activeTab, searchString, trigger]);
+  }, [
+    budgetIdParam,
+    currentPage,
+    activeTab,
+    searchString,
+    trigger,
+    userId,
+    loadingAuth,
+  ]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchRef.current) {
-      mountedExpenses.current = true;
       setCurrentPage(1);
       setBadgeText(`'${searchRef.current.value}'`);
       setSearchString(searchRef.current.value);
@@ -261,9 +312,8 @@ const ShowExpenses = () => {
 
   const handleResetSearch = () => {
     if (searchRef.current) {
-      mountedExpenses.current = true;
       searchRef.current.value = "";
-      setSearchString("")
+      setSearchString("");
       setCurrentPage(1);
       setBadgeText("Total");
       setTrigger((prev) => !prev);
@@ -281,7 +331,7 @@ const ShowExpenses = () => {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
+          <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -305,7 +355,7 @@ const ShowExpenses = () => {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
+          <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -320,7 +370,7 @@ const ShowExpenses = () => {
     return (
       <>
         <div className="text-center mt-4 mb-3">
-          <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
+          <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
             <Button variant="outline-secondary" className="all-budget-choices">
               Back To Budget
             </Button>
@@ -337,9 +387,9 @@ const ShowExpenses = () => {
   return (
     <>
       <div className="text-center mt-2">
-        <NavLink to={`${Urls.finance.showBudgets}/${id}`}>
-          <Button variant="outline-secondary" className="all-budget-choices">
-            Back To Budget '{budgetName}'
+        <NavLink to={`${Urls.finance.showBudgets}/${budgetIdParam}`}>
+          <Button variant="dark" className="all-budget-choices">
+            Back To Budget Info
           </Button>
         </NavLink>
       </div>
@@ -347,11 +397,12 @@ const ShowExpenses = () => {
       <Container className="mt-1 mb-4">
         <Row>
           <Col lg>
-            <div>
+            <PageHeader text="Submit New Expense" headerType="h2" />
+            {/* <div>
               <h3 className="text-light text-center mt-4 mb-3">
                 Submit New Expense
               </h3>
-            </div>
+            </div> */}
 
             <Form
               id="form-submit-expenses"
@@ -359,15 +410,18 @@ const ShowExpenses = () => {
               className="mx-1"
             >
               <Row>
-                <legend style={{ textAlign: "center", fontSize: "19px" }}>
+                <legend
+                  className="text-light"
+                  style={{ textAlign: "center", fontSize: "19px" }}
+                >
                   Total Remaining:{" "}
-                  <span className="text-success">
+                  <span className="text-info">
                     ${balance ? balance.total.String : ""} &#128176;
                   </span>
                 </legend>
 
                 <Col className="mt-1">
-                  <Form.Label className="text-primary">Expense Type</Form.Label>
+                  <Form.Label className="text-warning">Expense Type</Form.Label>
                   <Form.Select
                     className="mb-3"
                     id="expenseType"
@@ -384,7 +438,7 @@ const ShowExpenses = () => {
                       {balance ? balance.entertainment : ""}
                     </option>
                   </Form.Select>
-                  <Form.Label className="mb-0 text-primary">
+                  <Form.Label className="mb-0 text-warning">
                     Expense Amount
                   </Form.Label>
                   <Form.Control
@@ -397,7 +451,7 @@ const ShowExpenses = () => {
                     required
                   />
 
-                  <Form.Label className="mb-0 text-primary">
+                  <Form.Label className="mb-0 text-warning">
                     Expense Description
                   </Form.Label>
                   <Form.Control
@@ -444,10 +498,9 @@ const ShowExpenses = () => {
 
           <Col lg>
             <div className="container">
-              <div className="row mt-4">
-                <div>
-                  <h3 className="text-light text-center mb-0">View Expenses</h3>
-                </div>
+              <div className="row mt-1">
+                <PageHeader text="View Expenses" headerType="h2" />
+
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <Form
                     onSubmit={handleSearch}
@@ -485,7 +538,7 @@ const ShowExpenses = () => {
                     </Row>
                   </Form>
                 </div>
-
+                
                 <Tabs
                   id="controlled-tab-example"
                   activeKey={keyTab}
@@ -499,15 +552,36 @@ const ShowExpenses = () => {
                 >
                   <Tab eventKey={EXPENSE_TYPES.cap} title="Capital">
                     <ExpenseBadge data={data} badgeText={badgeText} />
-                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
+                    <ExpenseTable
+                      data={data}
+                      toggleTrigger={toggleTrigger}
+                      currentPage={currentPage}
+                      budgetIdParam={budgetIdParam ? budgetIdParam : ""}
+                      userId={userId}
+                      activeTab={activeTab}
+                    />
                   </Tab>
                   <Tab eventKey={EXPENSE_TYPES.eat} title="Eat Out">
                     <ExpenseBadge data={data} badgeText={badgeText} />
-                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
+                    <ExpenseTable
+                      data={data}
+                      toggleTrigger={toggleTrigger}
+                      currentPage={currentPage}
+                      budgetIdParam={budgetIdParam ? budgetIdParam : ""}
+                      userId={userId}
+                      activeTab={activeTab}
+                    />
                   </Tab>
                   <Tab eventKey={EXPENSE_TYPES.ent} title="Entertainment">
                     <ExpenseBadge data={data} badgeText={badgeText} />
-                    <ExpenseTable data={data} toggleTrigger={toggleTrigger} />
+                    <ExpenseTable
+                      data={data}
+                      toggleTrigger={toggleTrigger}
+                      currentPage={currentPage}
+                      budgetIdParam={budgetIdParam ? budgetIdParam : ""}
+                      userId={userId}
+                      activeTab={activeTab}
+                    />
                   </Tab>
                 </Tabs>
               </div>

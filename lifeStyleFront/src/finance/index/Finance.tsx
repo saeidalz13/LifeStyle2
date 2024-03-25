@@ -92,7 +92,7 @@ const Finance = () => {
     <div>
       <BackHomeBtn />
 
-      <PageHeader text="Welcome to the finance section!" />
+      <PageHeader text="Welcome to the finance section!" headerType="h1"/>
 
       <Container className="mt-3 mb-5">
         <Row className="align-items-center">

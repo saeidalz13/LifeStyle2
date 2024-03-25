@@ -39,7 +39,7 @@ const Home = () => {
 
   return (
     <div>
-      <PageHeader text="Discipline your life style" />
+      <PageHeader text="Discipline your life style" headerType="h1" />
 
       <Container>
         <Row className="align-items-center">
@@ -53,7 +53,7 @@ const Home = () => {
                   color: "#FFEFD5",
                 }}
               >
-                <MainDivHeader text="Let's Grow Together!" />
+                <MainDivHeader text="Let's Grow Together!" style={null} />
                 <p>
                   You and I will be a better person if we discipline our habits.
                   My plan is that we can do this more conveniently!

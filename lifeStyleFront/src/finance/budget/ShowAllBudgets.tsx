@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import Urls from "../../Urls";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Budgets } from "../../assets/FinanceInterfaces";
 import { Waiting } from "../../assets/GeneralInterfaces";
 import BACKEND_URL from "../../Config";
@@ -24,7 +24,6 @@ const ShowAllBudgets = () => {
   const { userId, isAuthenticated, loadingAuth } = useAuth();
   const navigateAuth = useNavigate();
   const limit = 2;
-  const mounted = useRef(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [numbers, setNumbers] = useState<null | Array<number>>(null);
   const [budgets, setBudgets] = useState<Waiting | Budgets | null>("waiting");
@@ -36,7 +35,6 @@ const ShowAllBudgets = () => {
   });
 
   const changeCurrentPage = (idx: number) => {
-    mounted.current = false;
     setCurrentPage(idx);
   };
 
@@ -88,14 +86,15 @@ const ShowAllBudgets = () => {
       if (receivedBudgets) {
         setBudgets(receivedBudgets);
         
-        const localStorageKey = `user${userId}_limit${limit}_offset${offset}`;
+        const localStorageKey = `allbudgets_user${userId}_limit${limit}_offset${offset}`;
         localStorage.setItem(
           localStorageKey,
           JSON.stringify(receivedBudgets)
         );
 
+
         const nums = [];
-        const upperBound = receivedBudgets.num_budgets / limit;
+        const upperBound = Math.ceil(receivedBudgets.num_budgets / limit);
         for (let i = 1; i <= upperBound; i++) {
           nums.push(i);
         }
@@ -103,15 +102,15 @@ const ShowAllBudgets = () => {
       }
     };
 
-    if (userId !== -1) {
-      const localStorageKey = `user${userId}_limit${limit}_offset${offset}`;
+    if (!loadingAuth) {
+      const localStorageKey = `allbudgets_user${userId}_limit${limit}_offset${offset}`;
       const storedData = localStorage.getItem(localStorageKey);
       if (storedData) {
         const data = JSON.parse(storedData) as Budgets;
         setBudgets(data);
 
         const nums = [];
-        const upperBound = data.num_budgets / limit;
+        const upperBound = Math.ceil(data.num_budgets / limit);
         for (let i = 1; i <= upperBound; i++) {
           nums.push(i);
         }
@@ -121,7 +120,7 @@ const ShowAllBudgets = () => {
       }
     }
 
-  }, [currentPage, userId]);
+  }, [currentPage, userId, loadingAuth]);
 
   if (budgets === "waiting") {
     return (

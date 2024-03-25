@@ -5,11 +5,16 @@ import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import { ApiRes } from "../../assets/GeneralInterfaces";
 import StatusCodes from "../../StatusCodes";
+import { useNavigate } from "react-router-dom";
 
 interface UpdateExpensesProps {
   updateRecModalShow: boolean;
   expenseType: string;
   selectedExpenseToUpdate: TExpense;
+  currentPage: number;
+  budgetIdParam: string;
+  userId: number;
+  activeTab: string;
   onHide: () => void;
   toggleTrigger: () => void;
 }
@@ -18,9 +23,14 @@ const ModalUpdateExpenses: React.FC<UpdateExpensesProps> = ({
   updateRecModalShow,
   expenseType,
   selectedExpenseToUpdate,
+  currentPage,
+  budgetIdParam,
+  userId,
+  activeTab,
   onHide,
   toggleTrigger,
 }) => {
+  const navigateAuth = useNavigate();
   const [updatedExpenses, setUpdatedExpenses] = useState<string>(
     selectedExpenseToUpdate.expenses
   );
@@ -142,7 +152,7 @@ const ModalUpdateExpenses: React.FC<UpdateExpensesProps> = ({
       });
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigateAuth(Urls.login);
         return;
       }
 
@@ -160,6 +170,12 @@ const ModalUpdateExpenses: React.FC<UpdateExpensesProps> = ({
         setTimeout(() => {
           setServerRespMsg("");
         }, 5000);
+
+        const offset = (currentPage - 1) * 10;
+        localStorage.removeItem(
+          `expense_user${userId}_budget${budgetIdParam}_expense${activeTab}_limit10_offset${offset}_search`
+        );
+
         if (toggleTrigger) {
           toggleTrigger();
         }
@@ -208,6 +224,11 @@ const ModalUpdateExpenses: React.FC<UpdateExpensesProps> = ({
         if (onHide) {
           onHide();
         }
+        const offset = (currentPage - 1) * 10;
+        localStorage.removeItem(
+          `expense_user${userId}_budget${budgetIdParam}_expense${activeTab}_limit10_offset${offset}_search`
+        );
+
         return;
       }
 

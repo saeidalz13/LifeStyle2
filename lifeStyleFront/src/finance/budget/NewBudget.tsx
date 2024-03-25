@@ -11,6 +11,7 @@ import { useAuth } from "../../context/useAuth";
 import QuestionMarkOverlay from "../../components/Misc/QuestionMarkOverlay";
 import MainDivHeader from "../../components/Headers/MainDivHeader";
 import { useSpring, animated } from "react-spring";
+import { getLocalStorageValuesByKeyContains } from "../../utils/LocalStorageUtils";
 
 const NewBudget = () => {
   const { isAuthenticated, loadingAuth } = useAuth();
@@ -114,6 +115,13 @@ const NewBudget = () => {
           }, 10000);
           return;
         } else if (response.status == StatusCodes.Created) {
+          const keysToRemove = getLocalStorageValuesByKeyContains("allbudgets");
+          if (keysToRemove) {
+            keysToRemove.forEach((key) => {
+              localStorage.removeItem(key);
+            });
+          }
+
           setServerRes(true);
           setTimeout(() => {
             setServerRes(false);
