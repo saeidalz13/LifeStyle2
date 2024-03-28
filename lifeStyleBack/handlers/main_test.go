@@ -32,6 +32,9 @@ func determineMigrationDrive() string {
 
 func execMigrations(migrationDir string) error {
 	driver, err := postgres.WithInstance(DB_TEST, &postgres.Config{})
+	if err != nil {
+		panic(err)
+	}
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationDir,
 		// databaseName (random string for logging)
