@@ -94,7 +94,7 @@ func TestMain(m *testing.M) {
 	randomString32Chars := "c808cd4bc8639e0808216f5180277189"
 
 	cn.EnvVars = &cn.DotEnvVars{
-		DbTestUrl: "postgresql://root:testpassword@localhost:3200/lfdb?sslmode=disable",
+		DbTestUrl: "postgresql://root:testpassword@0.0.0.0:5432/lfdb?sslmode=disable",
 		PasetoKey: randomString32Chars,
 		DevStage:  "dev",
 	}
