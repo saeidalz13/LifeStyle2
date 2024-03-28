@@ -8,7 +8,7 @@
 }
 
 body {
-    background-color: #EAD7BB;
+    background-color: #f0ebe1;
 }
 
 h1 {
@@ -60,9 +60,9 @@ footer {
 }
 
 .home-panels {
-    padding-right: 100px;
-    padding-left: 100px;
-    border-radius: 100px;
+    padding-right: 3rem;
+    padding-left: 3rem;
+    border-radius: 50px;
     background-color: #5F939A;
 }   
 
@@ -149,7 +149,7 @@ footer {
     border-radius: 20px;
 }
 
-#form-new-budget, #form-edit-budget, #form-submit-expenses, .list-group-balance, .form-fitfin {
+#form-new-budget, #form-edit-budget, #form-submit-expenses, .list-group-balance {
     background-color: var(--div-generic-color);
     padding: 20px;
     border-radius: 20px;
@@ -157,6 +157,16 @@ footer {
     box-shadow: 0 6px 20px rgba(102, 12, 57, 0.377);
     max-width: 750px;
 }
+
+.form-fitfin {
+    background-color: var(--div-generic-color);
+    padding: 20px;
+    border-radius: 20px;
+    margin: auto;
+    box-shadow: 0 6px 20px rgba(102, 12, 57, 0.377);
+    max-width: 30rem;
+}
+
 
 .list-group-balance {
     font-size: 20px;
@@ -283,4 +293,9 @@ transform: translateX(5px); /* Arrow moves right on hover */
     border-radius: 10px;
     background-color: var(--accordion-btn-color);
     margin-bottom: 5px;
+}
+
+.fitness-choices-main {
+    padding-top: 200px;
+    padding-bottom: 200px;
 }

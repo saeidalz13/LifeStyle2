@@ -3,12 +3,12 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
-	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
@@ -49,7 +49,7 @@ func (f *FitnessHandlersConfig) HandleGetAllFitnessPlans(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlans(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
@@ -87,7 +87,7 @@ func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlans(ftx *fiber.Ctx) erro
 func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlanMoves(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
@@ -109,34 +109,29 @@ func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlanMoves(ftx *fiber.Ctx) 
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	joinedData, err := q.JoinDayPlanAndDayPlanMovesAndMoves(ctx)
+	joinedData, err := q.JoinDayPlanAndDayPlanMovesAndMoves(ctx, sqlc.JoinDayPlanAndDayPlanMovesAndMovesParams{
+		UserID: user.ID,
+		PlanID: int64(planId),
+	})
 	if err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to join day_plans and day_plan_moves"})
 	}
 
-	var moves []models.RespMoves
+	moves := make(map[string][]sqlc.JoinDayPlanAndDayPlanMovesAndMovesRow)
 	for _, row := range joinedData {
-		if row.PlanID == int64(planId) && row.UserID == user.ID {
-			moveObj := models.RespMoves{}
-			moveObj.Day = row.Day
-			moveObj.DayPlanId = row.DayPlanID
-			moveObj.DayPlanMoveId = row.DayPlanMoveID
-			moveObj.MoveName = row.MoveName
-			moveObj.Days = row.Days
-			moveObj.PlanId = row.PlanID
-			moves = append(moves, moveObj)
-		}
+		dayString := fmt.Sprintf("%d", row.Day)
+		moves[dayString] = append(moves[dayString], row)
 	}
 
-	log.Printf("%#v", moves)
-	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"day_plan_moves": moves})
+	log.Printf("%+v", moves)
+	return ftx.Status(fiber.StatusOK).JSON(moves)
 }
 
 func (f *FitnessHandlersConfig) HandleGetSinglePlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
@@ -171,7 +166,7 @@ func (f *FitnessHandlersConfig) HandleGetSinglePlan(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlanMovesWorkout(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
@@ -193,7 +188,7 @@ func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlanMovesWorkout(ftx *fibe
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	dayPlanMoves, err := q.FetchFitnessDayPlanMoves(ctx, sqlc.FetchFitnessDayPlanMovesParams{
+	dayPlanMovesWorkout, err := q.SelectDayPlanMovesStartWorkout(ctx, sqlc.SelectDayPlanMovesStartWorkoutParams{
 		UserID:    user.ID,
 		DayPlanID: int64(dayPlanId),
 	})
@@ -202,29 +197,13 @@ func (f *FitnessHandlersConfig) HandleGetAllFitnessDayPlanMovesWorkout(ftx *fibe
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to fetch all day plan moves"})
 	}
 
-	var moves []models.RespStartWorkoutDayPlanMoves
-	for _, row := range dayPlanMoves {
-		moveName, err := q.FetchMoveName(ctx, row.MoveID)
-		if err != nil {
-			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractMoveName})
-		}
-		moves = append(moves, models.RespStartWorkoutDayPlanMoves{
-			DayPlanMoveID: row.DayPlanMoveID,
-			UserID:        row.UserID,
-			PlanID:        row.PlanID,
-			DayPlanID:     row.DayPlanID,
-			MoveName:      moveName,
-			MoveId:        row.MoveID,
-		})
-	}
-
-	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"moves": moves})
+	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"day_plan_moves": dayPlanMovesWorkout})
 }
 
 func (f *FitnessHandlersConfig) HandleGetPlanRecords(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	// User Authorization
 	userEmail, err := utils.ExtractEmailFromClaim(ftx)
@@ -246,7 +225,7 @@ func (f *FitnessHandlersConfig) HandleGetPlanRecords(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
 	}
 
-	planRecords, err := q.FetchPlanRecords(ctx, sqlc.FetchPlanRecordsParams{
+	planRecords, err := q.SelectPlanRecords(ctx, sqlc.SelectPlanRecordsParams{
 		UserID:    user.ID,
 		DayPlanID: int64(dayPlanId),
 	})
@@ -258,10 +237,88 @@ func (f *FitnessHandlersConfig) HandleGetPlanRecords(ftx *fiber.Ctx) error {
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"plan_records": planRecords})
 }
 
+func (f *FitnessHandlersConfig) HandleGetWeekPlanRecords(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	// User Authorization
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	dayPlanIdString := ftx.Params("dayPlanId")
+	weekString := ftx.Params("week")
+	dayPlanId, err := utils.FetchIntOfParamId(dayPlanIdString)
+	if err != nil {
+		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+	week, err := utils.FetchIntOfParamId(weekString)
+	if err != nil {
+		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+
+	weekPlanRecords, err := q.SelectWeekPlanRecords(ctx, sqlc.SelectWeekPlanRecordsParams{
+		UserID:    user.ID,
+		DayPlanID: int64(dayPlanId),
+		Week:      int32(week),
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "failed to fetch week plan records week: " + weekString + " day_plan_id: " + dayPlanIdString})
+	}
+
+	log.Printf("%+v",weekPlanRecords)
+	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"week_plan_records": weekPlanRecords})
+}
+
+func (f *FitnessHandlersConfig) HandleGetNumAvailableWeeksPlanRecords(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	// User Authorization
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	dayPlanIdString := ftx.Params("dayPlanId")
+	dayPlanId, err := utils.FetchIntOfParamId(dayPlanIdString)
+	if err != nil {
+		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+
+	numWeeks, err := q.SelectNumAvailableWeeksPlanRecords(ctx, sqlc.SelectNumAvailableWeeksPlanRecordsParams{
+		UserID: user.ID,
+		DayPlanID: int64(dayPlanId),
+	})
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "failed to fetch num weeks for day_plan_id: " + dayPlanIdString})
+	}
+
+	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"num_weeks": numWeeks})
+}
+
 func (f *FitnessHandlersConfig) HandlePostAddPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -295,7 +352,7 @@ func (f *FitnessHandlersConfig) HandlePostAddPlan(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandlePostEditPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -324,7 +381,7 @@ func (f *FitnessHandlersConfig) HandlePostEditPlan(ftx *fiber.Ctx) error {
 		movesToAdd = append(movesToAdd, *temp)
 	}
 
-	q2 := sqlc.NewQWithTx(database.DB)
+	q2 := sqlc.NewQWithTx(f.Db)
 	dayPlan, err := q2.CreateDayPlanMoves(ctx, sqlc.DayPlanMovesTx{
 		AddDayPlanTx: sqlc.AddDayPlanParams{
 			UserID: user.ID,
@@ -349,7 +406,7 @@ func (f *FitnessHandlersConfig) HandlePostEditPlan(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandlePostAddDayPlanMoves(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -397,7 +454,7 @@ func (f *FitnessHandlersConfig) HandlePostAddDayPlanMoves(ftx *fiber.Ctx) error 
 func (f *FitnessHandlersConfig) HandlePostAddPlanRecord(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -452,7 +509,7 @@ func (f *FitnessHandlersConfig) HandlePostAddPlanRecord(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) PatchPlanRecord(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -482,7 +539,7 @@ func (f *FitnessHandlersConfig) PatchPlanRecord(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleDeletePlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
@@ -512,7 +569,7 @@ func (f *FitnessHandlersConfig) HandleDeletePlan(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleDeleteDayPlan(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
@@ -542,8 +599,8 @@ func (f *FitnessHandlersConfig) HandleDeleteDayPlan(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleDeleteDayPlanMove(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
-	qwtx := sqlc.NewQWithTx(database.DB)
+	q := sqlc.New(f.Db)
+	qwtx := sqlc.NewQWithTx(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsDeleteReqs(ftx, ctx, q)
 	if err != nil {
@@ -568,7 +625,7 @@ func (f *FitnessHandlersConfig) HandleDeleteDayPlanMove(ftx *fiber.Ctx) error {
 func (f *FitnessHandlersConfig) HandleDeleteWeekFromPlanRecords(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {
@@ -596,7 +653,7 @@ func (f *FitnessHandlersConfig) HandleDeleteWeekFromPlanRecords(ftx *fiber.Ctx) 
 func (f *FitnessHandlersConfig) DeleteSetFromPlanRecord(ftx *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(database.DB)
+	q := sqlc.New(f.Db)
 
 	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
 	if err != nil {

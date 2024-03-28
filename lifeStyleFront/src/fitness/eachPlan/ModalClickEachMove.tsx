@@ -4,15 +4,18 @@ import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 import { ApiRes } from "../../assets/GeneralInterfaces";
+import { useAuth } from "../../context/useAuth";
+import { useNavigate } from "react-router-dom";
+// import { DayPlanMove, DayPlanMoves } from "../../assets/FitnessInterfaces";
 
 type OnHideCallback = () => void;
 interface CliclEachMoveProps {
   show: boolean;
   onHide: OnHideCallback;
+  planId: number;
   dayPlanMoveId: number;
   youTubeLink: string;
   toggleTrigger: () => void;
-  mountedRef: React.MutableRefObject<boolean>;
   moveName: string;
   clickedDay: number;
 }
@@ -20,14 +23,16 @@ interface CliclEachMoveProps {
 const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
   show,
   onHide,
+  planId,
   dayPlanMoveId,
   youTubeLink,
   toggleTrigger,
-  mountedRef,
   moveName,
   clickedDay,
 }) => {
   const [showVideo, setShowVideo] = useState(false);
+  const { userId } = useAuth();
+  const navigateAuth = useNavigate();
 
   const handleDeleteDayPlanMove = async () => {
     try {
@@ -40,7 +45,7 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
       );
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigateAuth(Urls.login);
         return;
       }
 
@@ -52,7 +57,21 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
       }
 
       if (result.status === StatusCodes.Ok) {
-        mountedRef.current = true;
+        // const storedMoves = localStorage.getItem(
+        //   `dayplanmoves_moves_user${userId}_fitnessplan${planId}`
+        // );
+        // if (storedMoves) {
+        //   const oldMoves = JSON.parse(storedMoves) as DayPlanMoves;
+        //   oldMoves.day_plan_moves = oldMoves.day_plan_moves.filter((value) => value.day_plan_move_id !== dayPlanMoveId
+        //   );
+        //   localStorage.setItem(
+        //     `dayplanmoves_moves_user${userId}_fitnessplan${planId}`,
+        //     JSON.stringify(oldMoves)
+        //   );
+        // }
+
+        localStorage.removeItem(`dayplanmoves_moves_user${userId}_fitnessplan${planId}`);
+
         if (onHide) {
           onHide();
         }
@@ -79,11 +98,8 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        <Modal.Header closeButton>
-          <Modal.Title
-            className="text-primary"
-            id="contained-modal-title-vcenter"
-          >
+        <Modal.Header className="bg-secondary rounded">
+          <Modal.Title className="text-info" id="contained-modal-title-vcenter">
             {moveName} (Day {clickedDay})
           </Modal.Title>
         </Modal.Header>
@@ -91,7 +107,7 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
           <div className="text-center">
             <Button
               className="px-5 py-3"
-              variant={youTubeLink === "" ? "light" : "success"}
+              variant={youTubeLink === "" ? "warning" : "success"}
               onClick={() => setShowVideo(true)}
               disabled={youTubeLink === ""}
             >
@@ -108,7 +124,7 @@ const ModalClickEachMove: React.FC<CliclEachMoveProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-primary" className="px-3" onClick={onHide}>
+          <Button variant="dark" className="px-3" onClick={onHide}>
             Close Window
           </Button>
         </Modal.Footer>

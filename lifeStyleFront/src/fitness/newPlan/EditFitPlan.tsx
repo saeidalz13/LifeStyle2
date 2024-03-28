@@ -11,7 +11,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import cp from "../ConstantsPlan";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
@@ -23,10 +23,12 @@ import {
 } from "../../assets/FitnessInterfaces";
 import { ApiRes } from "../../assets/GeneralInterfaces";
 import BackFitnessBtn from "../../misc/BackFitnessBtn";
+import { useAuth } from "../../context/useAuth";
 
 const EditFitPlan = () => {
-  // const mounted = useRef(true);
-  const { id } = useParams();
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
+  const { id: planId } = useParams();
   const [possibleErrs, setPossibleErrs] = useState("");
   const [success, setSuccess] = useState("");
   const [daysQry, setDaysQry] = useState<number | null>(null);
@@ -34,8 +36,8 @@ const EditFitPlan = () => {
   const MOVESARRAY = cp.MOVESARRAY;
 
   const [dayPlans, setDayPlans] = useState<FitnessDayPlan[]>([]);
-  const [percentageDayPlans, setPercentageDayPlans] = useState(0);
-  const [daysCreatedStr, setDaysCreatedStr] = useState(
+  const [percentageDayPlans, setPercentageDayPlans] = useState<number>(0);
+  const [daysCreatedStr, setDaysCreatedStr] = useState<string>(
     "No day plan has been created"
   );
   const [day, setDay] = useState(1);
@@ -45,11 +47,19 @@ const EditFitPlan = () => {
   const [addMoveErrs, setAddMoveErrs] = useState("");
 
   useEffect(() => {
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
+
+  useEffect(() => {
     const fetchDayPlans = async (): Promise<FitnessDayPlans | null> => {
       try {
-        // console.log("REACHED", id)
         const result = await fetch(
-          `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plans/${id}`,
+          `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plans/${planId}`,
           {
             method: "GET",
             credentials: "include",
@@ -95,13 +105,13 @@ const EditFitPlan = () => {
     };
 
     updateDayPlans();
-  }, [id]);
+  }, [planId]);
 
   // Update the progress bar and label
   useEffect(() => {
     const fetchSinglePlanFunc = async () => {
       const result = await fetch(
-        `${BACKEND_URL}${Urls.fitness.fetchSinglePlan}/${id}`,
+        `${BACKEND_URL}${Urls.fitness.fetchSinglePlan}/${planId}`,
         {
           method: "GET",
           credentials: "include",
@@ -153,7 +163,7 @@ const EditFitPlan = () => {
       dayStr = dayStr.slice(0, dayStr.length - 2);
       setDaysCreatedStr(dayStr);
     }
-  }, [daysQry, id, dayPlans]);
+  }, [daysQry, planId, dayPlans]);
 
   // Add move function
   function handleAddMove(e: FormEvent) {
@@ -185,7 +195,7 @@ const EditFitPlan = () => {
     e.preventDefault();
     setSuccess("");
     setPossibleErrs("");
-    if (!id) {
+    if (!planId) {
       return;
     }
     if (moves.length === 0) {
@@ -198,7 +208,7 @@ const EditFitPlan = () => {
 
     try {
       const result = await fetch(
-        `${BACKEND_URL}${Urls.fitness.editPlanNoID}/${id}`,
+        `${BACKEND_URL}${Urls.fitness.editPlanNoID}/${planId}`,
         {
           method: "POST",
           credentials: "include",
@@ -207,7 +217,7 @@ const EditFitPlan = () => {
             "Content-Type": "application/json;charset=UTF-8",
           },
           body: JSON.stringify({
-            plan_id: +id,
+            plan_id: +planId,
             day: +day,
             all_moves: moves,
           }),
@@ -230,6 +240,7 @@ const EditFitPlan = () => {
         setTimeout(() => {
           setSuccess("");
         }, 5000);
+        localStorage.removeItem(`dayplanmoves_moves_user${userId}_fitnessplan${planId}`)
         setDayPlans((prevVal) => {
           const newDayPlans = [...prevVal, dayPlan];
 
@@ -302,7 +313,7 @@ const EditFitPlan = () => {
             <Col>
               <Button
                 type="submit"
-                variant="outline-warning"
+                variant="warning"
                 className="px-4 all-budget-choices"
               >
                 Add Exercise
@@ -314,7 +325,7 @@ const EditFitPlan = () => {
 
         <div className="text-center mt-2">
           {percentageDayPlans >= 100 ? (
-            <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
+            <NavLink to={`${Urls.fitness.getAllDayPlans}/${planId}`}>
               <Button
                 variant="outline-light"
                 className="px-5 border border-danger"
@@ -334,15 +345,15 @@ const EditFitPlan = () => {
           ) : (
             <>
               <Button
-                variant="outline-success"
+                variant="success"
                 className="px-4 all-budget-choices"
                 onClick={handleSubmitDayPlan}
               >
                 Submit Day {day} Moves
               </Button>
               <br />
-              <NavLink to={`${Urls.fitness.getAllDayPlans}/${id}`}>
-                <Button className="mt-2 py-1" variant="outline-secondary">
+              <NavLink to={`${Urls.fitness.getAllDayPlans}/${planId}`}>
+                <Button className="mt-2 py-1" variant="dark">
                   Plan Details So Far
                 </Button>
               </NavLink>
@@ -359,12 +370,12 @@ const EditFitPlan = () => {
               You're All Set!
             </div>
           ) : (
-            <div className="text-center text-primary mt-3 mb-2">
+            <div className="text-center text-info mt-3 mb-2">
               <Badge
                 style={{
                   fontSize: "14px",
                 }}
-                className="me-1 px-3 border border-primary text-primary"
+                className="me-1 px-3 border border-primary text-info"
                 bg="dark"
               >
                 Created So Far: {daysCreatedStr}

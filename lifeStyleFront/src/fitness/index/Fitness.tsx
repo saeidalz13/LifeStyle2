@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import BackHomeBtn from "../../misc/BackHomeBtn";
 import {
   Container,
@@ -9,7 +9,7 @@ import {
   ListGroup,
   Accordion,
 } from "react-bootstrap";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import CreatePlan from "../newPlan/CreatePlan";
 import { FitnessPlans } from "../../assets/FitnessInterfaces";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
@@ -20,9 +20,23 @@ import rl from "../../svg/RotatingLoad.svg";
 import StatusCodes from "../../StatusCodes";
 import BACKEND_URL from "../../Config";
 import { Waiting } from "../../assets/GeneralInterfaces";
+import { useAuth } from "../../context/useAuth";
+import PageHeader from "../../components/Headers/PageHeader";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
+import InsideGenericDiv from "../../components/Div/InsideGenericDiv";
+import { useSpring, animated } from "react-spring";
 
 const Fitness = () => {
-  const mounted = useRef(false);
+  const springProps = useSpring({
+    from: { opacity: 0, transform: "translateX(100px)" },
+    to: { opacity: 1, transform: "translateX(0)" },
+    delay: 20,
+  });
+
+  
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
+
   const [startOrEndConn, setStartOrEndConn] = useState<"start" | "end">(
     "start"
   );
@@ -33,7 +47,6 @@ const Fitness = () => {
   const [msgLoading, setMsgLoading] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const navigate = useNavigate();
   const plansPerPage = 3;
   const [plans, setPlans] = useState<null | FitnessPlans | Waiting>("waiting");
 
@@ -41,8 +54,8 @@ const Fitness = () => {
   const [openPlans, setOpenPlans] = useState(false);
 
   const accBodyStyle = {
-    color: "rgba(189, 255, 254, 0.75)",
-    backgroundColor: "rgba(30, 30, 30, 0.7)",
+    color: "rgba(0, 0, 0, 0.75)",
+    backgroundColor: "rgba(30, 30, 30, 0.1)",
   };
 
   const accHeaderStyle = {
@@ -50,48 +63,69 @@ const Fitness = () => {
   };
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
 
-      const fetchFitnessPlans = async (): Promise<null | FitnessPlans> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.fitness.getAllPlans}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-
-          if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return null;
+  useEffect(() => {
+    const fetchFitnessPlans = async (): Promise<null | FitnessPlans> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.fitness.getAllPlans}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
+        );
 
-          if (result.status === StatusCodes.Ok) {
-            return result.json();
-          }
-
-          if (result.status === StatusCodes.InternalServerError) {
-            return null;
-          }
-
-          location.assign(Urls.login);
-          return null;
-        } catch (error) {
-          location.assign(Urls.login);
+        if (result.status === StatusCodes.UnAuthorized) {
+          navigateAuth(Urls.login);
           return null;
         }
-      };
 
-      const executeFetchPlans = async () => {
-        const receivedPlans = await fetchFitnessPlans();
-        setPlans(receivedPlans);
-      };
+        if (result.status === StatusCodes.Ok) {
+          return result.json();
+        }
+
+        if (result.status === StatusCodes.InternalServerError) {
+          return null;
+        }
+
+        alert("unexpected error of server; try again later");
+        console.log("unexpcted status code", result.status);
+        return null;
+      } catch (error) {
+        alert("unexpected error of server; try again later");
+        console.log(error);
+        return null;
+      }
+    };
+
+    const executeFetchPlans = async () => {
+      const receivedPlans = await fetchFitnessPlans();
+      setPlans(receivedPlans);
+      localStorage.setItem(
+        `allfitnessplans_user${userId}`,
+        JSON.stringify(receivedPlans)
+      );
+    };
+
+    if (!loadingAuth) {
+      const storedFitnessPlans = localStorage.getItem(
+        `allfitnessplans_user${userId}`
+      );
+      if (storedFitnessPlans) {
+        setPlans(JSON.parse(storedFitnessPlans));
+        return;
+      }
 
       executeFetchPlans();
     }
-  });
+  }, [loadingAuth, navigateAuth, userId]);
 
   const handleStartWsConn = () => {
     setLoading(true);
@@ -170,11 +204,6 @@ const Fitness = () => {
     setOpen(false);
   };
 
-  const handleDetailsPlan = (plan_id: number) => {
-    navigate(`${Urls.fitness.getAllDayPlans}/${plan_id}`);
-    return;
-  };
-
   useEffect(() => {
     const targetElement = document.getElementById("main-navbar");
 
@@ -185,17 +214,19 @@ const Fitness = () => {
   }, []);
 
   return (
-    <div id="main-fitness-div" className="mb-4">
+    <animated.div style={springProps} id="main-fitness-div" className="mb-4">
       <BackHomeBtn />
 
+      <PageHeader text="Fitness" headerType="h1"></PageHeader>
       <Container className="mt-3">
         <Row className="align-items-center">
           <Col className="mb-2" lg>
             <div className="p-4 page-explanations">
-              <h3 className="mb-3 text-center text-primary">
-                Welcome to the fitness section!
-              </h3>
-              <p className="text-center">
+              <MainDivHeader
+                text="What To Do?"
+                style={{ textAlign: "center" }}
+              ></MainDivHeader>
+              <p className="text-center text-light">
                 In this section, you can define custom fitness plans and manage
                 your fitness. Here's the steps how to start your finance
                 management journey:
@@ -230,7 +261,7 @@ const Fitness = () => {
             </div>
           </Col>
 
-          <Col lg>
+          {/* <Col lg>
             <div className="text-center page-explanations p-3">
               <h2 className="text-primary">Ask GPT!</h2>
               <div
@@ -286,28 +317,29 @@ const Fitness = () => {
                 </span>
               </div>
             </div>
-          </Col>
+          </Col> */}
         </Row>
       </Container>
       <hr className="mx-5" />
 
-      <Container className="text-center mt-4">
+      <Container className="mt-4 text-center">
         <Row>
-          <Col md className="mb-2">
+          <Col sm className="mb-2">
             <Button
               variant="success"
-              className="border border-dark rounded page-explanations-homepanels px-5"
+              className=" rounded page-explanations-homepanels p-3"
               onClick={handleClickCreate}
               style={{ fontSize: "20px" }}
             >
               Create Plan
             </Button>
           </Col>
-          <Col md className="mb-2">
+          <Col sm className="mb-2">
             <Button
-              className=" border border-dark rounded page-explanations-homepanels px-5"
+              className=" rounded page-explanations-homepanels p-3"
               onClick={handleClickShowPlans}
               style={{ fontSize: "20px" }}
+              variant="info"
             >
               Show Plans
             </Button>
@@ -317,7 +349,7 @@ const Fitness = () => {
 
       <Collapse in={open}>
         <div id="create-fitnessplan-container">
-          <CreatePlan />
+          <CreatePlan userId={userId}/>
         </div>
       </Collapse>
 
@@ -343,20 +375,20 @@ const Fitness = () => {
                   <Col className="m-1" md>
                     <div className="form-fitfin text-center">
                       <ListGroup as="ul">
-                        <ListGroup.Item as="li" active>
+                        <ListGroup.Item as="li" variant="info" active>
                           {plan.plan_name} &#127947;
                         </ListGroup.Item>
                         <ListGroup.Item as="li">
                           Days: {plan.days}
                         </ListGroup.Item>
                         <ListGroup.Item>
-                          <Button
-                            variant="outline-success"
-                            className="px-5"
-                            onClick={() => handleDetailsPlan(plan.plan_id)}
+                          <NavLink
+                            to={`${Urls.fitness.getAllDayPlans}/${plan.plan_id}`}
                           >
-                            Details
-                          </Button>
+                            <Button variant="outline-success" className="px-5">
+                              Details
+                            </Button>
+                          </NavLink>
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -378,7 +410,72 @@ const Fitness = () => {
           </Row>
         </Container>
       </Collapse>
-    </div>
+
+      <Container className="mt-4">
+        <Row>
+          <Col xxl>
+            <div className="text-center page-explanations p-3">
+              <InsideGenericDiv
+                header="Ask GPT!"
+                texts={[
+                  "Note: Your response will have maximum of 1000 characters for financial reasons!",
+                ]}
+              />
+
+              <div
+                style={{ fontSize: "18px" }}
+                className="text-light text-center mb-3"
+              ></div>
+
+              <h4 className="mb-3 text-info">Question:</h4>
+              {startOrEndConn === "start" ? (
+                <Button onClick={handleStartWsConn} variant="success">
+                  {loading ? <img src={rl} alt="Rotation" /> : "Start Chat"}
+                </Button>
+              ) : (
+                <div>
+                  <textarea
+                    className="rounded mb-2 p-2 fancy-textarea"
+                    placeholder="Type your question here!"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  ></textarea>
+                  <div></div>
+                  <Button
+                    onClick={sendMessage}
+                    className="mb-2 px-4"
+                    variant="info"
+                  >
+                    {msgLoading ? <img src={rl} alt="Rotation" /> : "Send"}
+                  </Button>
+                  <br />
+                  <Button onClick={handleEndWsConn} variant="outline-danger">
+                    End Chat
+                  </Button>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-warning mt-3 mb-1">Response:</h4>
+                <span className="gpt-response">
+                  {responses.length > 0 ? (
+                    responses.map((response, index) => (
+                      <span className="text-light" key={index}>
+                        {response}{" "}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-secondary" style={{ fontSize: 15 }}>
+                      Your response will be streamed here...
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </animated.div>
   );
 };
 

@@ -30,6 +30,9 @@ class Urls {
     deletePlanRecord: "/fitness/delete-plan-record",
     startWorkoutApp: "/fitness/start-workout/:id",
     startWorkout: "/fitness/start-workout",
+
+    workoutHistory: "/fitness/workout-history/:planId",
+    numWeeks: "/fitness/num-available-weeks"
   };
 
   finance = {

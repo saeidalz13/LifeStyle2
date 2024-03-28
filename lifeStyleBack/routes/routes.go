@@ -20,9 +20,12 @@ func AuthSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Get(cn.URLS.Home, hc.Auth.HandleGetHome)
 	app.Get(cn.URLS.Profile, hc.Auth.HandleGetProfile)
 	app.Get(cn.URLS.SignOut, h.HandleGetSignOut)
-
+	// app.Get(cn.URLS.ReduxEmail, hc.Auth.GetEmailFromTokenHandler)
+	
 	app.Post(cn.URLS.SignUp, hc.Auth.HandlePostSignUp)
 	app.Post(cn.URLS.Login, hc.Auth.HandlePostLogin)
+	
+	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, hc.Auth.HandleDeleteUser)
 }
 
 func FitnessSetup(app *fiber.App, hc *h.HandlersConfig) {
@@ -32,6 +35,8 @@ func FitnessSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Get(cn.URLS.AllDayPlanMoves, m.IsLoggedIn, hc.Fitness.HandleGetAllFitnessDayPlanMoves)
 	app.Get(cn.URLS.FetchDayPlanMovesWorkout, m.IsLoggedIn, hc.Fitness.HandleGetAllFitnessDayPlanMovesWorkout)
 	app.Get(cn.URLS.FetchPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetPlanRecords)
+	app.Get(cn.URLS.FetchWeekPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetWeekPlanRecords)
+	app.Get(cn.URLS.FetchNumAvailableWeeksPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetNumAvailableWeeksPlanRecords)
 
 	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, hc.Fitness.HandlePostAddPlan)
 	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, hc.Fitness.HandlePostEditPlan)
@@ -59,7 +64,6 @@ func FinanceSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Get(cn.URLS.EntertainmentExpenses, m.IsLoggedIn, hc.Finance.HandleGetEntertainmentExpenses)
 
 	app.Delete(cn.URLS.EachBudget, m.IsLoggedIn, hc.Finance.HandleDeleteBudget)
-	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, hc.Auth.HandleDeleteUser)
 	app.Delete(cn.URLS.DeleteCapitalExpense, m.IsLoggedIn, hc.Finance.DeleteCapitalExpense)
 	app.Delete(cn.URLS.DeleteEatoutExpense, m.IsLoggedIn, hc.Finance.DeleteEatoutExpense)
 	app.Delete(cn.URLS.DeleteEntertainmentExpense, m.IsLoggedIn, hc.Finance.DeleteEntertainmentExpense)

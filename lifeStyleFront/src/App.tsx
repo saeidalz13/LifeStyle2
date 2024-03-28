@@ -62,6 +62,7 @@ const router = createBrowserRouter(
         <Route path={Urls.fitness.editPlan} element={<EditFitPlan />} />
         <Route path={Urls.fitness.goDayPlanMove} element={<EachDayPlan />} />
         <Route path={Urls.fitness.startWorkoutApp} element={<StartWorkout />} />
+        <Route path={Urls.fitness.workoutHistory} element={""} />
 
         {/* Misc */}
         <Route path={Urls.about} element={<About />} />

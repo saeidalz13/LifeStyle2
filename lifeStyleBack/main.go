@@ -13,7 +13,6 @@ import (
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	database "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db"
-	appRedis "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/redis"
 
 	h "github.com/saeidalz13/LifeStyle2/lifeStyleBack/handlers"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/routes"
@@ -23,12 +22,11 @@ import (
 func main() {
 	mustPrepareReqVars()
 	mustPrepareGlobalPasetoMaker()
-	database.MustConnectToDb()
-	appRedis.ConnectDb()
+	psqlDb := database.MustConnectToDb()
 	handlersConfig := &h.HandlersConfig{
-		Auth:    &h.AuthHandlersConfig{Db: database.DB},
-		Finance: &h.FinanceHandlersConfig{Db: database.DB},
-		Fitness: &h.FitnessHandlersConfig{Db: database.DB},
+		Auth:    &h.AuthHandlersConfig{Db: psqlDb},
+		Finance: &h.FinanceHandlersConfig{Db: psqlDb},
+		Fitness: &h.FitnessHandlersConfig{Db: psqlDb},
 	}
 
 	app := fiber.New()

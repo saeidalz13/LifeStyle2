@@ -32,4 +32,3 @@ var DefaultDevStages = &DevStages{
 	Production:  "prod",
 	Test:        "test",
 }
-

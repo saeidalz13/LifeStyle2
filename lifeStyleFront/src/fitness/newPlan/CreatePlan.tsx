@@ -5,8 +5,13 @@ import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 import { AddedPlanId } from "../../assets/FitnessInterfaces";
 import { useNavigate } from "react-router-dom";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
 
-const CreatePlan = () => {
+interface CreatePlanProps {
+  userId: number;
+}
+
+const CreatePlan = (props: CreatePlanProps) => {
   const daysSelect = [1, 2, 3, 4, 5, 6];
   const [validationText, setValidationText] = useState<string>("");
   const [errText, setErrText] = useState<string>("");
@@ -32,7 +37,7 @@ const CreatePlan = () => {
       });
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigate(Urls.login);
         return;
       }
 
@@ -43,6 +48,7 @@ const CreatePlan = () => {
           setValidationText("");
         }, 1000);
 
+        localStorage.removeItem(`allfitnessplans_user${props.userId}`);
         setAlertMsg("Plan created, redirecting to edit...");
         setTimeout(() => {
           navigate(`edit-plan/${createdPlanId}`);
@@ -82,7 +88,11 @@ const CreatePlan = () => {
           <Row className="align-items-center">
             <Col>
               <Form.Group>
-                <h4 className="text-center mt-2">Create New Plan</h4>
+                <MainDivHeader
+                  text="Create New Plan"
+                  style={{ textAlign: "center", marginBottom: "15px" }}
+                />
+                <div className="text-light">Name</div>
                 <Form.Control
                   required
                   type="text"
@@ -90,7 +100,7 @@ const CreatePlan = () => {
                   onChange={(e) => setPlanName(e.target.value)}
                 />
 
-                <Form.Label>How many days?</Form.Label>
+                <Form.Label className="text-light">How many days?</Form.Label>
                 <Form.Select onChange={(e) => setDays(e.target.value)}>
                   {daysSelect.map((d) => (
                     <option value={d} key={d}>

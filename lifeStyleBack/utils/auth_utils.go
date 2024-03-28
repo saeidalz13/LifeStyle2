@@ -105,3 +105,15 @@ func ValidatePassword(password string) error {
 
 	return nil
 }
+
+// to generate a secure token to store the user's email in Redis
+// token will be sent to frontend via param (?token=blah).
+// then another request is sent to backend to figure out the email and then
+// it can be stored in Redux
+// func GenerateSecureToken(length int) (string, error) {
+// 	bytes := make([]byte, length)
+// 	if _, err := rand.Read(bytes); err != nil {
+// 		return "", err
+// 	}
+// 	return hex.EncodeToString(bytes), nil
+// }

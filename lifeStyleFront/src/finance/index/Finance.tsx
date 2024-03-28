@@ -71,7 +71,6 @@ const Finance = () => {
     }
   };
 
-
   useEffect(() => {
     if (!loadingAuth) {
       if (!isAuthenticated) {
@@ -87,12 +86,11 @@ const Finance = () => {
     }
   }, [isAuthenticated, loadingAuth, navigateAuth]);
 
-
   return (
     <div>
       <BackHomeBtn />
 
-      <PageHeader text="Welcome to the finance section!" headerType="h1"/>
+      <PageHeader text="Finance" headerType="h1" />
 
       <Container className="mt-3 mb-5">
         <Row className="align-items-center">
@@ -129,11 +127,7 @@ const Finance = () => {
               <h4 className="mb-3 text-info">Question:</h4>
               {startOrEndConn === "start" ? (
                 <Button onClick={handleStartWsConn} variant="success">
-                  {loading ? (
-                    <img src={rl} alt="Rotation" />
-                  ) : (
-                    "Start Chat"
-                  )}
+                  {loading ? <img src={rl} alt="Rotation" /> : "Start Chat"}
                 </Button>
               ) : (
                 <div>

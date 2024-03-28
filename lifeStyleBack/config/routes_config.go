@@ -11,6 +11,7 @@ type ProjUrls struct {
 	SignOut       string
 	OAuthSignIn   string
 	OAuthCallback string
+	ReduxEmail    string
 	Profile       string
 	DeleteProfile string
 
@@ -33,22 +34,24 @@ type ProjUrls struct {
 	DeleteEntertainmentExpense  string
 
 	// Fitness
-	FetchSinglePlan          string
-	FetchDayPlanMovesWorkout string
-	FetchPlanRecords         string
-	AddPlan                  string
-	DeletePlan               string
-	DeleteDayPlan            string
-	DeleteDayPlanMove        string
-	EditPlan                 string
-	AllPlans                 string
-	AllDayPlans              string
-	AllDayPlanMoves          string
-	AddDayPlanMoves          string
-	AddPlanRecord            string
-	DeleteWeekPlanRecords    string
-	UpdatePlanRecord         string
-	DeletePlanRecord         string
+	FetchSinglePlan                   string
+	FetchDayPlanMovesWorkout          string
+	FetchPlanRecords                  string
+	FetchWeekPlanRecords              string
+	FetchNumAvailableWeeksPlanRecords string
+	AddPlan                           string
+	DeletePlan                        string
+	DeleteDayPlan                     string
+	DeleteDayPlanMove                 string
+	EditPlan                          string
+	AllPlans                          string
+	AllDayPlans                       string
+	AllDayPlanMoves                   string
+	AddDayPlanMoves                   string
+	AddPlanRecord                     string
+	DeleteWeekPlanRecords             string
+	UpdatePlanRecord                  string
+	DeletePlanRecord                  string
 
 	// GPT
 	GptApi string
@@ -62,6 +65,7 @@ var URLS = &ProjUrls{
 	SignOut:       "/signout",
 	OAuthSignIn:   "/google-sign-in",
 	OAuthCallback: "/google-callback",
+	ReduxEmail:    "/retrieve-email-redux-from-google-token",
 
 	// User
 	Profile:       "/profile",
@@ -74,8 +78,8 @@ var URLS = &ProjUrls{
 	EachBudget:                  "/finance/show-all-budgets/:id",
 	EachExpense:                 "/finance/submit-expenses/:id",
 	AllExpensesBudget:           "/finance/show-expenses/:id",
-	CapitalExpenses:			 "/finance/show-capital-expenses/:id",
-	EatoutExpenses: 			 "/finance/show-eatout-expenses/:id",
+	CapitalExpenses:             "/finance/show-capital-expenses/:id",
+	EatoutExpenses:              "/finance/show-eatout-expenses/:id",
 	EntertainmentExpenses:       "/finance/show-entertainment-expenses/:id",
 	EachBalance:                 "/finance/balance/:id",
 	UpdateBudget:                "/finance/update-budget/:id",
@@ -87,20 +91,22 @@ var URLS = &ProjUrls{
 	DeleteEntertainmentExpense:  "/finance/delete-entertainment-expenses",
 
 	// Fitness
-	FetchSinglePlan:          "/fitness/plan/:id",
-	FetchDayPlanMovesWorkout: "/fitness/start-workout/:id",
-	FetchPlanRecords:         "/fitness/plan-records/:id",
-	AddPlan:                  "/fitness/add-plan",
-	EditPlan:                 "/fitness/edit-plan/:id",
-	DeletePlan:               "/fitness/delete-plan/:id",
-	DeleteDayPlan:            "/fitness/delete-day-plan/:id",
-	DeleteDayPlanMove:        "/fitness/delete-day-plan-move/:id",
-	AllPlans:                 "/fitness/all-plans",
-	AllDayPlans:              "/fitness/all-day-plans/day-plans/:id",
-	AllDayPlanMoves:          "/fitness/all-day-plans/day-plan-moves/:id",
-	AddDayPlanMoves:          "/fitness/all-day-plans/add-moves/:id",
-	AddPlanRecord:            "/fitness/add-plan-record/:id",
-	DeleteWeekPlanRecords:    "/fitness/delete-week-plan-records",
-	UpdatePlanRecord:         "/fitness/update-plan-record",
-	DeletePlanRecord:         "/fitness/delete-plan-record",
+	FetchSinglePlan:                   "/fitness/plan/:id",
+	FetchDayPlanMovesWorkout:          "/fitness/start-workout/:id",
+	FetchPlanRecords:                  "/fitness/plan-records/:id",
+	FetchWeekPlanRecords:              "/fitness/plan-records/:dayPlanId/:week",
+	FetchNumAvailableWeeksPlanRecords: "/fitness/num-available-weeks/:dayPlanId",
+	AddPlan:                           "/fitness/add-plan",
+	EditPlan:                          "/fitness/edit-plan/:id",
+	AllPlans:                          "/fitness/all-plans",
+	AllDayPlans:                       "/fitness/all-day-plans/day-plans/:id",
+	AllDayPlanMoves:                   "/fitness/all-day-plans/day-plan-moves/:id",
+	AddDayPlanMoves:                   "/fitness/all-day-plans/add-moves/:id",
+	AddPlanRecord:                     "/fitness/add-plan-record/:id",
+	UpdatePlanRecord:                  "/fitness/update-plan-record",
+	DeletePlan:                        "/fitness/delete-plan/:id",
+	DeleteDayPlan:                     "/fitness/delete-day-plan/:id",
+	DeleteDayPlanMove:                 "/fitness/delete-day-plan-move/:id",
+	DeleteWeekPlanRecords:             "/fitness/delete-week-plan-records",
+	DeletePlanRecord:                  "/fitness/delete-plan-record",
 }

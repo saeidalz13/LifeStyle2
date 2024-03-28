@@ -16,7 +16,7 @@ import (
 )
 
 type FinanceHandlersConfig struct {
-	Db *sql.DB
+	Db  *sql.DB
 }
 
 func (f *FinanceHandlersConfig) HandleGetAllBudgets(ftx *fiber.Ctx) error {
@@ -32,6 +32,7 @@ func (f *FinanceHandlersConfig) HandleGetAllBudgets(ftx *fiber.Ctx) error {
 
 	limitQry := ftx.Query("limit", "2")
 	offsetQry := ftx.Query("offset", "0")
+	log.Println("limit:" + limitQry + "offset" + offsetQry)
 	convertedInts, err := utils.ConvertStringToInt64(limitQry, offsetQry)
 	if err != nil {
 		log.Println(err)
@@ -133,6 +134,18 @@ func (f *FinanceHandlersConfig) HandleGetCapitalExpenses(ftx *fiber.Ctx) error {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
+
+	// redisKey := fmt.Sprint(userId) + ":" + fmt.Sprint(budgetID) + ":" + fmt.Sprint(limit) + ":" + fmt.Sprint(offset) + ":" + searchString
+	// var cachedExpenses []sqlc.FetchAllCapitalExpensesRow
+	// value, err := rUtils.GetRedisStruct(f.Rdb, redisKey, cachedExpenses)
+	// if err != nil {
+	// 	if err.Error() == "EOF" {
+	// 		log.Printf("no cached capital expenses: %s\n", redisKey)
+	// 	}
+	// 	log.Printf("error get this key from redis %s: %v\n%", redisKey, err)
+	// } else {
+	// 	log.Printf("%+v", value)
+	// }
 
 	capitalExpenses, err := q.FetchAllCapitalExpenses(ctx, sqlc.FetchAllCapitalExpensesParams{
 		UserID:      userId,

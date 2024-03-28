@@ -18,7 +18,7 @@ import { useState } from "react";
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
-  const heightWidthSVGs = 90;
+  const heightWidthSVGs = 80;
 
   const fadeInUp = useSpring({
     from: { opacity: 0, transform: "translateY(20px)" },

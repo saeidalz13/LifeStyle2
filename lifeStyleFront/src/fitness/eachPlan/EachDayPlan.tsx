@@ -1,9 +1,13 @@
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, useNavigate } from "react-router-dom";
 import BackFitnessBtn from "../../misc/BackFitnessBtn";
 import { useEffect, useRef, useState } from "react";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
-import { DayPlanMoves, DayPlanMove } from "../../assets/FitnessInterfaces";
+import {
+  DayPlanMoves,
+  DayPlanMove,
+  FitnessPlans,
+} from "../../assets/FitnessInterfaces";
 import StatusCodes from "../../StatusCodes";
 import { Badge, Button, Container, ListGroup, Modal } from "react-bootstrap";
 import ModalAddPlan from "./ModalAddPlan";
@@ -11,29 +15,29 @@ import sadFace from "../../svg/SadFaceNoBudgets.svg";
 import cp from "../ConstantsPlan";
 import rl from "../../svg/RotatingLoad.svg";
 import ModalClickEachMove from "./ModalClickEachMove";
+import { useAuth } from "../../context/useAuth";
+import MainDivHeader from "../../components/Headers/MainDivHeader";
+import { useSpring, animated } from "react-spring";
 
 const EachDayPlan = () => {
+  const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const navigateAuth = useNavigate();
+
   const [youTubeSrc, setYouTubeSrc] = useState("");
-  const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
-  const [clickedDayPlanMoveId, setClickedDayPlanMoveId] = useState<number>(0);
+  // const [dayPlanIds, setDayPlanIds] = useState<number[]>([]);
   const [clickedMove, setClickedMove] = useState<string>("");
   const [clickedDay, setClickedDay] = useState<number>(0);
 
+  const [clickedDayPlanMoveId, setClickedDayPlanMoveId] = useState<number>(0);
   const [clickedDayPlanId, setClickedDayPlanId] = useState<number>(0);
   const [modalShow, setModalShow] = useState(false);
   const [modalClickMoveShow, setModalClickMoveShow] = useState(false);
 
-  const { id } = useParams();
+  const { id: fitnessPlanId } = useParams();
   const mounted = useRef(true);
   const [trigger, setTrigger] = useState(false);
-  const [moves, setMoves] = useState<
+  const [dayPlanMoves, setDayPlanMoves] = useState<
     DayPlanMoves | "waiting" | "error" | "nodata"
-  >("waiting");
-  const [groupedData, setGroupedData] = useState<
-    | {
-        [day: number]: DayPlanMove[];
-      }
-    | "waiting"
   >("waiting");
 
   const [selectedDeleteDayPlan, setSelectedDeleteDayPlan] = useState<number>(0);
@@ -64,6 +68,21 @@ const EachDayPlan = () => {
     setClickedDay(day);
     setClickMoveTrigger((prev) => !prev);
   };
+
+  const springProps = useSpring({
+    to: { opacity: 1, transform: "translateX(0)" }, // End at original position
+    from: { opacity: 0, transform: "translateX(-100px)" }, // Start 100px to the left
+    delay: 20,
+  });
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
 
   useEffect(() => {
     if (clickMoveTrigger) {
@@ -96,7 +115,7 @@ const EachDayPlan = () => {
       );
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigateAuth(Urls.login);
         return;
       }
 
@@ -108,6 +127,13 @@ const EachDayPlan = () => {
       if (result.status === StatusCodes.Ok) {
         mounted.current = true;
         handleCloseDeleteDayPlan();
+        localStorage.removeItem(`dayplanmoves_moves_user${userId}_fitnessplan${fitnessPlanId}`)
+        // const storedDayPlanMoves = localStorage.getItem(`dayplanmoves_moves_user${userId}_fitnessplan${fitnessPlanId}`);
+        // if (storedDayPlanMoves) {
+        //   const oldData = JSON.parse(storedDayPlanMoves) as DayPlanMoves
+        //   oldData.
+        // }
+
         setTrigger((prev) => !prev);
         return;
       }
@@ -122,20 +148,32 @@ const EachDayPlan = () => {
   const handleDeletePlan = async () => {
     try {
       const result = await fetch(
-        `${BACKEND_URL}${Urls.fitness.deletePlan}/${id}`,
+        `${BACKEND_URL}${Urls.fitness.deletePlan}/${fitnessPlanId}`,
         {
           method: "DELETE",
           credentials: "include",
         }
       );
-
-      if (result.status === StatusCodes.Ok) {
-        location.assign(Urls.fitness.index);
+      if (result.status === StatusCodes.UnAuthorized) {
+        navigateAuth(Urls.login);
         return;
       }
 
-      if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+      if (result.status === StatusCodes.Ok) {
+        const storedAllPlans = localStorage.getItem(
+          `allfitnessplans_user${userId}`
+        );
+        if (storedAllPlans && fitnessPlanId) {
+          const allPlans = JSON.parse(storedAllPlans) as FitnessPlans;
+          allPlans.plans = allPlans.plans.filter(
+            (value) => value.plan_id !== Number(fitnessPlanId)
+          );
+          localStorage.setItem(
+            `allfitnessplans_user${userId}`,
+            JSON.stringify(allPlans)
+          );
+        }
+        navigateAuth(Urls.fitness.index);
         return;
       }
     } catch (error) {
@@ -145,73 +183,100 @@ const EachDayPlan = () => {
   };
 
   useEffect(() => {
-    if (mounted.current) {
-      mounted.current = false;
-
-      const fetchDayPlanMoves = async (): Promise<DayPlanMoves | "error"> => {
-        try {
-          const result = await fetch(
-            `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plan-moves/${id}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-
-          if (result.status === StatusCodes.UnAuthorized) {
-            location.assign(Urls.login);
-            return "error";
+    const fetchDayPlanMoves = async (): Promise<DayPlanMoves | "error"> => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.fitness.getAllDayPlans}/day-plan-moves/${fitnessPlanId}`,
+          {
+            method: "GET",
+            credentials: "include",
           }
+        );
 
-          if (result.status === StatusCodes.Ok) {
-            const data = (await result.json()) as DayPlanMoves;
-            return data;
-          }
-
-          return "error";
-        } catch (error) {
-          console.log(error);
+        if (result.status === StatusCodes.UnAuthorized) {
+          location.assign(Urls.login);
           return "error";
         }
-      };
 
-      const updateMoves = async () => {
-        const movesUpdated = await fetchDayPlanMoves();
-        if (movesUpdated !== "error") {
-          if (movesUpdated.day_plan_moves === null) {
-            setMoves("nodata");
-            return;
-          }
+        if (result.status === StatusCodes.Ok) {
+          const data = (await result.json()) as DayPlanMoves;
+          return data;
+        }
 
-          const data: { [day: number]: DayPlanMove[] } = {};
-          const ids: number[] = [];
-          movesUpdated.day_plan_moves.forEach((item) => {
-            if (!data[item.day]) {
-              data[item.day] = [];
-              ids.push(item.day_plan_id);
-            }
-            data[item.day].push(item);
-          });
+        return "error";
+      } catch (error) {
+        console.log(error);
+        return "error";
+      }
+    };
 
-          setDayPlanIds(ids);
-          setGroupedData(data);
-          setMoves(movesUpdated);
+    const updateMoves = async () => {
+      const movesUpdated = await fetchDayPlanMoves();
+      if (movesUpdated !== "error") {
+        if (movesUpdated === null) {
+          setDayPlanMoves("nodata");
           return;
         }
 
-        setMoves("error");
-      };
+        // const data: { [day: number]: DayPlanMove[] } = {};
+        // const ids: number[] = [];
+        // movesUpdated.day_plan_moves.forEach((item) => {
+        //   if (!data[item.day]) {
+        //     data[item.day] = [];
+        //     ids.push(item.day_plan_id);
+        //   }
+        //   data[item.day].push(item);
+        // });
 
+        // setDayPlanIds(ids);
+        // setGroupedData(data);
+        setDayPlanMoves(movesUpdated);
+
+        localStorage.setItem(
+          `dayplanmoves_moves_user${userId}_fitnessplan${fitnessPlanId}`,
+          JSON.stringify(movesUpdated)
+        );
+        // localStorage.setItem(
+        //   `dayplanmoves_groupeddata_user${userId}_fitnessplan${fitnessPlanId}`,
+        //   JSON.stringify(data)
+        // );
+        // localStorage.setItem(
+        //   `dayplanmoves_ids_user${userId}_fitnessplan${fitnessPlanId}`,
+        //   JSON.stringify(ids)
+        // );
+        return;
+      }
+
+      setDayPlanMoves("error");
+    };
+
+    if (!loadingAuth) {
+      const storedDayPlanMoves = localStorage.getItem(
+        `dayplanmoves_moves_user${userId}_fitnessplan${fitnessPlanId}`
+      );
+      // const storedGroupedData = localStorage.getItem(
+      //   `dayplanmoves_groupeddata_user${userId}_fitnessplan${fitnessPlanId}`
+      // );
+      // const storedDayPlanIds = localStorage.getItem(
+      //   `dayplanmoves_ids_user${userId}_fitnessplan${fitnessPlanId}`
+      // );
+
+      if (storedDayPlanMoves) {
+        setDayPlanMoves(JSON.parse(storedDayPlanMoves));
+        // setGroupedData(JSON.parse(storedGroupedData));
+        // setDayPlanIds(JSON.parse(storedDayPlanIds));
+        return;
+      }
       updateMoves();
     }
-  }, [id, trigger]);
+  }, [fitnessPlanId, trigger, loadingAuth, userId]);
 
-  if (moves === "waiting") {
+  if (dayPlanMoves === "waiting") {
     return (
       <>
         <BackFitnessBtn />
         <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${fitnessPlanId}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
           <Button
@@ -251,12 +316,12 @@ const EachDayPlan = () => {
     );
   }
 
-  if (moves === "error") {
+  if (dayPlanMoves === "error" || dayPlanMoves == undefined) {
     return (
       <>
         <BackFitnessBtn />
         <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${fitnessPlanId}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
           <Button
@@ -292,12 +357,12 @@ const EachDayPlan = () => {
     );
   }
 
-  if (moves === "nodata") {
+  if (dayPlanMoves === "nodata") {
     return (
       <>
         <BackFitnessBtn />
         <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${fitnessPlanId}`}>
             <Button className="primary">Add Day Plan</Button>
           </NavLink>
           <Button
@@ -333,97 +398,13 @@ const EachDayPlan = () => {
     );
   }
 
-  if (moves.day_plan_moves.length === 0) {
-    return (
-      <>
-        <BackFitnessBtn />
-        <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
-            <Button className="primary">Add Day Plan</Button>
-          </NavLink>
-          <Button
-            variant="warning"
-            className="ms-2 px-4"
-            onClick={handleShowDeleteModal}
-          >
-            Delete Plan
-          </Button>
-        </div>
-        <h1>No Day Plans!</h1>
-        <div className="text-center">
-          <img src={sadFace} />
-        </div>
-        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
-          <Modal.Header closeButton>
-            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="text-light">
-            Are you sure you want to delete this plan?
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="success" onClick={handleCloseDeleteModal}>
-              No!
-            </Button>
-            <Button variant="outline-danger" onClick={handleDeletePlan}>
-              Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  if (!groupedData && groupedData !== "waiting") {
-    return (
-      <>
-        <BackFitnessBtn />
-        <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
-            <Button className="primary">Add Day Plan</Button>
-          </NavLink>
-          <Button
-            variant="warning"
-            className="ms-2 px-4"
-            onClick={handleShowDeleteModal}
-          >
-            Delete Plan
-          </Button>
-        </div>
-        <h1>No Day Plans!</h1>
-        <div className="text-center">
-          <img src={sadFace} />
-        </div>
-        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
-          <Modal.Header closeButton>
-            <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="text-light">
-            Are you sure you want to delete this plan?
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="success" onClick={handleCloseDeleteModal}>
-              No!
-            </Button>
-            <Button variant="outline-danger" onClick={handleDeletePlan}>
-              Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  if (
-    moves !== null &&
-    moves.day_plan_moves.length !== 0 &&
-    groupedData !== "waiting"
-  ) {
+  if (dayPlanMoves !== null && fitnessPlanId) {
     return (
       <div className="mb-4">
         <BackFitnessBtn />
-        <div className="text-center mt-3">
-          <NavLink to={`${Urls.fitness.editPlanNoID}/${id}`}>
-            <Button className="primary">Add Day Plan</Button>
+        <div className="text-center mt-1">
+          <NavLink to={`${Urls.fitness.editPlanNoID}/${fitnessPlanId}`}>
+            <Button variant="info">Add Day Plan</Button>
           </NavLink>
           <Button
             variant="warning"
@@ -435,103 +416,109 @@ const EachDayPlan = () => {
         </div>
 
         <Container>
-          <div
-            className="page-explanations-homepanels my-4"
-            style={{ margin: "auto", maxWidth: "1200px" }}
-          >
-            <h2 className="text-center">Day Plans</h2>
-            <p className="text-center">
-              You can see the list of the day plans you created so far. <br />{" "}
-              Click on each one to see a YouTube video of how the move is done
-              properly. You can also delete the move from your day plan.
-            </p>
-          </div>
+          <animated.div style={springProps}>
+            <div
+              className="finance-choices-explanation my-4"
+              style={{ margin: "auto", maxWidth: "1200px" }}
+            >
+              <h2 className="text-center">Day Plans</h2>
+              <p className="text-center">
+                You can see the list of the day plans you created so far. <br />{" "}
+                Click on each one to see a YouTube video of how the move is done
+                properly. You can also delete the move from your day plan.
+              </p>
+            </div>
+          </animated.div>
         </Container>
 
         <Container>
-          <div>
-            {groupedData &&
-              Object.keys(groupedData).map((day, idx) => (
-                <div key={day} className="text-center form-fitfin mt-4">
-                  <h2 className="text-primary">Day {day}</h2>
-                  {groupedData[parseInt(day)].map((item, index) => (
-                    <ListGroup key={crypto.randomUUID()} as="ul">
-                      {cp.YOUTUBE_LINKS_MOVES[item.move_name] ? (
-                        <ListGroup.Item
-                          action
-                          key={index}
-                          style={{ fontSize: "18px" }}
-                          onClick={() =>
-                            handleMoveClicked(
-                              +day,
-                              item.move_name,
-                              item.day_plan_move_id,
-                              cp.YOUTUBE_LINKS_MOVES[item.move_name]
-                            )
-                          }
-                        >
-                          {item.move_name}{" "}
-                          <Badge className="ms-2 my-0 mx-0">&#127916;</Badge>
-                        </ListGroup.Item>
-                      ) : (
-                        // Handle the case when item.move_name is not found in YOUTUBE_LINKS_MOVES
-                        <ListGroup.Item
-                          action
-                          key={index}
-                          style={{ fontSize: "18px" }}
-                          onClick={() =>
-                            handleMoveClicked(
-                              +day,
-                              item.move_name,
-                              item.day_plan_move_id,
-                              ""
-                            )
-                          }
-                        >
-                          {item.move_name}
-                        </ListGroup.Item>
-                      )}
-                    </ListGroup>
-                  ))}
-                  <div key={crypto.randomUUID()} className="mt-3">
-                    <NavLink
-                      to={`${Urls.fitness.startWorkout}/${
-                        groupedData[parseInt(day)][0].day_plan_id
-                      }`}
-                    >
-                      <Button className="me-1" variant="outline-success">
-                        Start Workout
-                      </Button>
-                    </NavLink>
-                    <Button
-                      onClick={() => handleAddMoveToDayPlan(dayPlanIds[idx])}
-                      variant="outline-warning"
-                    >
-                      Add Exercise
+          <animated.div style={springProps}>
+            {Object.entries(dayPlanMoves).map(([day, dayPlanMovesEachDay]) => (
+              <div key={day} className="text-center form-fitfin mt-4">
+                <MainDivHeader text={`Day ${day}`} style={null} />
+
+                {dayPlanMovesEachDay.map((move: DayPlanMove, index: number) => (
+                  <ListGroup key={crypto.randomUUID()} as="ul">
+                    {cp.YOUTUBE_LINKS_MOVES[move.move_name] ? (
+                      <ListGroup.Item
+                        className="mb-1"
+                        action
+                        key={index}
+                        style={{ fontSize: "18px", borderRadius: "30px" }}
+                        onClick={() =>
+                          handleMoveClicked(
+                            +day,
+                            move.move_name,
+                            move.day_plan_move_id,
+                            cp.YOUTUBE_LINKS_MOVES[move.move_name]
+                          )
+                        }
+                      >
+                        {move.move_name}{" "}
+                        <Badge className="ms-2 my-0 mx-0 bg-info">
+                          &#127916;
+                        </Badge>
+                      </ListGroup.Item>
+                    ) : (
+                      // Handle the case when item.move_name is not found in YOUTUBE_LINKS_MOVES
+                      <ListGroup.Item
+                        className="mb-1"
+                        action
+                        key={index}
+                        style={{ fontSize: "18px", borderRadius: "30px" }}
+                        onClick={() =>
+                          handleMoveClicked(
+                            +day,
+                            move.move_name,
+                            move.day_plan_move_id,
+                            ""
+                          )
+                        }
+                      >
+                        {move.move_name}
+                      </ListGroup.Item>
+                    )}
+                  </ListGroup>
+                ))}
+
+                <div key={crypto.randomUUID()} className="mt-3">
+                  <NavLink
+                    to={`${Urls.fitness.startWorkout}/${dayPlanMovesEachDay[0].day_plan_id}`}
+                    state={{dayPlanMoves: dayPlanMovesEachDay}}
+                  >
+                    <Button className="me-1" variant="success">
+                      Start Workout
                     </Button>
-                    <br />
-                    <Button
-                      variant="outline-danger"
-                      className="mt-1"
-                      onClick={() =>
-                        clickDeleteDayPlan(
-                          groupedData[parseInt(day)][0].day_plan_id
-                        )
-                      }
-                    >
-                      Delete Day {day}
-                    </Button>
-                  </div>
+                  </NavLink>
+                  <Button
+                    onClick={() =>
+                      handleAddMoveToDayPlan(dayPlanMovesEachDay[0].day_plan_id)
+                    }
+                    variant="warning"
+                  >
+                    Add Exercise
+                  </Button>
+                  <br />
+                  <Button
+                    variant="danger"
+                    className="mt-1"
+                    onClick={() =>
+                      clickDeleteDayPlan(dayPlanMovesEachDay[0].day_plan_id)
+                    }
+                  >
+                    Delete Day {day}
+                  </Button>
                 </div>
-              ))}
-          </div>
+              </div>
+            ))}
+          </animated.div>
         </Container>
 
         <ModalAddPlan
           show={modalShow}
           onHide={() => setModalShow(false)}
           dayPlanId={clickedDayPlanId}
-          planId={moves.day_plan_moves[0].plan_id}
+          planId={parseInt(fitnessPlanId)}
           toggleTrigger={() => setTrigger((prev) => !prev)}
           mountedRef={mounted}
         />
@@ -539,19 +526,19 @@ const EachDayPlan = () => {
         <ModalClickEachMove
           show={modalClickMoveShow}
           onHide={() => setModalClickMoveShow(false)}
+          planId={parseInt(fitnessPlanId)}
           dayPlanMoveId={clickedDayPlanMoveId}
           youTubeLink={youTubeSrc}
           toggleTrigger={() => setTrigger((prev) => !prev)}
-          mountedRef={mounted}
           moveName={clickedMove}
           clickedDay={clickedDay}
         />
 
         <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
-          <Modal.Header closeButton>
+          <Modal.Header className="bg-dark">
             <Modal.Title className="text-danger">Delete Plan!</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="text-light">
+          <Modal.Body className="text-dark">
             Are you sure you want to delete this plan?
           </Modal.Body>
           <Modal.Footer>
@@ -568,7 +555,7 @@ const EachDayPlan = () => {
           <Modal.Header closeButton>
             <Modal.Title className="text-danger">Delete Day Plan!</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="text-light">
+          <Modal.Body className="text-dark">
             Are you sure you want to delete this day plan?
           </Modal.Body>
           <Modal.Footer>

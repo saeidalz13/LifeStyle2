@@ -5,6 +5,8 @@ import StatusCodes from "../../StatusCodes";
 import Urls from "../../Urls";
 import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import BACKEND_URL from "../../Config";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
 
 interface AddMovesToDayPlanProps {
   dayPlanId: number;
@@ -14,6 +16,9 @@ interface AddMovesToDayPlanProps {
 }
 
 const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
+  const {userId} = useAuth();
+  
+  const navigateAuth = useNavigate();
   const MOVESARRAY = cp.MOVESARRAY;
   const [possibleErrs, setPossibleErrs] = useState("");
   const [move, setMove] = useState<string>(MOVESARRAY[0]);
@@ -43,7 +48,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
       );
 
       if (result.status === StatusCodes.UnAuthorized) {
-        location.assign(Urls.login);
+        navigateAuth(Urls.login);
         return;
       }
 
@@ -60,19 +65,26 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
         if (props.toggleTrigger) {
           props.toggleTrigger();
         }
-        props.mountedRef.current = true;
-        console.log(data.message);
+
         setEmptyMoveNamesTxt(data.message);
         setMoveNames([]);
+
+        localStorage.removeItem(`dayplanmoves_moves_user${userId}_fitnessplan${props.planId}`)
+        localStorage.removeItem(`dayplanmoves_groupeddata_user${userId}_fitnessplan${props.planId}`)
+        localStorage.removeItem(`dayplanmoves_ids_user${userId}_fitnessplan${props.planId}`)
+
         setTimeout(() => {
           setEmptyMoveNamesTxt("");
         }, 5000);
         return;
       }
 
-      location.assign(Urls.login);
+      alert("unexpected error from server! try again later please")
+      console.log("unexpected error from server!" + result.status)
       return;
+
     } catch (error) {
+      alert("unexpected error from server! try again later please")
       console.log(error);
       return;
     }
@@ -103,7 +115,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
   return (
     <div>
       <Form onSubmit={handleAddMove}>
-        <Form.Group className="mx-4">
+        <Form.Group className="mx-1">
           <Form.Label>Move:</Form.Label>
           <Form.Select value={move} onChange={(e) => setMove(e.target.value)}>
             {MOVESARRAY.map((m) => (
@@ -115,8 +127,8 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
         <div className="text-center mt-3">
           <Button
             type="submit"
-            variant="outline-warning"
-            className="px-3 all-budget-choices"
+            variant="info"
+            className="px-3"
           >
             Add Exercise
           </Button>
@@ -125,10 +137,10 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
         </div>
       </Form>
 
-      <ListGroup as="ul" className="mt-4 form-fitfin">
+      <ListGroup as="ul" className="mt-4">
         {moveNames.length === 0 ? (
           <div
-            className="text-primary text-center"
+            className="text-secondary text-center"
             style={{ fontSize: "18px" }}
           >
             Click On "Add Exercise" To Create Submit List
@@ -136,10 +148,11 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
         ) : (
           <>
             {moveNames.map((m, idx) => (
-              <Container key={m}>
-                <Row className="mt-1 align-items-center">
-                  <Col xl={10} lg={10} md={8} xs={8}>
+              <Container key={m} fluid>
+                <Row className="mt-1 align-items-center text-center">
+                  <Col xl={10} lg={10} md={10} xs={10}>
                     <ListGroup.Item
+                    variant="info"
                       key={m}
                       style={{
                         boxShadow: "1px 1px 4px 1px rgb(30, 30, 30)",
@@ -149,10 +162,10 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
                       {m}
                     </ListGroup.Item>
                   </Col>
-                  <Col>
+                  <Col xl={2} lg={2} md={2} xs={2}>
                     <Button
                       onClick={() => handleDeleteMove(idx)}
-                      className="ms-4 py-0 px-1"
+                      className=" py-0 px-1"
                       variant="dark"
                     >
                       &#10060;
@@ -165,7 +178,7 @@ const AddMovesToDayPlan = (props: AddMovesToDayPlanProps) => {
               <Button
                 onClick={handleSubmitNewMoves}
                 className="px-5"
-                variant="outline-success"
+                variant="success"
               >
                 Submit
               </Button>

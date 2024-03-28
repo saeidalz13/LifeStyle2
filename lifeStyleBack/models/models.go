@@ -68,6 +68,7 @@ type RespStartWorkoutDayPlanMoves struct {
 	MoveId        int64  `json:"move_id"`
 }
 
+
 type RespMoves struct {
 	DayPlanId     int64  `json:"day_plan_id"`
 	DayPlanMoveId int64  `json:"day_plan_move_id"`

@@ -4,7 +4,7 @@ export interface FitnessPlan {
   days: number;
 }
 
-export type AddedPlanId = number
+export type AddedPlanId = number;
 
 export type FitnessPlans = { plans: Array<FitnessPlan> };
 
@@ -22,29 +22,20 @@ export interface Move {
 }
 
 export interface DayPlanMove {
-  day_plan_id: number;
   day_plan_move_id: number;
-  move_name: string;
-  day: number;
+  day_plan_id: number;
   plan_id: number;
-  days: number;
+  day: number;
+  move_id: number;
+  move_name: string;
 }
 
 export interface DayPlanMoves {
-  day_plan_moves: DayPlanMove[];
-}
-
-export interface DayPlanMoveStartWorkout {
-  day_plan_move_id: number;
-  user_id: number;
-  plan_id: number;
-  day_plan_id: number;
-  move_name: string;
-  move_id: number;
+  [day: string]: DayPlanMove[];
 }
 
 export interface DayPlanMovesStartWorkout {
-  moves: DayPlanMoveStartWorkout[];
+  day_plan_moves: DayPlanMove[];
 }
 
 export interface ReqAddPlanRecord {
@@ -74,4 +65,17 @@ export interface PlanRecords {
   plan_records: PlanRecord[];
 }
 
+export interface WeekPlanRecordsRow {
+  set_record: number;
+  reps: number;
+  weight: number;
+  move_name: string;
+}
 
+export interface WeekPlanRecords {
+  week_plan_records: WeekPlanRecordsRow[];
+}
+
+export interface NumWeeks {
+  num_weeks: number
+}

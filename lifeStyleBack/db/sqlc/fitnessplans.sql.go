@@ -147,7 +147,8 @@ func (q *Queries) CountFitnessDayPlanMoves(ctx context.Context, arg CountFitness
 }
 
 const countFitnessPlans = `-- name: CountFitnessPlans :one
-SELECT COUNT(plan_id) FROM plans
+SELECT COUNT(plan_id)
+FROM plans
 WHERE user_id = $1
 `
 
@@ -334,6 +335,7 @@ SELECT plan_id,
     days
 FROM plans
 WHERE user_id = $1
+ORDER BY created_at DESC
 `
 
 type FetchFitnessPlansRow struct {
@@ -352,80 +354,6 @@ func (q *Queries) FetchFitnessPlans(ctx context.Context, userID int64) ([]FetchF
 	for rows.Next() {
 		var i FetchFitnessPlansRow
 		if err := rows.Scan(&i.PlanID, &i.PlanName, &i.Days); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const fetchPlanRecords = `-- name: FetchPlanRecords :many
-SELECT plan_records.plan_record_id,
-    plan_records.user_id,
-    plan_records.day_plan_id,
-    plan_records.day_plan_move_id,
-    plan_records.move_id,
-    plan_records.week,
-    plan_records.set_record,
-    plan_records.reps,
-    plan_records.weight,
-    moves.move_name,
-    moves.move_type_id
-FROM plan_records
-    JOIN moves ON plan_records.move_id = moves.move_id
-WHERE user_id = $1
-    AND day_plan_id = $2
-ORDER BY plan_records.plan_record_id,
-    plan_records.set_record
-`
-
-type FetchPlanRecordsParams struct {
-	UserID    int64 `json:"user_id"`
-	DayPlanID int64 `json:"day_plan_id"`
-}
-
-type FetchPlanRecordsRow struct {
-	PlanRecordID  int64  `json:"plan_record_id"`
-	UserID        int64  `json:"user_id"`
-	DayPlanID     int64  `json:"day_plan_id"`
-	DayPlanMoveID int64  `json:"day_plan_move_id"`
-	MoveID        int64  `json:"move_id"`
-	Week          int32  `json:"week"`
-	SetRecord     int32  `json:"set_record"`
-	Reps          int32  `json:"reps"`
-	Weight        int32  `json:"weight"`
-	MoveName      string `json:"move_name"`
-	MoveTypeID    int64  `json:"move_type_id"`
-}
-
-func (q *Queries) FetchPlanRecords(ctx context.Context, arg FetchPlanRecordsParams) ([]FetchPlanRecordsRow, error) {
-	rows, err := q.db.QueryContext(ctx, fetchPlanRecords, arg.UserID, arg.DayPlanID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []FetchPlanRecordsRow{}
-	for rows.Next() {
-		var i FetchPlanRecordsRow
-		if err := rows.Scan(
-			&i.PlanRecordID,
-			&i.UserID,
-			&i.DayPlanID,
-			&i.DayPlanMoveID,
-			&i.MoveID,
-			&i.Week,
-			&i.SetRecord,
-			&i.Reps,
-			&i.Weight,
-			&i.MoveName,
-			&i.MoveTypeID,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -467,33 +395,36 @@ func (q *Queries) FetchSingleFitnessPlan(ctx context.Context, arg FetchSingleFit
 }
 
 const joinDayPlanAndDayPlanMovesAndMoves = `-- name: JoinDayPlanAndDayPlanMovesAndMoves :many
-SELECT day_plan_moves.user_id,
-    day_plan_moves.plan_id,
+SELECT day_plan_moves.day_plan_move_id,
     day_plan_moves.day_plan_id,
-    day_plan_moves.day_plan_move_id,
+    day_plan_moves.plan_id,
     day,
-    move_name,
-    plans.days
+    day_plan_moves.move_id,
+    move_name
 FROM day_plan_moves
-    INNER JOIN plans ON day_plan_moves.user_id = plans.user_id
-    AND day_plan_moves.plan_id = plans.plan_id
-    INNER JOIN day_plans ON day_plan_moves.user_id = day_plans.user_id
-    AND day_plan_moves.day_plan_id = day_plans.day_plan_id
+    INNER JOIN day_plans ON day_plan_moves.day_plan_id = day_plans.day_plan_id
     INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
+WHERE day_plan_moves.user_id = $1
+    AND day_plan_moves.plan_id = $2
+ORDER BY day
 `
 
-type JoinDayPlanAndDayPlanMovesAndMovesRow struct {
-	UserID        int64  `json:"user_id"`
-	PlanID        int64  `json:"plan_id"`
-	DayPlanID     int64  `json:"day_plan_id"`
-	DayPlanMoveID int64  `json:"day_plan_move_id"`
-	Day           int32  `json:"day"`
-	MoveName      string `json:"move_name"`
-	Days          int32  `json:"days"`
+type JoinDayPlanAndDayPlanMovesAndMovesParams struct {
+	UserID int64 `json:"user_id"`
+	PlanID int64 `json:"plan_id"`
 }
 
-func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error) {
-	rows, err := q.db.QueryContext(ctx, joinDayPlanAndDayPlanMovesAndMoves)
+type JoinDayPlanAndDayPlanMovesAndMovesRow struct {
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	PlanID        int64  `json:"plan_id"`
+	Day           int32  `json:"day"`
+	MoveID        int64  `json:"move_id"`
+	MoveName      string `json:"move_name"`
+}
+
+func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context, arg JoinDayPlanAndDayPlanMovesAndMovesParams) ([]JoinDayPlanAndDayPlanMovesAndMovesRow, error) {
+	rows, err := q.db.QueryContext(ctx, joinDayPlanAndDayPlanMovesAndMoves, arg.UserID, arg.PlanID)
 	if err != nil {
 		return nil, err
 	}
@@ -502,13 +433,231 @@ func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context) ([]Joi
 	for rows.Next() {
 		var i JoinDayPlanAndDayPlanMovesAndMovesRow
 		if err := rows.Scan(
-			&i.UserID,
+			&i.DayPlanMoveID,
+			&i.DayPlanID,
 			&i.PlanID,
+			&i.Day,
+			&i.MoveID,
+			&i.MoveName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectDayFromPlan = `-- name: SelectDayFromPlan :one
+SELECT days
+FROM plans
+`
+
+func (q *Queries) SelectDayFromPlan(ctx context.Context) (int32, error) {
+	row := q.db.QueryRowContext(ctx, selectDayFromPlan)
+	var days int32
+	err := row.Scan(&days)
+	return days, err
+}
+
+const selectDayPlanMovesStartWorkout = `-- name: SelectDayPlanMovesStartWorkout :many
+SELECT day_plan_moves.day_plan_move_id,
+    day_plan_moves.day_plan_id,
+    day_plan_moves.plan_id,
+    day,
+    day_plan_moves.move_id,
+    move_name
+FROM day_plan_moves
+    INNER JOIN day_plans ON day_plan_moves.day_plan_id = day_plans.day_plan_id
+    INNER JOIN moves ON day_plan_moves.move_id = moves.move_id
+WHERE day_plan_moves.user_id = $1
+    AND day_plan_moves.day_plan_id = $2
+ORDER BY day_plan_moves.day_plan_move_id
+`
+
+type SelectDayPlanMovesStartWorkoutParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+type SelectDayPlanMovesStartWorkoutRow struct {
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	PlanID        int64  `json:"plan_id"`
+	Day           int32  `json:"day"`
+	MoveID        int64  `json:"move_id"`
+	MoveName      string `json:"move_name"`
+}
+
+func (q *Queries) SelectDayPlanMovesStartWorkout(ctx context.Context, arg SelectDayPlanMovesStartWorkoutParams) ([]SelectDayPlanMovesStartWorkoutRow, error) {
+	rows, err := q.db.QueryContext(ctx, selectDayPlanMovesStartWorkout, arg.UserID, arg.DayPlanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SelectDayPlanMovesStartWorkoutRow{}
+	for rows.Next() {
+		var i SelectDayPlanMovesStartWorkoutRow
+		if err := rows.Scan(
+			&i.DayPlanMoveID,
+			&i.DayPlanID,
+			&i.PlanID,
+			&i.Day,
+			&i.MoveID,
+			&i.MoveName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectNumAvailableWeeksPlanRecords = `-- name: SelectNumAvailableWeeksPlanRecords :one
+SELECT COUNT(DISTINCT week)
+from plan_records
+WHERE user_id = $1
+    AND day_plan_id = $2
+`
+
+type SelectNumAvailableWeeksPlanRecordsParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+func (q *Queries) SelectNumAvailableWeeksPlanRecords(ctx context.Context, arg SelectNumAvailableWeeksPlanRecordsParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, selectNumAvailableWeeksPlanRecords, arg.UserID, arg.DayPlanID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const selectPlanRecords = `-- name: SelectPlanRecords :many
+SELECT plan_records.plan_record_id,
+    plan_records.user_id,
+    plan_records.day_plan_id,
+    plan_records.day_plan_move_id,
+    plan_records.move_id,
+    plan_records.week,
+    plan_records.set_record,
+    plan_records.reps,
+    plan_records.weight,
+    moves.move_name,
+    moves.move_type_id
+FROM plan_records
+    JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1
+    AND day_plan_id = $2
+ORDER BY plan_records.plan_record_id,
+    plan_records.set_record
+`
+
+type SelectPlanRecordsParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+}
+
+type SelectPlanRecordsRow struct {
+	PlanRecordID  int64  `json:"plan_record_id"`
+	UserID        int64  `json:"user_id"`
+	DayPlanID     int64  `json:"day_plan_id"`
+	DayPlanMoveID int64  `json:"day_plan_move_id"`
+	MoveID        int64  `json:"move_id"`
+	Week          int32  `json:"week"`
+	SetRecord     int32  `json:"set_record"`
+	Reps          int32  `json:"reps"`
+	Weight        int32  `json:"weight"`
+	MoveName      string `json:"move_name"`
+	MoveTypeID    int64  `json:"move_type_id"`
+}
+
+func (q *Queries) SelectPlanRecords(ctx context.Context, arg SelectPlanRecordsParams) ([]SelectPlanRecordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, selectPlanRecords, arg.UserID, arg.DayPlanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SelectPlanRecordsRow{}
+	for rows.Next() {
+		var i SelectPlanRecordsRow
+		if err := rows.Scan(
+			&i.PlanRecordID,
+			&i.UserID,
 			&i.DayPlanID,
 			&i.DayPlanMoveID,
-			&i.Day,
+			&i.MoveID,
+			&i.Week,
+			&i.SetRecord,
+			&i.Reps,
+			&i.Weight,
 			&i.MoveName,
-			&i.Days,
+			&i.MoveTypeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectWeekPlanRecords = `-- name: SelectWeekPlanRecords :many
+SELECT plan_records.set_record,
+    plan_records.reps,
+    plan_records.weight,
+    moves.move_name
+FROM plan_records
+    JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1
+    AND day_plan_id = $2
+    AND week = $3
+ORDER BY plan_record_id,
+    set_record
+`
+
+type SelectWeekPlanRecordsParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+	Week      int32 `json:"week"`
+}
+
+type SelectWeekPlanRecordsRow struct {
+	SetRecord int32  `json:"set_record"`
+	Reps      int32  `json:"reps"`
+	Weight    int32  `json:"weight"`
+	MoveName  string `json:"move_name"`
+}
+
+func (q *Queries) SelectWeekPlanRecords(ctx context.Context, arg SelectWeekPlanRecordsParams) ([]SelectWeekPlanRecordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, selectWeekPlanRecords, arg.UserID, arg.DayPlanID, arg.Week)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SelectWeekPlanRecordsRow{}
+	for rows.Next() {
+		var i SelectWeekPlanRecordsRow
+		if err := rows.Scan(
+			&i.SetRecord,
+			&i.Reps,
+			&i.Weight,
+			&i.MoveName,
 		); err != nil {
 			return nil, err
 		}

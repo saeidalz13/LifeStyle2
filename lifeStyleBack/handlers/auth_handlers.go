@@ -19,7 +19,7 @@ import (
 )
 
 type AuthHandlersConfig struct {
-	Db *sql.DB
+	Db  *sql.DB
 }
 
 func (a *AuthHandlersConfig) HandleGetHome(ftx *fiber.Ctx) error {
@@ -269,6 +269,16 @@ func (a *AuthHandlersConfig) HandleGetGoogleCallback(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Failed to log in the user. Please try again later!"})
 	}
 
+	// emailToken, err := utils.GenerateSecureToken(16)
+	// if err != nil {
+	// 	log.Println("failed to store the token in redis for email in redux", err)
+	// }
+	// if err := redisutils.SetRedisKeyString(a.Rdb, emailToken, userData.Email, 5*time.Minute); err != nil {
+	// 	log.Println(err)
+	// } else {
+	// 	log.Println("email saved in redis for redux")
+	// }
+
 	ftx.Cookie(&fiber.Cookie{
 		Name:     cn.PASETO_COOKIE_NAME,
 		Value:    tokenString,
@@ -281,3 +291,15 @@ func (a *AuthHandlersConfig) HandleGetGoogleCallback(ftx *fiber.Ctx) error {
 
 	return ftx.Redirect(cn.EnvVars.FrontEndUrl)
 }
+
+// func (a *AuthHandlersConfig) GetEmailFromTokenHandler(ftx *fiber.Ctx) error {
+// 	token := ftx.Query("token")
+
+// 	email, err := redisutils.GetRedisKeyString(a.Rdb, token)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return ftx.SendStatus(fiber.StatusNotFound)
+// 	}
+
+// 	return ftx.Status(fiber.StatusOK).JSON(fiber.Map{"email": email})
+// }

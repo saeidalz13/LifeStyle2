@@ -21,9 +21,9 @@ const ModalAddPlan = (props: ModalAddPlanProps) => {
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        <Modal.Header>
+        <Modal.Header className="bg-secondary rounded">
           <Modal.Title
-            className="text-primary"
+            className="text-info"
             id="contained-modal-title-vcenter"
           >
             Add Exercises to Day Plan
@@ -39,7 +39,7 @@ const ModalAddPlan = (props: ModalAddPlanProps) => {
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="outline-success"
+            variant="dark"
             className="px-5"
             onClick={() => props.onHide()}
           >

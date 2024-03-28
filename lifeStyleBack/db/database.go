@@ -13,7 +13,7 @@ import (
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
 )
 
-var DB *sql.DB
+// var DB *sql.DB
 
 func mustDetermineMigrationDrive() string {
 	if cn.EnvVars.DevStage == cn.DefaultDevStages.Production {
@@ -26,8 +26,8 @@ func mustDetermineMigrationDrive() string {
 	panic(cn.ErrsFitFin.DevStage)
 }
 
-func mustExecMigrations(migrationDir string) {
-	driver, err := postgres.WithInstance(DB, &postgres.Config{})
+func mustExecMigrations(db *sql.DB, migrationDir string) {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -52,11 +52,11 @@ func mustExecMigrations(migrationDir string) {
 	}
 }
 
-func mustCreateFitnessMovesForDb() {
+func mustCreateFitnessMovesForDb(db *sql.DB) {
 	// Add move types
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(DB)
+	q := sqlc.New(db)
 	for _, moveType := range cn.MOVE_TYPES_SLICE {
 		if err := q.AddMoveType(ctx, moveType); err != nil {
 			panic(err)
@@ -79,7 +79,7 @@ func mustCreateFitnessMovesForDb() {
 	}
 }
 
-func MustConnectToDb() {
+func MustConnectToDb() *sql.DB {
 	db, err := sql.Open("postgres", cn.EnvVars.DbUrl)
 	if err != nil {
 		panic(cn.ErrsFitFin.PostgresConn)
@@ -93,10 +93,11 @@ func MustConnectToDb() {
 	db.SetMaxOpenConns(cn.DbMaxOpenConnections)
 	db.SetMaxIdleConns(cn.DbMaxIdleConnections)
 	db.SetConnMaxLifetime(cn.DbMaxConnectionLifetime)
-	DB = db
+	// DB = db
 
 	migrationDir := mustDetermineMigrationDrive()
-	mustExecMigrations(migrationDir)
-	mustCreateFitnessMovesForDb()
+	mustExecMigrations(db, migrationDir)
+	mustCreateFitnessMovesForDb(db)
 	log.Println("possible migrations were successful!")
+	return db
 }
