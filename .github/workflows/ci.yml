@@ -38,7 +38,7 @@ jobs:
         go-version: '1.22'
     
     - name: Test
-      run: cd lifeStyleBack && go test -v -cover ./handlers
+      run: cd lifeStyleBack && go test -v ./handlers -count=1
 
   deploy:
     name: Deploy app
