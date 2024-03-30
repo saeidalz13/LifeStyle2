@@ -21,10 +21,13 @@ class Urls {
     getAllPlans: "/fitness/all-plans",
     getAllDayPlans: "/fitness/all-day-plans",
     goDayPlanMove: "/fitness/all-day-plans/:id",
+    getRecordedTime: "/fitness/recorded-time",
     addDayPlanMoves: "/fitness/all-day-plans/add-moves",
     fetchSinglePlan: "/fitness/plan",
     addPlanRecord: "/fitness/add-plan-record",
     getPlanRecords: "/fitness/plan-records",
+    getCompletedExercises: "/fitness/current-week-completed-exercises",
+    postRecordedTime: "/fitness/add-recorded-time",
     deleteWeekPlanRecords: "/fitness/delete-week-plan-records",
     updatePlanRecord: "/fitness/update-plan-record",
     deletePlanRecord: "/fitness/delete-plan-record",
@@ -32,7 +35,7 @@ class Urls {
     startWorkout: "/fitness/start-workout",
 
     workoutHistory: "/fitness/workout-history/:planId",
-    numWeeks: "/fitness/num-available-weeks"
+    numWeeks: "/fitness/num-available-weeks",
   };
 
   finance = {

@@ -113,3 +113,11 @@ type User struct {
 	Password  string       `json:"password"`
 	CreatedAt sql.NullTime `json:"created_at"`
 }
+
+type WorkoutPlansTime struct {
+	WptID          int64 `json:"wpt_id"`
+	UserID         int64 `json:"user_id"`
+	DayPlanID      int64 `json:"day_plan_id"`
+	Week           int32 `json:"week"`
+	RecordedTimeMs int32 `json:"recorded_time_ms"`
+}

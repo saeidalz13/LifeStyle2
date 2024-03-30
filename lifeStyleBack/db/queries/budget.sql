@@ -20,6 +20,7 @@ VALUES (
     $8
   )
 RETURNING *;
+
 -- name: SelectSingleBudget :one
 SELECT budget_id,
   budget_name,

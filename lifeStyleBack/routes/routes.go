@@ -20,11 +20,10 @@ func AuthSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Get(cn.URLS.Home, hc.Auth.HandleGetHome)
 	app.Get(cn.URLS.Profile, hc.Auth.HandleGetProfile)
 	app.Get(cn.URLS.SignOut, h.HandleGetSignOut)
-	// app.Get(cn.URLS.ReduxEmail, hc.Auth.GetEmailFromTokenHandler)
-	
+
 	app.Post(cn.URLS.SignUp, hc.Auth.HandlePostSignUp)
 	app.Post(cn.URLS.Login, hc.Auth.HandlePostLogin)
-	
+
 	app.Delete(cn.URLS.DeleteProfile, m.IsLoggedIn, hc.Auth.HandleDeleteUser)
 }
 
@@ -37,12 +36,15 @@ func FitnessSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Get(cn.URLS.FetchPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetPlanRecords)
 	app.Get(cn.URLS.FetchWeekPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetWeekPlanRecords)
 	app.Get(cn.URLS.FetchNumAvailableWeeksPlanRecords, m.IsLoggedIn, hc.Fitness.HandleGetNumAvailableWeeksPlanRecords)
+	app.Get(cn.URLS.FetchCurrentWeekCompletedExercises, m.IsLoggedIn, hc.Fitness.HandleGetCurrentWeekCompletedExercises)
+	app.Get(cn.URLS.FetchRecordedTime, m.IsLoggedIn, hc.Fitness.HandleGetRecordedTime)
 
 	app.Post(cn.URLS.AddPlan, m.IsLoggedIn, hc.Fitness.HandlePostAddPlan)
 	app.Post(cn.URLS.EditPlan, m.IsLoggedIn, hc.Fitness.HandlePostEditPlan)
 	app.Post(cn.URLS.AddDayPlanMoves, m.IsLoggedIn, hc.Fitness.HandlePostAddDayPlanMoves)
 	app.Post(cn.URLS.AddPlanRecord, m.IsLoggedIn, hc.Fitness.HandlePostAddPlanRecord)
-
+	app.Post(cn.URLS.AddPlanRecordedTime, m.IsLoggedIn, hc.Fitness.HandlePostRecordedTime)
+	
 	app.Delete(cn.URLS.DeletePlan, m.IsLoggedIn, hc.Fitness.HandleDeletePlan)
 	app.Delete(cn.URLS.DeleteDayPlan, m.IsLoggedIn, hc.Fitness.HandleDeleteDayPlan)
 	app.Delete(cn.URLS.DeleteDayPlanMove, m.IsLoggedIn, hc.Fitness.HandleDeleteDayPlanMove)
@@ -72,7 +74,6 @@ func FinanceSetup(app *fiber.App, hc *h.HandlersConfig) {
 	app.Patch(cn.URLS.UpdateCapitalExpenses, m.IsLoggedIn, hc.Finance.PatchCapitalExpenses)
 	app.Patch(cn.URLS.UpdateEatoutExpenses, m.IsLoggedIn, hc.Finance.PatchEatoutExpenses)
 	app.Patch(cn.URLS.UpdateEntertainmentExpenses, m.IsLoggedIn, hc.Finance.PatchEntertainmentExpenses)
-
 }
 
 func Setup(app *fiber.App, hc *h.HandlersConfig) {
@@ -96,7 +97,7 @@ func Setup(app *fiber.App, hc *h.HandlersConfig) {
 				break
 			}
 			prompt := string(msg)
-			
+
 			// Prepare req for GTP API
 			req := openai.ChatCompletionRequest{
 				Model:     openai.GPT3Dot5Turbo,

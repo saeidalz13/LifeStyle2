@@ -1,5 +1,5 @@
-import { FormEvent, useRef, useState } from "react";
-import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Col, Container, Modal, Row, Table } from "react-bootstrap";
 import { WeekPlanRecords } from "../../assets/FitnessInterfaces";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
@@ -9,32 +9,27 @@ import { ApiRes } from "../../assets/GeneralInterfaces";
 import rl from "../../svg/RotatingLoad.svg";
 
 interface WeekPlanRecordsProps {
-  numWeeks: number;
+  show: boolean;
+  onHide: () => void;
+  week: number;
   dayPlanID: number;
+  userId: number;
 }
 
 const WeekPlanRecords = (props: WeekPlanRecordsProps) => {
   const navigateAuth = useNavigate();
-  const weekRef = useRef<HTMLSelectElement>(null);
-  const numWeeksArray: number[] = [];
-  for (let i = 1; i < props.numWeeks + 1; i++) {
-    numWeeksArray.push(i);
-  }
 
   const [weekPlanRecords, setWeekPlanRecords] = useState<
     null | WeekPlanRecords | "waiting" | "initial"
   >("initial");
 
-  const handleFetchWeekPlanRecord = async (e: FormEvent) => {
-    e.preventDefault();
-    setWeekPlanRecords("waiting");
-
-    if (weekRef.current) {
-      const selectedWeek = weekRef.current.value;
+  useEffect(() => {
+    const handleFetchWeekPlanRecord = async () => {
+      setWeekPlanRecords("waiting");
 
       try {
         const result = await fetch(
-          `${BACKEND_URL}${Urls.fitness.getPlanRecords}/${props.dayPlanID}/${selectedWeek}`,
+          `${BACKEND_URL}${Urls.fitness.getPlanRecords}/${props.dayPlanID}/${props.week}`,
           {
             method: "GET",
             credentials: "include",
@@ -55,6 +50,7 @@ const WeekPlanRecords = (props: WeekPlanRecordsProps) => {
 
         if (result.status === StatusCodes.Ok) {
           const data = (await result.json()) as WeekPlanRecords;
+          sessionStorage.setItem(`lastweek_week${props.week}_user${props.userId}_dayPlanId${props.dayPlanID}`, JSON.stringify(data))
           setWeekPlanRecords(data);
           return;
         }
@@ -63,90 +59,89 @@ const WeekPlanRecords = (props: WeekPlanRecordsProps) => {
       } catch (error) {
         console.log(error);
       }
+    };
+
+    if (props.show) {
+      const storedLastWeek = sessionStorage.getItem(
+        `lastweek_week${props.week}_user${props.userId}_dayPlanId${props.dayPlanID}`
+      );
+      if (storedLastWeek) {
+        const lastWeekData = JSON.parse(storedLastWeek);
+        setWeekPlanRecords(lastWeekData);
+      } else {
+        console.log("hit db for last week data")
+        handleFetchWeekPlanRecord();
+      }
     }
-  };
+  }, [navigateAuth, props.dayPlanID, props.week, props.show, props.userId]);
 
   return (
     <>
-      <Container
-        className="mt-5 mb-2"
-        style={{ maxWidth: "400px", margin: "auto" }}
+      <Modal
+        onHide={props.onHide}
+        show={props.show}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
       >
-        <Row
-          className="p-4 mx-2 rounded"
-          style={{ boxShadow: "0 5px 10px 1px grey" }}
-        >
-          <h2 className="text-dark text-center">Workout History!</h2>
-          <Col>
-            {numWeeksArray.length === 0 ? (
-              <div className="text-center">
-                <div className="text-danger mb-1">No Records Yet</div>
-                <Button variant="info">Update</Button>
-              </div>
-            ) : (
-              <Form onSubmit={(e) => handleFetchWeekPlanRecord(e)}>
-                <Form.Select ref={weekRef}>
-                  {numWeeksArray.map((week) => (
-                    <option key={week} value={week}>
-                      Week {week}
-                    </option>
-                  ))}
-                </Form.Select>
-                <div className="text-center mt-2">
-                  <Button type="submit" variant="info">
-                    Show History
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Col>
-        </Row>
-      </Container>
-
-      {weekPlanRecords === "initial" ? (
-        <div></div>
-      ) : weekPlanRecords === "waiting" ? (
-        <div className="mt-5" style={{ textAlign: "center" }}>
-          <img
-            className="bg-primary rounded p-2"
-            src={rl}
-            height="150px"
-            width="150px"
-            alt="Rotation"
-          />
-        </div>
-      ) : weekPlanRecords === null ? (
-        <div>No Data To Show!</div>
-      ) : (
-        <Container fluid>
-          <Row>
-            <Col>
-              <div className="px-2">
-                <Table striped hover>
-                  <thead>
-                    <tr>
-                      <th className="text-primary">Move</th>
-                      <th className="text-info">Set</th>
-                      <th className="text-warning">Reps</th>
-                      <th className="text-danger">Weights</th>
-                    </tr>
-                  </thead>
-                  <tbody className="plan-records-table">
-                    {weekPlanRecords.week_plan_records.map((planRow, index) => (
-                      <tr key={index}>
-                        <td>{planRow.move_name}</td>
-                        <td>{planRow.set_record}</td>
-                        <td>{planRow.reps}</td>
-                        <td>{planRow.weight}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      )}
+        <Modal.Title id="contained-modal-title-vcenter">
+          <Modal.Header closeButton>Week {props.week} Summary</Modal.Header>
+        </Modal.Title>
+        <Modal.Body>
+          {weekPlanRecords === "initial" ? (
+            <div className="text-center">No Data To Show</div>
+          ) : weekPlanRecords === "waiting" ? (
+            <div className="mt-5" style={{ textAlign: "center" }}>
+              <img
+                className="bg-primary rounded p-2"
+                src={rl}
+                height="150px"
+                width="150px"
+                alt="Rotation"
+              />
+            </div>
+          ) : weekPlanRecords === null ? (
+            <div className="text-center">No Data To Show</div>
+          ) : (
+            <Container fluid>
+              <Row>
+                <Col>
+                  <div className="px-2">
+                    <Table striped hover className="text-center">
+                      <thead>
+                        <tr>
+                          <th className="text-primary">Move</th>
+                          {/* <th className="text-info">Set</th> */}
+                          <th className="text-warning">Reps</th>
+                          <th className="text-danger">Weights</th>
+                        </tr>
+                      </thead>
+                      <tbody className="plan-records-table">
+                        {weekPlanRecords.week_plan_records.length === 0 ? (
+                          <tr className="text-center">
+                            <td colSpan={3}>No Data To Show!</td>
+                          </tr>
+                        ) : (
+                          weekPlanRecords.week_plan_records.map(
+                            (planRow, index) => (
+                              <tr key={index}>
+                                <td>{planRow.move_name}</td>
+                                {/* <td>{planRow.set_record}</td> */}
+                                <td>{planRow.reps}</td>
+                                <td>{planRow.weight}</td>
+                              </tr>
+                            )
+                          )
+                        )}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Col>
+              </Row>
+            </Container>
+          )}
+        </Modal.Body>
+      </Modal>
 
       {/* {Object.values(groupedPlanRecords).map(
                 (planRecordsArray: PlanRecord[], index: number) => (

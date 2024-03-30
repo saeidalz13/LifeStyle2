@@ -79,3 +79,11 @@ export interface WeekPlanRecords {
 export interface NumWeeks {
   num_weeks: number
 }
+
+export interface CompletedExercises {
+  completed_exercises: string[]
+}
+
+export interface RecordedTimeWeek {
+  recorded_time: number;
+}

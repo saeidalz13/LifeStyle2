@@ -281,7 +281,7 @@ const EditFitPlan = () => {
           <Row>
             <Col md>
               <Form.Group>
-                <Form.Label>Day:</Form.Label>
+                <Form.Label className="text-light">Day:</Form.Label>
                 <Form.Select
                   value={day}
                   onChange={(e) => setDay(+e.target.value)}
@@ -296,7 +296,7 @@ const EditFitPlan = () => {
             </Col>
             <Col className="mb-1" md>
               <Form.Group controlId="move">
-                <Form.Label>Exercise:</Form.Label>
+                <Form.Label className="text-light">Exercise:</Form.Label>
                 <Form.Select
                   value={move}
                   onChange={(e) => setMove(e.target.value)}
@@ -327,7 +327,7 @@ const EditFitPlan = () => {
           {percentageDayPlans >= 100 ? (
             <NavLink to={`${Urls.fitness.getAllDayPlans}/${planId}`}>
               <Button
-                variant="outline-light"
+                variant="light"
                 className="px-5 border border-danger"
               >
                 Go To Plan Details
@@ -364,8 +364,8 @@ const EditFitPlan = () => {
         <div>
           {percentageDayPlans >= 100 ? (
             <div
-              className="text-center mt-3"
-              style={{ color: "yellowgreen", fontSize: "27px" }}
+              className="text-center text-success mt-3"
+              style={{ fontSize: "27px" }}
             >
               You're All Set!
             </div>

@@ -276,7 +276,7 @@ func (f *FitnessHandlersConfig) HandleGetWeekPlanRecords(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "failed to fetch week plan records week: " + weekString + " day_plan_id: " + dayPlanIdString})
 	}
 
-	log.Printf("%+v",weekPlanRecords)
+	log.Printf("%+v", weekPlanRecords)
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"week_plan_records": weekPlanRecords})
 }
 
@@ -304,7 +304,7 @@ func (f *FitnessHandlersConfig) HandleGetNumAvailableWeeksPlanRecords(ftx *fiber
 	}
 
 	numWeeks, err := q.SelectNumAvailableWeeksPlanRecords(ctx, sqlc.SelectNumAvailableWeeksPlanRecordsParams{
-		UserID: user.ID,
+		UserID:    user.ID,
 		DayPlanID: int64(dayPlanId),
 	})
 	if err != nil {
@@ -313,6 +313,134 @@ func (f *FitnessHandlersConfig) HandleGetNumAvailableWeeksPlanRecords(ftx *fiber
 	}
 
 	return ftx.Status(fiber.StatusOK).JSON(map[string]interface{}{"num_weeks": numWeeks})
+}
+
+func (f *FitnessHandlersConfig) HandleGetCurrentWeekCompletedExercises(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	// User Authorization
+	userEmail, err := utils.ExtractEmailFromClaim(ftx)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	user, err := q.SelectUser(ctx, userEmail)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+	dayPlanIdString := ftx.Params("dayPlanId")
+	weekString := ftx.Params("week")
+	dayPlanId, err := utils.FetchIntOfParamId(dayPlanIdString)
+	if err != nil {
+		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+	week, err := utils.FetchIntOfParamId(weekString)
+	if err != nil {
+		log.Println("GetSinglePlan: FetchIntOfParamId section", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+
+	completedExercises, err := q.SelectCurrentWeekCompletedExercises(ctx, sqlc.SelectCurrentWeekCompletedExercisesParams{
+		UserID:    user.ID,
+		DayPlanID: int64(dayPlanId),
+		Week:      int32(week),
+	})
+	if err != nil {
+		log.Println("HandleGetCurrentWeekCompletedExercises:", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "failed to fetch current week completed exercises"})
+	}
+
+	return ftx.Status(fiber.StatusOK).JSON(fiber.Map{"completed_exercises": completedExercises})
+}
+
+func (f *FitnessHandlersConfig) HandleGetRecordedTime(ftx *fiber.Ctx) error {
+	q := sqlc.New(f.Db)
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+
+	user, err := utils.InitialNecessaryValidationsGetReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	dayPlanIdString := ftx.Params("dayPlanId")
+	weekString := ftx.Params("week")
+	dayPlanId, err := utils.FetchIntOfParamId(dayPlanIdString)
+	if err != nil {
+		log.Println("HandlePostRecordedTime:", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+	week, err := utils.FetchIntOfParamId(weekString)
+	if err != nil {
+		log.Println("HandlePostRecordedTime:", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+
+	recordedTime, err := q.SelectRecordedTime(ctx, sqlc.SelectRecordedTimeParams{
+		UserID:    user.ID,
+		DayPlanID: int64(dayPlanId),
+		Week:      int32(week),
+	})
+	if err != nil {
+		if err.Error() == cn.SqlErrs.NoRows {
+			log.Println(err, recordedTime)
+			return ftx.Status(fiber.StatusOK).JSON(fiber.Map{"recorded_time": -1})
+		} else {
+			log.Println("HandlePostRecordedTime:", err)
+			return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: fmt.Sprintf("failed to fetch recorded time for userId: %v - dayPlanId: %v - week: %v", user.ID, dayPlanId, week)})
+		}
+	}
+
+	return ftx.Status(fiber.StatusOK).JSON(fiber.Map{"recorded_time": recordedTime})
+}
+
+func (f *FitnessHandlersConfig) HandlePostRecordedTime(ftx *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
+	defer cancel()
+	q := sqlc.New(f.Db)
+
+	// User Authorization
+	user, err := utils.InitialNecessaryValidationsPostReqs(ftx, ctx, q)
+	if err != nil {
+		log.Println(err)
+		return ftx.Status(fiber.StatusUnauthorized).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.UserValidation})
+	}
+
+	dayPlanIdString := ftx.Params("dayPlanId")
+	weekString := ftx.Params("week")
+	dayPlanId, err := utils.FetchIntOfParamId(dayPlanIdString)
+	if err != nil {
+		log.Println("HandlePostRecordedTime:", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+	week, err := utils.FetchIntOfParamId(weekString)
+	if err != nil {
+		log.Println("HandlePostRecordedTime:", err)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ExtractUrlParam})
+	}
+
+	var recordedTime models.IncomingRecordedTime
+	if err := ftx.BodyParser(&recordedTime); err != nil {
+		log.Println(err)
+		log.Printf("%+v", recordedTime)
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
+	}
+
+	if err := q.InsertRecordedTime(ctx, sqlc.InsertRecordedTimeParams{
+		UserID:         user.ID,
+		DayPlanID:      int64(dayPlanId),
+		Week:           int32(week),
+		RecordedTimeMs: recordedTime.Time,
+	}); err != nil {
+		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "failed to add recorded time to db"})
+	}
+
+	return ftx.SendStatus(fiber.StatusOK)
 }
 
 func (f *FitnessHandlersConfig) HandlePostAddPlan(ftx *fiber.Ctx) error {

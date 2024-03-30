@@ -59,6 +59,10 @@ type IncomingDeletePlanRecord struct {
 	PlanRecordID int64 `json:"plan_record_id"`
 }
 
+type IncomingRecordedTime struct {
+	Time int32 `json:"time"`
+}
+
 type RespStartWorkoutDayPlanMoves struct {
 	DayPlanMoveID int64  `json:"day_plan_move_id"`
 	UserID        int64  `json:"user_id"`
@@ -67,7 +71,6 @@ type RespStartWorkoutDayPlanMoves struct {
 	MoveName      string `json:"move_name"`
 	MoveId        int64  `json:"move_id"`
 }
-
 
 type RespMoves struct {
 	DayPlanId     int64  `json:"day_plan_id"`

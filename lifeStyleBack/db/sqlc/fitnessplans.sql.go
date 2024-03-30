@@ -453,6 +453,44 @@ func (q *Queries) JoinDayPlanAndDayPlanMovesAndMoves(ctx context.Context, arg Jo
 	return items, nil
 }
 
+const selectCurrentWeekCompletedExercises = `-- name: SelectCurrentWeekCompletedExercises :many
+SELECT DISTINCT moves.move_name
+FROM
+    plan_records JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1
+    AND day_plan_id = $2
+    AND week = $3
+`
+
+type SelectCurrentWeekCompletedExercisesParams struct {
+	UserID    int64 `json:"user_id"`
+	DayPlanID int64 `json:"day_plan_id"`
+	Week      int32 `json:"week"`
+}
+
+func (q *Queries) SelectCurrentWeekCompletedExercises(ctx context.Context, arg SelectCurrentWeekCompletedExercisesParams) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, selectCurrentWeekCompletedExercises, arg.UserID, arg.DayPlanID, arg.Week)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var move_name string
+		if err := rows.Scan(&move_name); err != nil {
+			return nil, err
+		}
+		items = append(items, move_name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectDayFromPlan = `-- name: SelectDayFromPlan :one
 SELECT days
 FROM plans

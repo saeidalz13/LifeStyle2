@@ -20,6 +20,7 @@ import { useSpring, animated } from "react-spring";
 import { useAuth } from "../../context/useAuth";
 import MainDivHeader from "../../components/Headers/MainDivHeader";
 import { getLocalStorageValuesByKeyContains } from "../../utils/LocalStorageUtils";
+import PieChartEachBudget from "./charts/PieChartBalance";
 
 const EachBudget = () => {
   const navigateAuth = useNavigate();
@@ -195,7 +196,7 @@ const EachBudget = () => {
 
   async function handleDeleteBudget() {
     try {
-      console.log("here")
+      console.log("here");
       const result = await fetch(
         `${BACKEND_URL}${Urls.finance.showBudgets}/${budgetIdParam}`,
         {
@@ -216,11 +217,11 @@ const EachBudget = () => {
       }
 
       if (result.status === StatusCodes.NoContent) {
-        const keysToRemove = getLocalStorageValuesByKeyContains("allbudgets")
+        const keysToRemove = getLocalStorageValuesByKeyContains("allbudgets");
         if (keysToRemove) {
           keysToRemove.forEach((key) => {
-            localStorage.removeItem(key)
-          })
+            localStorage.removeItem(key);
+          });
         }
         navigateAuth(Urls.finance.showBudgets);
         return;
@@ -379,6 +380,30 @@ const EachBudget = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Container className="mb-5">
+        <Row className="align-items-center text-center">
+          <Col>
+            <h2
+              style={{
+                // textAlign: "center",
+                color: "#4E625A", // An earthy color to match your theme
+                fontSize: "28px", // Adjust size as needed
+                fontWeight: "normal", // Avoid overly bold fonts for elegance
+                marginBottom: "10px", // Adds some space below the title
+                borderBottom: "2px solid #9B4A1B", // A subtle underline with an earthy color
+                paddingBottom: "5px", // Spacing between text and underline
+              }}
+            >
+              Balance Chart
+            </h2>
+          </Col>
+
+          <Col>
+            <div>{balance ? <PieChartEachBudget balance={balance} /> : ""}</div>
+          </Col>
+        </Row>
+      </Container>
     </animated.div>
   );
 };

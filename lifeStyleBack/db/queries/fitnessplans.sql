@@ -50,11 +50,14 @@ SELECT *
 FROM day_plan_moves
 WHERE user_id = $1
     AND day_plan_id = $2;
+
 -- name: CountFitnessDayPlanMoves :one
 SELECT COUNT(day_plan_move_id)
 FROM day_plan_moves
 WHERE user_id = $1
     AND day_plan_id = $2;
+
+
 -- name: JoinDayPlanAndDayPlanMovesAndMoves :many
 SELECT day_plan_moves.day_plan_move_id,
     day_plan_moves.day_plan_id,
@@ -68,6 +71,8 @@ FROM day_plan_moves
 WHERE day_plan_moves.user_id = $1
     AND day_plan_moves.plan_id = $2
 ORDER BY day;
+
+
 -- name: SelectDayPlanMovesStartWorkout :many
 SELECT day_plan_moves.day_plan_move_id,
     day_plan_moves.day_plan_id,
@@ -81,14 +86,20 @@ FROM day_plan_moves
 WHERE day_plan_moves.user_id = $1
     AND day_plan_moves.day_plan_id = $2
 ORDER BY day_plan_moves.day_plan_move_id;
+
+
 -- name: SelectDayFromPlan :one
 SELECT days
 FROM plans;
+
+
 -- name: DeleteFitnessDayPlanMove :one
 DELETE FROM day_plan_moves
 WHERE user_id = $1
     AND day_plan_move_id = $2
 RETURNING *;
+
+
 -- name: AddPlanRecord :exec
 INSERT INTO plan_records (
         user_id,
@@ -110,6 +121,8 @@ VALUES (
         $7,
         $8
     );
+
+
 -- name: SelectWeekPlanRecords :many
 SELECT plan_records.set_record,
     plan_records.reps,
@@ -122,11 +135,24 @@ WHERE user_id = $1
     AND week = $3
 ORDER BY plan_record_id,
     set_record;
+
+
+-- name: SelectCurrentWeekCompletedExercises :many
+SELECT DISTINCT moves.move_name
+FROM
+    plan_records JOIN moves ON plan_records.move_id = moves.move_id
+WHERE user_id = $1
+    AND day_plan_id = $2
+    AND week = $3;
+
+
 -- name: SelectNumAvailableWeeksPlanRecords :one
 SELECT COUNT(DISTINCT week)
 from plan_records
 WHERE user_id = $1
     AND day_plan_id = $2;
+
+
 -- name: SelectPlanRecords :many
 SELECT plan_records.plan_record_id,
     plan_records.user_id,
@@ -145,6 +171,7 @@ WHERE user_id = $1
     AND day_plan_id = $2
 ORDER BY plan_records.plan_record_id,
     plan_records.set_record;
+
 -- name: UpdatePlanRecord :one
 UPDATE plan_records
 SET reps = $1,
@@ -152,10 +179,12 @@ SET reps = $1,
 WHERE user_id = $3
     AND plan_record_id = $4
 RETURNING *;
+
 -- name: DeletePlanRecord :exec
 DELETE FROM plan_records
 WHERE user_id = $1
     AND plan_record_id = $2;
+
 -- name: DeleteWeekPlanRecords :exec
 DELETE FROM plan_records
 WHERE user_id = $1

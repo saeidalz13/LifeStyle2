@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import BackFitnessBtn from "../../misc/BackFitnessBtn";
 import { useParams, NavLink, useLocation, useNavigate } from "react-router-dom";
 import BACKEND_URL from "../../Config";
 import Urls from "../../Urls";
 import StatusCodes from "../../StatusCodes";
 import {
+  CompletedExercises,
   DayPlanMove,
   DayPlanMovesStartWorkout,
-  NumWeeks,
+  RecordedTimeWeek,
 } from "../../assets/FitnessInterfaces";
 import {
   Button,
@@ -23,19 +23,13 @@ import { ApiRes, SUCCESS_STYLE } from "../../assets/GeneralInterfaces";
 import { ReqAddPlanRecord } from "../../assets/FitnessInterfaces";
 import cn from "../ConstantsPlan";
 import sadFace from "../../svg/SadFaceNoBudgets.svg";
-// import ModalUpdatePlanRecord from "./ModalUpdatePlanRecord";
 import { useAuth } from "../../context/useAuth";
 import PageHeader from "../../components/Headers/PageHeader";
 import { useSpring, animated } from "react-spring";
 import WeekPlanRecords from "./WeekPlanRecords";
-// import ModalWorkoutHistory from "./ModalWorkoutHistory";
-
-/* 
-TODO: 1. separate history into a different route
-TODO: 2. make plots for the history section
-// TODO: 3. cache the data for plans
-TODO: 4. useLocation to send moves to this route (start workout)
-*/
+import confetti from "canvas-confetti";
+import WorkoutFinish from "./WorkoutFinish";
+import WorkoutSummary from "./WorkoutSummary";
 
 const StartWorkout = () => {
   const { userId, isAuthenticated, loadingAuth } = useAuth();
@@ -44,27 +38,34 @@ const StartWorkout = () => {
   const dayPlanMovesState = loc.state?.dayPlanMoves as null | DayPlanMove[];
   const { id: dayPlanId } = useParams();
   const [possibleErrs, setPossibleErrs] = useState("");
-  const [numWeeks, setNumWeeks] = useState<number>(-1);
-  // const [updatePossibleErrs, setUpdatePossibleErrs] = useState("");
+  const [showLastWeekModal, setShowLastWeekModal] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false)
+
+  const [completedTrigger, setCompletedTrigger] = useState(false);
+  const [recordedTimeWeek, setRecordedTimeWeek] = useState(-1);
 
   const [possibleSuccess, setPossibleSuccess] = useState("");
   const [secondsElapsed, setSecondsElapsed] = useState<number>(0);
-  const [startedWorkout, setStartedWorkout] = useState(false);
-  // const [updatePossibleSuccess, setUpdatePossibleSuccess] = useState("");
+  const [startedWorkout, setStartedWorkout] = useState<boolean>(false);
+  const [startTime, setStartTime] = useState<number>(-1);
 
   const [addSetErrs, setAddSetErrs] = useState("");
   const [loading, setLoading] = useState(false);
-  const [week, setWeek] = useState(1);
+  const [week, setWeek] = useState<number>(-1);
   const [moveName, setMoveName] = useState("");
   const [dayPlanMoveId, setDayPlanMoveId] = useState(-1);
   const [reps, setReps] = useState<number>(cn.REPS[0]);
   const [weights, setWeights] = useState<number>(cn.WEIGHTS[0]);
+  const [completedExercises, setCompletedExercises] = useState<string[]>([]);
 
   const [addedReps, setAddedReps] = useState<number[]>([]);
   const [addedWeights, setAddedWeights] = useState<number[]>([]);
   const minutes = Math.floor(secondsElapsed / 60);
   const seconds = secondsElapsed % 60;
-  const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
 
   const [dayPlanMoves, setDayPlanMoves] = useState<
     DayPlanMove[] | "error" | "waiting"
@@ -77,28 +78,10 @@ const StartWorkout = () => {
   });
 
   useEffect(() => {
-    if (!loadingAuth) {
-      if (!isAuthenticated) {
-        navigateAuth(Urls.home);
-        return;
-      }
-    }
-  }, [isAuthenticated, loadingAuth, navigateAuth]);
-
-  useEffect(() => {
-    const storedSecond = localStorage.getItem(
-      `elapsedtime_user${userId}_dayPlanId${dayPlanId}`
-    );
-    if (storedSecond) {
-      setSecondsElapsed(+JSON.parse(storedSecond));
-    }
-  }, [dayPlanId, userId]);
-
-  useEffect(() => {
-    const fetchNumWeeks = async () => {
+    const fetchRecordedTime = async () => {
       try {
         const result = await fetch(
-          `${BACKEND_URL}${Urls.fitness.numWeeks}/${dayPlanId}`,
+          `${BACKEND_URL}${Urls.fitness.getRecordedTime}/${dayPlanId}/${week}`,
           {
             method: "GET",
             credentials: "include",
@@ -113,59 +96,209 @@ const StartWorkout = () => {
         if (result.status === StatusCodes.InternalServerError) {
           const data = (await result.json()) as ApiRes;
           console.log(data.message);
-          alert(data.message);
           return;
         }
 
         if (result.status === StatusCodes.Ok) {
-          const data = (await result.json()) as NumWeeks;
-          console.log(data)
-          localStorage.setItem(`numWeeks_user${userId}_dayPlanId${dayPlanId}`, JSON.stringify(data.num_weeks))
-          setNumWeeks(data.num_weeks);
+          const data = (await result.json()) as RecordedTimeWeek;
+          console.log(data);
+          setRecordedTimeWeek(data.recorded_time);
           return;
         }
 
-        console.log("unexpected status code; did not fetch num_weeks", result.status);
-        return;
+        console.log(
+          "unexpected behavior for fetch recorded time",
+          result.status
+        );
       } catch (error) {
         console.log(error);
       }
     };
 
-    if (!loadingAuth) {
-      const storedNumWeeks = localStorage.getItem(`numWeeks_user${userId}_dayPlanId${dayPlanId}`)
-      if (storedNumWeeks){
-        setNumWeeks(+JSON.parse(storedNumWeeks))
-        return;
-      }
-
-      fetchNumWeeks();
+    if (!loadingAuth && week !== -1) {
+      fetchRecordedTime();
     }
-
-  }, [dayPlanId, navigateAuth, userId, loadingAuth]);
+  }, [loadingAuth, dayPlanId, navigateAuth, week, showFinishModal]);
 
   useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    if (startedWorkout) {
-      intervalId = setInterval(() => {
-        const newSecond = secondsElapsed + 1;
-        setSecondsElapsed(newSecond);
-        localStorage.setItem(
-          `elapsedtime_user${userId}_dayPlanId${dayPlanId}`,
-          JSON.stringify(newSecond)
+    const handleFetchWeekPlanRecord = async () => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.fitness.getCompletedExercises}/${dayPlanId}/${week}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
         );
-      }, 1000);
-    }
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+        if (result.status === StatusCodes.UnAuthorized) {
+          navigateAuth(Urls.login);
+          return;
+        }
+
+        if (result.status === StatusCodes.InternalServerError) {
+          const data = (await result.json()) as ApiRes;
+          console.log(data.message);
+          return;
+        }
+
+        if (result.status === StatusCodes.Ok) {
+          const data = (await result.json()) as CompletedExercises;
+          sessionStorage.setItem(
+            `currentweekCompletedExerc_week${week}_user${userId}_dayPlanId${dayPlanId}`,
+            JSON.stringify(data.completed_exercises)
+          );
+          setCompletedExercises(data.completed_exercises);
+          return;
+        }
+
+        console.log("unexpected error from server", result.status);
+      } catch (error) {
+        console.log(error);
       }
     };
-  }, [dayPlanId, userId, secondsElapsed, startedWorkout]);
+
+    if (!loadingAuth && week !== -1) {
+      const storedLastWeek = sessionStorage.getItem(
+        `currentweekCompletedExerc_week${week}_user${userId}_dayPlanId${dayPlanId}`
+      );
+      if (storedLastWeek) {
+        const lastWeekData = JSON.parse(storedLastWeek);
+        setCompletedExercises(lastWeekData);
+      } else {
+        handleFetchWeekPlanRecord();
+      }
+    }
+  }, [navigateAuth, dayPlanId, week, userId, loadingAuth, completedTrigger]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        navigateAuth(Urls.home);
+        return;
+      }
+    }
+  }, [isAuthenticated, loadingAuth, navigateAuth]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      const storedStartTime = localStorage.getItem(
+        `starttime_user${userId}_dayPlanId${dayPlanId}_week${week}`
+      );
+      const startTimeInit = storedStartTime ? +JSON.parse(storedStartTime) : -1;
+
+      setStartTime(startTimeInit);
+
+      if (startTimeInit !== -1) {
+        const currentTimeInit = Date.now();
+        const elapsed = Math.floor((currentTimeInit - startTimeInit) / 1000);
+        setSecondsElapsed(elapsed);
+      } else {
+        setSecondsElapsed(0);
+      }
+    }
+  }, [dayPlanId, userId, loadingAuth, week]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      const storedStartedWorkout = localStorage.getItem(
+        `startedworkout_user${userId}_dayPlanId${dayPlanId}`
+      );
+      if (storedStartedWorkout) {
+        setStartedWorkout(Boolean(JSON.parse(storedStartedWorkout)));
+      }
+    }
+  }, [loadingAuth, userId, dayPlanId]);
+
+  useEffect(() => {
+    if (!loadingAuth) {
+      const storedWeek = localStorage.getItem(
+        `currentweek_user${userId}_dayPlandId${dayPlanId}`
+      );
+      setWeek(storedWeek ? +JSON.parse(storedWeek) : 1);
+
+      if (!storedWeek) {
+        localStorage.setItem(
+          `currentweek_user${userId}_dayPlandId${dayPlanId}`,
+          (1).toString()
+        );
+      }
+    }
+  }, [loadingAuth, userId, dayPlanId]);
+
+  useEffect(() => {
+    if (startedWorkout && !loadingAuth) {
+      const intervalId = setInterval(() => {
+        const newElapsed = Math.floor((Date.now() - startTime) / 1000);
+        setSecondsElapsed(newElapsed);
+      }, 1000);
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+    }
+  }, [dayPlanId, userId, startedWorkout, loadingAuth, startTime]);
+
+  // useEffect(() => {
+  //   const fetchNumWeeks = async () => {
+  //     try {
+  //       const result = await fetch(
+  //         `${BACKEND_URL}${Urls.fitness.numWeeks}/${dayPlanId}`,
+  //         {
+  //           method: "GET",
+  //           credentials: "include",
+  //         }
+  //       );
+
+  //       if (result.status === StatusCodes.UnAuthorized) {
+  //         navigateAuth(Urls.login);
+  //         return;
+  //       }
+
+  //       if (result.status === StatusCodes.InternalServerError) {
+  //         const data = (await result.json()) as ApiRes;
+  //         console.log(data.message);
+  //         alert(data.message);
+  //         return;
+  //       }
+
+  //       if (result.status === StatusCodes.Ok) {
+  //         const data = (await result.json()) as NumWeeks;
+  //         console.log(data);
+  //         localStorage.setItem(
+  //           `numWeeks_user${userId}_dayPlanId${dayPlanId}`,
+  //           JSON.stringify(data.num_weeks)
+  //         );
+  //         setNumWeeks(data.num_weeks);
+  //         return;
+  //       }
+
+  //       console.log(
+  //         "unexpected status code; did not fetch num_weeks",
+  //         result.status
+  //       );
+  //       return;
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+
+  //   if (!loadingAuth) {
+  //     const storedNumWeeks = localStorage.getItem(
+  //       `numWeeks_user${userId}_dayPlanId${dayPlanId}`
+  //     );
+  //     if (storedNumWeeks) {
+  //       setNumWeeks(+JSON.parse(storedNumWeeks));
+  //     } else {
+  //       fetchNumWeeks();
+  //     }
+
+  //   }
+  // }, [dayPlanId, navigateAuth, userId, loadingAuth]);
 
   // Store the added sets to browser local storage before submission
+
   useEffect(() => {
     if (dayPlanId) {
       const storedData = sessionStorage.getItem(
@@ -329,11 +462,14 @@ const StartWorkout = () => {
         }
 
         if (result.status === StatusCodes.Ok) {
-          // handleUpdateHistory();
           setPossibleSuccess("Record added successfully!");
           setAddedReps([]);
           setAddedWeights([]);
-
+          setCompletedExercises([]);
+          setCompletedTrigger((prev) => !prev);
+          sessionStorage.removeItem(
+            `currentweekCompletedExerc_week${week}_user${userId}_dayPlanId${dayPlanId}`
+          );
           sessionStorage.removeItem(
             `movesToSubmit_dayPlanId${dayPlanId}_userID${userId}`
           );
@@ -437,35 +573,116 @@ const StartWorkout = () => {
     }
   }, [dayPlanId, dayPlanMovesState, userId, loadingAuth]);
 
-  // const fetchPlanRecords = async (): Promise<PlanRecords | "error"> => {
-  //   try {
-  //     const result = await fetch(
-  //       `${BACKEND_URL}${Urls.fitness.getPlanRecords}/${dayPlanId}`,
-  //       {
-  //         method: "GET",
-  //         credentials: "include",
-  //       }
-  //     );
+  const handleResetTimer = () => {
+    setStartedWorkout(false);
+    setSecondsElapsed(0);
+    setStartTime(-1);
+    localStorage.removeItem(
+      `starttime_user${userId}_dayPlanId${dayPlanId}_week${week}`
+    );
+    localStorage.setItem(
+      `startedworkout_user${userId}_dayPlanId${dayPlanId}`,
+      JSON.stringify(false)
+    );
+  };
 
-  //     if (result.status === StatusCodes.UnAuthorized) {
-  //       location.assign(Urls.login);
-  //       return "error";
-  //     }
+  useEffect(() => {
+    const submitRecordedTime = async (time: number) => {
+      try {
+        const result = await fetch(
+          `${BACKEND_URL}${Urls.fitness.postRecordedTime}/${dayPlanId}/${week}`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json;charset=UTF-8",
+            },
+            body: JSON.stringify({ time: time }),
+          }
+        );
 
-  //     if (result.status === StatusCodes.InternalServerError) {
-  //       return "error";
-  //     }
+        if (result.status === StatusCodes.UnAuthorized) {
+          navigateAuth(Urls.login);
+          return;
+        }
 
-  //     if (result.status === StatusCodes.Ok) {
-  //       return await result.json();
-  //     }
+        if (result.status === StatusCodes.InternalServerError) {
+          const data = (await result.json()) as ApiRes;
+          console.log(data.message);
+          return;
+        }
 
-  //     return "error";
-  //   } catch (error) {
-  //     console.log(error);
-  //     return "error";
-  //   }
-  // };
+        if (result.status === StatusCodes.Ok) {
+          return;
+        }
+
+        console.log(
+          "unexpected error happened in adding recorded time",
+          result.status
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (
+      completedExercises.length !== 0 &&
+      !loadingAuth &&
+      dayPlanMoves.length === completedExercises.length &&
+      week !== -1
+    ) {
+      const alreadyCelebrated = localStorage.getItem(
+        `celebrated_user${userId}_dayPlanId${dayPlanId}_week${week}`
+      );
+
+      if (!alreadyCelebrated) {
+        let recordedTime = 0;
+        if (startTime !== -1) {
+          console.log("must NOT see this");
+          recordedTime = Date.now() - startTime;
+        }
+        localStorage.setItem(
+          `recordedTime_user${userId}_dayPlanId${dayPlanId}_week${week}`,
+          recordedTime.toString()
+        );
+
+        setStartedWorkout(false);
+        setSecondsElapsed(0);
+        setStartTime(-1);
+        localStorage.removeItem(
+          `starttime_user${userId}_dayPlanId${dayPlanId}_week${week}`
+        );
+        localStorage.setItem(
+          `startedworkout_user${userId}_dayPlanId${dayPlanId}`,
+          JSON.stringify(false)
+        );
+
+        submitRecordedTime(recordedTime);
+        setShowFinishModal(true);
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+
+        localStorage.setItem(
+          `celebrated_user${userId}_dayPlanId${dayPlanId}_week${week}`,
+          JSON.stringify(1)
+        );
+      }
+    }
+  }, [
+    dayPlanMoves.length,
+    completedExercises.length,
+    userId,
+    dayPlanId,
+    week,
+    loadingAuth,
+    completedExercises,
+    startTime,
+    navigateAuth,
+  ]);
 
   if (dayPlanMoves === "waiting") {
     return (
@@ -506,25 +723,21 @@ const StartWorkout = () => {
     );
   }
 
-  const handleResetTimer = () => {
-    setStartedWorkout(false);
-    setSecondsElapsed(0);
-    localStorage.setItem(
-      `elapsedtime_user${userId}_dayPlanId${dayPlanId}`,
-      String(0)
-    );
-  };
-
   return (
     <>
       <PageHeader text="Workout Time" headerType="h2" />
-      <BackFitnessBtn />
-
-      <div className="text-center mt-1">
+      <div className="text-center mt-2">
+        <NavLink to={Urls.fitness.index}>
+          <Button style={{ color: "rgb(249, 215, 215)" }} variant="dark">
+            &#128170; Back To Fitness
+          </Button>
+        </NavLink>
         <NavLink
           to={`${Urls.fitness.getAllDayPlans}/${dayPlanMoves[0].plan_id}`}
         >
-          <Button variant="danger">Back to Day Plan</Button>
+          <Button className="ms-1" variant="danger">
+            Back to Day Plan
+          </Button>
         </NavLink>
       </div>
 
@@ -535,35 +748,18 @@ const StartWorkout = () => {
               <Form className="form-fitfin">
                 <Row className="mb-3 mt-2">
                   <Col>
-                    <Card className="text-center mb-3">
-                      <Card.Header as="h5" className="bg-info">
-                        Workout Tracker
-                      </Card.Header>
-                      <Card.Body>
-                        <Card.Title className="mb-3">
-                          Elapsed Time: {formattedTime}
-                        </Card.Title>
-                        <Button
-                          variant={startedWorkout ? "danger" : "success"}
-                          onClick={() => setStartedWorkout((prev) => !prev)}
-                        >
-                          {startedWorkout ? "Stop" : "Start Workout"}
-                        </Button>
-                        <Button
-                          variant="warning"
-                          className=" ms-2"
-                          onClick={() => handleResetTimer()}
-                        >
-                          Reset
-                        </Button>
-                      </Card.Body>
-                    </Card>
-
-                    <Form.Group className="text-center mx-5">
+                    <Form.Group style={{ maxWidth: "10rem", margin: "auto" }}>
                       <Form.Select
+                        className="text-center"
                         value={week}
                         onChange={(e) => {
                           setWeek(+e.target.value);
+                          setCompletedExercises([]);
+                          setCompletedTrigger((prev) => !prev);
+                          localStorage.setItem(
+                            `currentweek_user${userId}_dayPlandId${dayPlanId}`,
+                            e.target.value
+                          );
                           const storedData = sessionStorage.getItem(
                             `movesToSubmit_dayPlanId${dayPlanId}_userID${userId}`
                           );
@@ -588,7 +784,97 @@ const StartWorkout = () => {
                     </Form.Group>
                   </Col>
                 </Row>
+                <Row>
+                  <Col>
+                    <Card className="text-center mb-3">
+                      <Card.Header as="h5" className="bg-info">
+                        Workout Tracker
+                      </Card.Header>
+                      <Card.Body>
+                        <Card.Title className="mb-2">
+                          Elapsed Time: {formattedTime}
+                        </Card.Title>
+                        <Button
+                          disabled={startedWorkout ? true : false}
+                          variant="success"
+                          onClick={() => {
+                            setStartedWorkout(true);
+                            const dateNow = Date.now();
+                            setStartTime(dateNow);
+                            localStorage.setItem(
+                              `starttime_user${userId}_dayPlanId${dayPlanId}_week${week}`,
+                              dateNow.toString()
+                            );
+                            localStorage.setItem(
+                              `startedworkout_user${userId}_dayPlanId${dayPlanId}`,
+                              JSON.stringify(true)
+                            );
+                          }}
+                        >
+                          Start
+                        </Button>
+                        <Button
+                          variant="dark"
+                          className=" ms-2"
+                          onClick={() => handleResetTimer()}
+                        >
+                          Reset
+                        </Button>
 
+                        <div>
+                          <Table className="text-center mt-3" bordered striped>
+                            <thead>
+                              <tr>
+                                <th colSpan={2}>Exercise</th>
+                                <th colSpan={1}>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dayPlanMoves.map((item) => (
+                                <tr key={item.day_plan_move_id}>
+                                  <td colSpan={2}>{item.move_name}</td>
+                                  <td colSpan={1}>
+                                    {completedExercises.includes(
+                                      item.move_name
+                                    ) ? (
+                                      <span className="text-success">
+                                        🎯 Done
+                                      </span>
+                                    ) : (
+                                      <span className="text-danger">
+                                        🏋️‍♂️ To Do
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </div>
+
+                        <Button
+                          disabled={week === 1 ? true : false}
+                          variant="warning"
+                          onClick={() => setShowLastWeekModal(true)}
+                        >
+                          Show Last Week
+                        </Button>
+                        {recordedTimeWeek !== -1 ? (
+                          <Button
+                            onClick={() => setShowSummaryModal(true)}
+                            disabled={recordedTimeWeek === -1 ? true : false}
+                            className="ms-2"
+                            variant="primary"
+                          >
+                            Week {week} Summary
+                          </Button>
+                        ) : (
+                          ""
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
                 <Row>
                   <Form.Group>
                     <Form.Select
@@ -661,7 +947,7 @@ const StartWorkout = () => {
                 <Row className="mt-3">
                   <Col>
                     <Button
-                      className="px-5"
+                      className="px-4"
                       variant="info"
                       onClick={() => handleAddSet()}
                     >
@@ -670,104 +956,99 @@ const StartWorkout = () => {
                     <div className="mt-1 text-danger">{addSetErrs}</div>
                   </Col>
                 </Row>
-              </Form>
-            </Col>
-          </Row>
 
-          <Row className="mt-3">
-            <Col>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th style={{ fontSize: "18px" }} className="text-primary">
-                      Set
-                    </th>
-                    <th style={{ fontSize: "18px" }} className="text-info">
-                      Reps
-                    </th>
-                    <th style={{ fontSize: "18px" }} className="text-warning">
-                      Weight
-                    </th>
-                    <th style={{ fontSize: "18px" }} className="text-danger">
-                      Delete
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {addedReps.length > 0 ? (
-                    addedReps.map((addedRep, idx) => (
-                      <tr key={idx}>
-                        <td
-                          className=" centered-cell"
-                          style={{ fontSize: "17px" }}
-                          colSpan={1}
-                        >
-                          {+idx + 1}
-                        </td>
-                        <td
-                          className=" centered-cell"
-                          style={{ fontSize: "17px" }}
-                          colSpan={1}
-                        >
-                          {addedRep}
-                        </td>
-                        <td
-                          className=" centered-cell"
-                          style={{ fontSize: "17px" }}
-                        >
-                          {addedWeights[idx]}
-                        </td>
-                        <td className="centered-cell" colSpan={1}>
-                          <Button
-                            variant="outline-secondary"
-                            className="py-1 px-1"
-                            onClick={() => handleDeleteSet(idx)}
-                          >
-                            &#10060;
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="text-secondary"
-                        style={{ fontSize: "17px" }}
-                      >
-                        No Sets Added Yet!
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </Col>
-          </Row>
-          <Row className="mt-2">
-            <Col>
-              <Button
-                variant="success"
-                className="px-5 py-2 all-budget-choices"
-                onClick={handleSubmitRecord}
-              >
-                {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
-              </Button>
-              <div className="mt-1 text-danger">{possibleErrs}</div>
-              <div className="mt-1" style={SUCCESS_STYLE}>
-                {possibleSuccess}
-              </div>
+                <Row className="mt-3">
+                  <Col>
+                    <Col>
+                      <Table variant="dark" striped bordered hover>
+                        <thead>
+                          <tr>
+                            <th className="text-primary">Set</th>
+                            <th className="text-info">Reps</th>
+                            <th className="text-warning">Weight</th>
+                            <th className="text-danger">Delete</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {addedReps.length > 0 ? (
+                            addedReps.map((addedRep, idx) => (
+                              <tr key={idx}>
+                                <td className=" centered-cell" colSpan={1}>
+                                  {+idx + 1}
+                                </td>
+                                <td className=" centered-cell" colSpan={1}>
+                                  {addedRep}
+                                </td>
+                                <td className=" centered-cell">
+                                  {addedWeights[idx]}
+                                </td>
+                                <td className="centered-cell" colSpan={1}>
+                                  <Button
+                                    variant="outline-secondary"
+                                    className="py-1 px-1"
+                                    onClick={() => handleDeleteSet(idx)}
+                                  >
+                                    &#10060;
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={4}
+                                className="text-secondary"
+                                style={{ fontSize: "17px" }}
+                              >
+                                No Sets Added Yet!
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </Table>
+                    </Col>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col>
+                    <Button
+                      variant="success"
+                      className="px-4 py-2 all-budget-choices"
+                      onClick={handleSubmitRecord}
+                    >
+                      {loading ? <img src={rl} alt="Rotation" /> : "Submit"}
+                    </Button>
+                    <div className="mt-1 text-danger">{possibleErrs}</div>
+                    <div className="mt-1" style={SUCCESS_STYLE}>
+                      {possibleSuccess}
+                    </div>
+                  </Col>
+                </Row>
+              </Form>
             </Col>
           </Row>
         </Container>
       </animated.div>
-        
-        <WeekPlanRecords numWeeks={numWeeks} dayPlanID={dayPlanId ? parseInt(dayPlanId) : -1} />
-      {/* <ModalWorkoutHistory
-        show={modalWorkoutHistoryShow}
-        onHide={() => setModalWorkoutHistoryShow(false)}
-        planRecords={planRecords}
-        dayPlanId={dayPlanId ? dayPlanId : ""}
-      /> */}
+
+      <WeekPlanRecords
+        show={showLastWeekModal}
+        onHide={() => setShowLastWeekModal(false)}
+        week={week === 1 ? week : week - 1}
+        dayPlanID={dayPlanId ? parseInt(dayPlanId) : -1}
+        userId={userId}
+      />
+
+      <WorkoutFinish
+        show={showFinishModal}
+        onHide={() => setShowFinishModal(false)}
+        completedExercises={completedExercises}
+        userId={userId}
+        dayPlanId={dayPlanId}
+        week={week}
+      ></WorkoutFinish>
+
+      <WorkoutSummary recordedTime={recordedTimeWeek} show={showSummaryModal} onHide={() => setShowSummaryModal(false)} />
     </>
   );
 };
