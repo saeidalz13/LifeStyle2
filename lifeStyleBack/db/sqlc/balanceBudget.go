@@ -4,29 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 )
-
-
-type CreateBudgetBalanceTx struct {
-	BudgetName    string    `json:"budget_name"`
-	UserID        int64     `json:"user_id"`
-	StartDate     time.Time `json:"start_date"`
-	EndDate       time.Time `json:"end_date"`
-	Savings       string    `json:"savings"`
-	Capital       string    `json:"capital"`
-	Eatout        string    `json:"eatout"`
-	Entertainment string    `json:"entertainment"`
-}
 
 type BalanceBudgetResultTx struct {
 	BudgetRes  Budget
 	BalanceRes Balance
 }
 
-func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetBalanceTx) (BalanceBudgetResultTx, error) {
+func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetParams) (BalanceBudgetResultTx, error) {
 	var createBudget BalanceBudgetResultTx
 
 	err := qw.execTx(ctx, func(q *Queries) error {
@@ -66,16 +53,7 @@ func (qw *QWithTx) CreateBudgetBalance(ctx context.Context, arg CreateBudgetBala
 	return createBudget, nil
 }
 
-type UpdateBudgetBalanceTx struct {
-	Savings       string `json:"savings"`
-	Capital       string `json:"capital"`
-	Eatout        string `json:"eatout"`
-	Entertainment string `json:"entertainment"`
-	BudgetID      int64  `json:"budget_id"`
-	UserID        int64  `json:"user_id"`
-}
-
-func (qw *QWithTx) UpdateBudgetBalance(ctx context.Context, arg UpdateBudgetBalanceTx) (UpdateBudgetRow, Balance, error) {
+func (qw *QWithTx) UpdateBudgetBalance(ctx context.Context, arg UpdateBudgetParams) (UpdateBudgetRow, Balance, error) {
 	var updatedBudget UpdateBudgetRow
 	var updateBalance Balance
 
@@ -173,7 +151,7 @@ func (qw *QWithTx) AddExpenseUpdateBalance(ctx context.Context, arg AddExpenseUp
 				return err
 			}
 		} else {
-			return fmt.Errorf("Invalid type of budget requested!")
+			return fmt.Errorf("invalid type of budget requested")
 		}
 
 		updatedBalance, err = q.UpdateBalance(ctx, updateBalanceParams)
@@ -190,3 +168,23 @@ func (qw *QWithTx) AddExpenseUpdateBalance(ctx context.Context, arg AddExpenseUp
 	}
 	return updatedBalance, nil
 }
+
+// type UpdateBudgetBalanceTx struct {
+// 	Savings       string `json:"savings"`
+// 	Capital       string `json:"capital"`
+// 	Eatout        string `json:"eatout"`
+// 	Entertainment string `json:"entertainment"`
+// 	BudgetID      int64  `json:"budget_id"`
+// 	UserID        int64  `json:"user_id"`
+// }
+
+// type CreateBudgetBalanceTx struct {
+// 	BudgetName    string    `json:"budget_name"`
+// 	UserID        int64     `json:"user_id"`
+// 	StartDate     time.Time `json:"start_date"`
+// 	EndDate       time.Time `json:"end_date"`
+// 	Savings       string    `json:"savings"`
+// 	Capital       string    `json:"capital"`
+// 	Eatout        string    `json:"eatout"`
+// 	Entertainment string    `json:"entertainment"`
+// }

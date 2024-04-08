@@ -24,8 +24,8 @@ func (qw *QWithTx) CreateDayPlanMoves(ctx context.Context, arg DayPlanMovesTx) (
 		}
 
 		for _, eachMove := range arg.AddDayPlanMovesTx {
-			var err error
-			err = q.AddDayPlanMoves(ctx, AddDayPlanMovesParams{
+			// var err error
+			err := q.AddDayPlanMoves(ctx, AddDayPlanMovesParams{
 				UserID:    eachMove.UserID,
 				PlanID:    eachMove.PlanID,
 				DayPlanID: dayPlan.DayPlanID,

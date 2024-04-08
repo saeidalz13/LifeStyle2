@@ -8,14 +8,12 @@ import (
 
 // Composition instead of inheritence
 type QWithTx struct {
-	*Queries
 	db *sql.DB
 }
 
 func NewQWithTx(db *sql.DB) *QWithTx {
 	return &QWithTx{
 		db:      db,
-		Queries: New(db),
 	}
 }
 

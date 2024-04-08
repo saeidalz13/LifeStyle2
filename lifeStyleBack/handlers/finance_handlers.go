@@ -267,7 +267,7 @@ func (f *FinanceHandlersConfig) HandlePostNewBudget(ftx *fiber.Ctx) error {
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
 	}
 
-	operationBudget := sqlc.CreateBudgetBalanceTx(newBudget)
+	operationBudget := sqlc.CreateBudgetParams(newBudget)
 	operationBudget.UserID = user.ID
 	op := sqlc.NewQWithTx(f.Db)
 	result, err := op.CreateBudgetBalance(ctx, operationBudget)
@@ -480,7 +480,7 @@ func (f *FinanceHandlersConfig) PatchBudget(ftx *fiber.Ctx) error {
 	}
 
 	// Prepare the input
-	var updateBudgetBalance sqlc.UpdateBudgetBalanceTx
+	var updateBudgetBalance sqlc.UpdateBudgetParams
 	if err := ftx.BodyParser(&updateBudgetBalance); err != nil {
 		log.Println(err)
 		return ftx.Status(fiber.StatusInternalServerError).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: cn.ErrsFitFin.ParseJSON})
