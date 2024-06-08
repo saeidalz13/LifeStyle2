@@ -19,7 +19,7 @@ import { ApiRes } from "../../assets/GeneralInterfaces";
 import { useSpring, animated } from "react-spring";
 import { useAuth } from "../../context/useAuth";
 import MainDivHeader from "../../components/Headers/MainDivHeader";
-import { getLocalStorageValuesByKeyContains } from "../../utils/LocalStorageUtils";
+import { getLocalStorageValuesByKeyContains, removeLocalStorageItem } from "../../utils/LocalStorageUtils";
 import PieChartEachBudget from "./charts/PieChartBalance";
 
 const EachBudget = () => {
@@ -27,6 +27,7 @@ const EachBudget = () => {
   const loc = useLocation();
   const budgetDataState = loc.state?.idBudget as Budget | undefined;
   const { userId, isAuthenticated, loadingAuth } = useAuth();
+  const [syncSignal, setSyncSignal] = useState<boolean>(false)
 
   const springProps = useSpring({
     to: { opacity: 1, transform: "translateX(0)" },
@@ -192,7 +193,7 @@ const EachBudget = () => {
     if (userId !== -1) {
       updateBalance();
     }
-  }, [budgetIdParam, userId, budgetDataState]);
+  }, [budgetIdParam, userId, budgetDataState, syncSignal]);
 
   async function handleDeleteBudget() {
     try {
@@ -235,10 +236,17 @@ const EachBudget = () => {
     }
   }
 
+  const handleSyncData = () => {
+    removeLocalStorageItem([`budget_user${userId}`, `balance_user${userId}`])
+    setSyncSignal(el => !el)
+  }
+
   return (
     <animated.div style={springProps}>
       <BackBudgets />
-
+      <div className="text-center mt-1">
+        <Button onClick={handleSyncData}>Sync Data</Button>
+      </div>
       {budget ? <h1 className="mt-3 mb-1">{budget.budget_name}</h1> : ""}
       <Container className="mt-3 mb-4">
         <Row className="text-center">

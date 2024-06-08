@@ -19,6 +19,7 @@ import BackFinance from "../../misc/BackFinance";
 import { useAuth } from "../../context/useAuth";
 import { useSpring, animated } from "react-spring";
 import MainDivHeader from "../../components/Headers/MainDivHeader";
+import { removeLocalStorageItem } from "../../utils/LocalStorageUtils";
 
 const ShowAllBudgets = () => {
   const { userId, isAuthenticated, loadingAuth } = useAuth();
@@ -27,6 +28,7 @@ const ShowAllBudgets = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [numbers, setNumbers] = useState<null | Array<number>>(null);
   const [budgets, setBudgets] = useState<Waiting | Budgets | null>("waiting");
+  const [syncSignal, setSyncSignal] = useState<boolean>(false)
 
   const springProps = useSpring({
     to: { opacity: 1, transform: "translateX(0)" }, // End at original position
@@ -85,13 +87,9 @@ const ShowAllBudgets = () => {
       const receivedBudgets = await fetchAllBudgets();
       if (receivedBudgets) {
         setBudgets(receivedBudgets);
-        
-        const localStorageKey = `allbudgets_user${userId}_limit${limit}_offset${offset}`;
-        localStorage.setItem(
-          localStorageKey,
-          JSON.stringify(receivedBudgets)
-        );
 
+        const localStorageKey = `allbudgets_user${userId}_limit${limit}_offset${offset}`;
+        localStorage.setItem(localStorageKey, JSON.stringify(receivedBudgets));
 
         const nums = [];
         const upperBound = Math.ceil(receivedBudgets.num_budgets / limit);
@@ -119,8 +117,14 @@ const ShowAllBudgets = () => {
         executeFetch();
       }
     }
+  }, [currentPage, userId, loadingAuth, syncSignal]);
 
-  }, [currentPage, userId, loadingAuth]);
+  // Button that make sure the cache is not stale
+  // client can request for syncing with server
+  const handleSyncData = () => {
+    removeLocalStorageItem(["allbudgets"])
+    setSyncSignal(el => !el)
+  }
 
   if (budgets === "waiting") {
     return (
@@ -155,6 +159,9 @@ const ShowAllBudgets = () => {
   return (
     <animated.div style={springProps} className="mb-4">
       <BackFinance />
+      <div className="text-center mt-1">
+        <Button onClick={handleSyncData}>Sync Data</Button>
+      </div>
       <Container className="mt-3 text-center mb-2">
         <Row>
           {budgets.budgets.length > 0

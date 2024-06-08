@@ -13,3 +13,13 @@ export function getLocalStorageValuesByKeyContains(
   }
   return null;
 }
+
+export function removeLocalStorageItem(userKeys: string[]) {
+  for (let i = 0; i < userKeys.length; i++) {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.includes(userKeys[i])) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+}

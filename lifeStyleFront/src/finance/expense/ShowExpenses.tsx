@@ -17,6 +17,7 @@ import ExpenseTable from "./ExpenseTable";
 import { Balance } from "../../assets/FinanceInterfaces";
 import { useAuth } from "../../context/useAuth";
 import PageHeader from "../../components/Headers/PageHeader";
+import { removeLocalStorageItem } from "../../utils/LocalStorageUtils";
 
 type Expense = TCapitalExpenses | TEatoutExpenses | TEntertainmentExpenses;
 
@@ -43,6 +44,7 @@ const ShowExpenses = () => {
   const [possibleErrs, setPossibleErrs] = useState(false);
   const [possibleErrsMsg, setPossibleErrsMsg] = useState("");
   const [successRes, setSuccessRes] = useState(false);
+  const [syncSignal, setSyncSignal] = useState<boolean>(false)
 
   // View Expenses
   const [keyTab, setKeyTab] = useState("capital");
@@ -128,7 +130,7 @@ const ShowExpenses = () => {
 
       fetchSingleBalance();
     }
-  }, [budgetIdParam, trigger, userId, loadingAuth]);
+  }, [budgetIdParam, trigger, userId, loadingAuth, syncSignal]);
 
   // Submit Expenses
   async function handleSubmitExpense(e: FormEvent) {
@@ -298,6 +300,7 @@ const ShowExpenses = () => {
     trigger,
     userId,
     loadingAuth,
+    syncSignal
   ]);
 
   const handleSearch = (e: FormEvent) => {
@@ -326,6 +329,11 @@ const ShowExpenses = () => {
     setActiveTab(str);
     mountedExpenses.current = true;
   };
+
+  const handleSyncData = () => {
+    removeLocalStorageItem([`expense_user${userId}`])
+    setSyncSignal(el => !el)
+  }
 
   if (data === "waiting") {
     return (
@@ -384,6 +392,7 @@ const ShowExpenses = () => {
     );
   }
 
+
   return (
     <>
       <div className="text-center mt-2">
@@ -392,6 +401,10 @@ const ShowExpenses = () => {
             Back To Budget Info
           </Button>
         </NavLink>
+      </div>
+
+      <div className="text-center mt-1">
+        <Button onClick={handleSyncData}>Sync Data</Button>
       </div>
 
       <Container className="mt-1 mb-4">

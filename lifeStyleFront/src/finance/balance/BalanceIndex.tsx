@@ -94,6 +94,7 @@ const BalanceIndex = () => {
         </NavLink>
       </div>
 
+
       <div className="mx-4 mb-5">
         <ul className="list-group text-center">
           <li className="list-group-item list-group-balance border border-info list-item-capital-balance">
