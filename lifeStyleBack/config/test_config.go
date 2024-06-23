@@ -22,9 +22,3 @@ var RequestMethods = &RequestMethodsStruct{
 	Put:    "PUT",
 }
 
-const (
-	TEST_REQUEST_TIMEOUT_MS       = 5000
-	EXISTENT_EMAIL_IN_TEST_DB     = "test@gmail.com"
-	EXISTENT_AND_VALID_PASSWORD   = "SomePassword13"
-	NON_EXISTENT_EMAIL_IN_TEST_DB = "emaildoesnotexist@gmail.com"
-)

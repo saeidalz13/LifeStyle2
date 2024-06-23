@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -19,11 +20,25 @@ import (
 	// "golang.org/x/oauth2/google"
 )
 
-const TEST_DB_DRIVER = "postgres"
+const (
+	testRequestTimeout = 5000
+	validEmail         = "test@gmail.com"
+	anotherValidEmail  = "anotheremail@gmail.com"
+	validPassword      = "SomePassword13"
+	nonExistentEmail   = "emaildoesnotexist@gmail.com"
+	testDbDriver       = "postgres"
+	validContentType   = "application/json"
+	invalidToken       = ""
+)
 
-var DB_TEST *sql.DB
-var TestAuthHandlerReqs *AuthHandlersConfig
-var TestFinanceHandlerReqs *FinanceHandlersConfig
+var (
+	testDb                 *sql.DB
+	testAuthHandlerReqs    *AuthHandlersConfig
+	testFinanceHandlerReqs *FinanceHandlersConfig
+	testFitnessHandlerReqs *FitnessHandlersConfig
+	app                    = fiber.New()
+	validToken             string
+)
 
 func determineMigrationDrive() string {
 	return "file:../db/migration"
@@ -31,7 +46,7 @@ func determineMigrationDrive() string {
 }
 
 func execMigrations(migrationDir string) error {
-	driver, err := postgres.WithInstance(DB_TEST, &postgres.Config{})
+	driver, err := postgres.WithInstance(testDb, &postgres.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +75,7 @@ func ensureFitnessMovesAvailability() error {
 	// Add move types
 	ctx, cancel := context.WithTimeout(context.Background(), cn.CONTEXT_TIMEOUT)
 	defer cancel()
-	q := sqlc.New(DB_TEST)
+	q := sqlc.New(testDb)
 	for _, moveType := range cn.MOVE_TYPES_SLICE {
 		if err := q.AddMoveType(ctx, moveType); err != nil {
 			return err
@@ -109,7 +124,7 @@ func TestMain(m *testing.M) {
 	}
 	token.PasetoMakerGlobal = tempPaseto
 
-	DB_TEST, err := sql.Open(TEST_DB_DRIVER, cn.EnvVars.DbTestUrl)
+	DB_TEST, err := sql.Open(testDbDriver, cn.EnvVars.DbTestUrl)
 	if err != nil {
 		log.Println(err)
 	}
@@ -139,10 +154,13 @@ func TestMain(m *testing.M) {
 	}
 	migrateDb.Up()
 
-	TestAuthHandlerReqs = &AuthHandlersConfig{
+	testAuthHandlerReqs = &AuthHandlersConfig{
 		Db: DB_TEST,
 	}
-	TestFinanceHandlerReqs = &FinanceHandlersConfig{
+	testFinanceHandlerReqs = &FinanceHandlersConfig{
+		Db: DB_TEST,
+	}
+	testFitnessHandlerReqs = &FitnessHandlersConfig{
 		Db: DB_TEST,
 	}
 

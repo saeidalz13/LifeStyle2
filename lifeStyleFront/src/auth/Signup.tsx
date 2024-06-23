@@ -99,7 +99,7 @@ const Signup = () => {
       setLoading(false);
       const resp = await result.json();
 
-      if (result.status === StatusCodes.Ok) {
+      if (result.status === StatusCodes.Created) {
         setSuccess(true);
         location.assign(Urls.home);
         return;

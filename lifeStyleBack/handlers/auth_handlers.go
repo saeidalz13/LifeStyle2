@@ -123,7 +123,7 @@ func (a *AuthHandlersConfig) HandlePostSignUp(ftx *fiber.Ctx) error {
 		Secure:   cn.EnvVars.DevStage == cn.DefaultDevStages.Production,
 		Path:     "/",
 	})
-	return ftx.Status(fiber.StatusOK).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
+	return ftx.Status(fiber.StatusCreated).JSON(&cn.ApiRes{ResType: cn.ResTypes.Err, Msg: "Successful signing in!"})
 }
 
 func (a *AuthHandlersConfig) HandlePostLogin(ftx *fiber.Ctx) error {
