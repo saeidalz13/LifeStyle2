@@ -9,13 +9,17 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	cn "github.com/saeidalz13/LifeStyle2/lifeStyleBack/config"
 	sqlc "github.com/saeidalz13/LifeStyle2/lifeStyleBack/db/sqlc"
+	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/models"
 	"github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	// "github.com/saeidalz13/LifeStyle2/lifeStyleBack/token"
 	// "github.com/saeidalz13/LifeStyle2/lifeStyleBack/utils"
@@ -38,6 +42,8 @@ type TestCase[T any] struct {
 ***
 */
 func TestSignUp(t *testing.T) {
+	app.Post(cn.URLS.SignUp, testAuthHandlerReqs.HandlePostSignUp)
+
 	tests := []TestCase[sqlc.CreateUserParams]{
 		{
 			name:           "signup valid email and password",
@@ -90,6 +96,7 @@ func TestSignUp(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, test.url, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", test.contentType)
+
 			resp, err := app.Test(req, 10)
 			if err != nil {
 				t.Fatal(err)
@@ -113,6 +120,8 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
+	app.Post(cn.URLS.Login, testAuthHandlerReqs.HandlePostLogin)
+
 	tests := []TestCase[sqlc.CreateUserParams]{
 		{
 			name:           "login with valid email and password",
@@ -168,6 +177,8 @@ func TestLogin(t *testing.T) {
 }
 
 func TestGetHome(t *testing.T) {
+	app.Get(cn.URLS.Home, testAuthHandlerReqs.HandleGetHome)
+
 	tests := []TestCase[sqlc.CreateUserParams]{
 		{
 			name:           "get home valid token",
@@ -201,6 +212,8 @@ func TestGetHome(t *testing.T) {
 }
 
 func TestGetProfile(t *testing.T) {
+	app.Get(cn.URLS.Profile, testAuthHandlerReqs.HandleGetProfile)
+
 	tests := []TestCase[sqlc.CreateUserParams]{
 		{
 			name:           "get profile valid token",
@@ -242,6 +255,8 @@ func TestGetProfile(t *testing.T) {
 */
 
 func TestHandlePostNewBudget(t *testing.T) {
+	app.Post(cn.URLS.PostNewBudget, testFinanceHandlerReqs.HandlePostNewBudget)
+
 	tests := []TestCase[sqlc.CreateBudgetParams]{
 		{
 			name:           "create budget valid token valid params",
@@ -251,6 +266,54 @@ func TestHandlePostNewBudget(t *testing.T) {
 			token:          validToken,
 			reqPayload: sqlc.CreateBudgetParams{
 				BudgetName:    "random",
+				StartDate:     time.Now(),
+				EndDate:       time.Now().Add(time.Hour),
+				Savings:       "100000",
+				Capital:       "1000",
+				Eatout:        "1000",
+				Entertainment: "2000",
+			},
+		},
+		{
+			name:           "not create budget same budget name",
+			expectedStatus: http.StatusInternalServerError,
+			url:            cn.URLS.PostNewBudget,
+			contentType:    validContentType,
+			token:          validToken,
+			reqPayload: sqlc.CreateBudgetParams{
+				BudgetName:    "random",
+				StartDate:     time.Now(),
+				EndDate:       time.Now().Add(time.Hour),
+				Savings:       "100000",
+				Capital:       "1000",
+				Eatout:        "1000",
+				Entertainment: "2000",
+			},
+		},
+		{
+			name:           "not create budget invalid money params",
+			expectedStatus: http.StatusInternalServerError,
+			url:            cn.URLS.PostNewBudget,
+			contentType:    validContentType,
+			token:          validToken,
+			reqPayload: sqlc.CreateBudgetParams{
+				BudgetName:    "new_random",
+				StartDate:     time.Now(),
+				EndDate:       time.Now().Add(time.Hour),
+				Savings:       "gs",
+				Capital:       "g",
+				Eatout:        "100grd50",
+				Entertainment: "dg",
+			},
+		},
+		{
+			name:           "not create budget invalid token",
+			expectedStatus: http.StatusUnauthorized,
+			url:            cn.URLS.PostNewBudget,
+			contentType:    validContentType,
+			token:          invalidToken,
+			reqPayload: sqlc.CreateBudgetParams{
+				BudgetName:    "new random",
 				StartDate:     time.Now(),
 				EndDate:       time.Now().Add(time.Hour),
 				Savings:       "100000",
@@ -285,21 +348,139 @@ func TestHandlePostNewBudget(t *testing.T) {
 }
 
 func TestHandleGetAllBudgets(t *testing.T) {
+	tests := []TestCase[any]{
+		{
+			expectedStatus: http.StatusOK,
+			name:           "get all budgets valid token",
+			url:            cn.URLS.ShowBudgets,
+			token:          validToken,
+		},
+		{
+			expectedStatus: http.StatusUnauthorized,
+			name:           "no budgets invalid token",
+			url:            cn.URLS.ShowBudgets,
+			token:          invalidToken,
+		},
+	}
 
+	for i, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, test.url, nil)
+			req.AddCookie(&http.Cookie{Name: "paseto", Value: test.token})
+
+			resp, err := app.Test(req, 10)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if resp.StatusCode != test.expectedStatus {
+				t.Fatalf("expected status code: %d\t got: %d", resp.StatusCode, test.expectedStatus)
+			}
+
+			if i == 0 {
+				var jsonResp models.OutgoingAllBudgets
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err = json.Unmarshal(bodyBytes, &jsonResp); err != nil {
+					t.Fatal(err)
+				}
+				validBudgetId = fmt.Sprint(jsonResp.Budgets[0].BudgetID)
+			}
+		})
+	}
 }
 
 func TestHandleGetSingleBudget(t *testing.T) {
+	tests := []TestCase[string]{
+		{
+			expectedStatus: http.StatusOK,
+			name:           "get single budget valid token",
+			url:            cn.URLS.EachBudget,
+			token:          validToken,
+			reqPayload:     validBudgetId,
+		},
+		{
+			expectedStatus: http.StatusNotFound,
+			name:           "no budget invalid id",
+			url:            cn.URLS.EachBudget,
+			token:          validToken,
+			reqPayload:     "-1",
+		},
+		{
+			expectedStatus: http.StatusUnauthorized,
+			name:           "no budget invalid token",
+			url:            cn.URLS.EachBudget,
+			token:          invalidToken,
+			reqPayload:     validBudgetId,
+		},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, strings.Replace(test.url, ":id", test.reqPayload, 1), nil)
+			req.AddCookie(&http.Cookie{Name: "paseto", Value: test.token})
+
+			resp, err := app.Test(req, 10)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if resp.StatusCode != test.expectedStatus {
+				t.Fatalf("expected status code: %d\t got: %d", resp.StatusCode, test.expectedStatus)
+			}
+		})
+	}
 }
 
 func TestHandleGetSingleBalance(t *testing.T) {
+	tests := []TestCase[string]{
+		{
+			name:           "get balance valid budget id",
+			expectedStatus: http.StatusOK,
+			url:            cn.URLS.EachBalance,
+			token:          validToken,
+			reqPayload:     validBudgetId,
+		},
+		{
+			name:           "no balance invalid budget id",
+			expectedStatus: http.StatusNotFound,
+			url:            cn.URLS.EachBalance,
+			token:          validToken,
+			reqPayload:     "-1",
+		},
+		{
+			name:           "no balance invalid token",
+			expectedStatus: http.StatusUnauthorized,
+			url:            cn.URLS.EachBalance,
+			token:          invalidToken,
+			reqPayload:     validBudgetId,
+		},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, strings.Replace(test.url, ":id", test.reqPayload, 1), nil)
+			req.AddCookie(&http.Cookie{Name: "paseto", Value: test.token})
+
+			resp, err := app.Test(req, 10)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if resp.StatusCode != test.expectedStatus {
+				t.Fatalf("expected status code: %d\t got: %d", resp.StatusCode, test.expectedStatus)
+			}
+		})
+	}
 }
 
 /*
 ***
 
 	teardown function
+	Deletes the user to clean up the test database
 
 ***
 */

@@ -38,6 +38,7 @@ var (
 	testFitnessHandlerReqs *FitnessHandlersConfig
 	app                    = fiber.New()
 	validToken             string
+	validBudgetId          string
 )
 
 func determineMigrationDrive() string {
